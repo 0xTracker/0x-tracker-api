@@ -1,0 +1,50 @@
+{
+  "name": "0x-tracker-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "precommit": "lint-staged",
+    "start": "node .",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "lint-staged": {
+    "*.js": "eslint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xTracker/0x-tracker-api.git"
+  },
+  "keywords": [
+    "ethereum",
+    "0x",
+    "web3"
+  ],
+  "author": "Craig Bovis",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/0xTracker/0x-tracker-api/issues"
+  },
+  "homepage": "https://0xtracker.com",
+  "devDependencies": {
+    "eslint": "5.4.0",
+    "eslint-config-airbnb-base": "13.1.0",
+    "eslint-config-prettier": "3.0.1",
+    "eslint-plugin-import": "2.14.0",
+    "eslint-plugin-prettier": "2.6.2",
+    "husky": "0.14.3",
+    "jest": "23.5.0",
+    "lint-staged": "7.2.2",
+    "prettier": "1.14.2"
+  },
+  "dependencies": {
+    "bugsnag": "2.4.3",
+    "config": "2.0.1",
+    "dotenv-safe": "6.0.0",
+    "lodash": "4.17.10",
+    "mongoose": "^5.2.14",
+    "signale": "1.3.0"
+  }
+}
