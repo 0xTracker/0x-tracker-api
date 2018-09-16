@@ -5,8 +5,10 @@ const helmet = require('koa-helmet');
 const Koa = require('koa');
 const signale = require('signale');
 
+const { logError } = require('../util/error-logger');
 const error = require('./middleware/error');
 const invalidUrl = require('./middleware/invalid-url');
+const routes = require('./routes');
 
 const logger = signale.scope('application');
 
@@ -14,7 +16,7 @@ const start = port => {
   const app = new Koa();
 
   app.on('error', (err, { request }) => {
-    logger.logError(err, { request });
+    logError(err, { request });
   });
 
   app.use(error());
@@ -22,6 +24,7 @@ const start = port => {
   app.use(cors());
   app.use(consoleLogger());
   app.use(compress());
+  app.use(routes());
   app.use(invalidUrl());
 
   app.listen(port);
