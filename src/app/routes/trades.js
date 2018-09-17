@@ -2,7 +2,7 @@ const _ = require('lodash');
 const Router = require('koa-router');
 
 const Fill = require('../../model/fill');
-const getFilterForRelayer = require('../../fills/get-filter-for-relayer');
+const getFilterForRelayer = require('../../relayers/get-filter-for-relayer');
 const getTokens = require('../../tokens/get-tokens');
 const searchFills = require('../../fills/search-fills');
 const transformFill = require('../util/transform-fill');
