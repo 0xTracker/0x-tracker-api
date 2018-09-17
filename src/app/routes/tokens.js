@@ -4,11 +4,9 @@ const memoryCache = require('memory-cache');
 const ms = require('ms');
 
 const Token = require('../../model/token');
+const transformToken = require('../util/transform-token');
 
 const router = new Router({ prefix: '/tokens' });
-
-const transformToken = token =>
-  _.pick(token, ['address', 'decimals', 'imageUrl', 'name', 'symbol', 'price']);
 
 router.get('/', async ({ response }, next) => {
   const cacheKey = 'tokens';

@@ -5,7 +5,7 @@ const articles = require('./articles');
 // const relayers = require('./relayers');
 // const stats = require('./stats');
 const tokens = require('./tokens');
-// const trades = require('./trades');
+const trades = require('./trades');
 const zrxPrice = require('./zrx-price');
 
 const router = combineRouters(
@@ -13,7 +13,7 @@ const router = combineRouters(
   // metrics,
   // relayers,
   // stats,
-  // trades,
+  trades,
   tokens,
   zrxPrice,
 );

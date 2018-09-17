@@ -1,0 +1,97 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should return all relayers 1`] = `
+Object {
+  "bambooRelay": Object {
+    "id": "bambooRelay",
+    "lookupId": 1,
+    "name": "Bamboo Relay",
+    "slug": "bamboo-relay",
+    "url": "https://bamboorelay.com/",
+  },
+  "ddex": Object {
+    "id": "ddex",
+    "lookupId": 2,
+    "name": "DDEX",
+    "slug": "ddex",
+    "url": "https://ddex.io",
+  },
+  "ercDex": Object {
+    "id": "ercDex",
+    "lookupId": 3,
+    "name": "ERC dEX",
+    "slug": "erc-dex",
+    "url": "https://ercdex.com",
+  },
+  "idtExchange": Object {
+    "id": "idtExchange",
+    "lookupId": 4,
+    "name": "IDT Exchange",
+    "slug": "idt-exchange",
+    "url": "https://www.idtexchange.com",
+  },
+  "ledgerDex": Object {
+    "id": "ledgerDex",
+    "lookupId": 12,
+    "name": "LedgerDex",
+    "slug": "ledger-dex",
+    "url": "https://ledgerdex.com",
+  },
+  "openRelay": Object {
+    "id": "openRelay",
+    "lookupId": 5,
+    "name": "OpenRelay",
+    "slug": "open-relay",
+    "url": "https://openrelay.xyz",
+  },
+  "paradex": Object {
+    "id": "paradex",
+    "lookupId": 6,
+    "name": "Paradex",
+    "slug": "paradex",
+    "url": "https://paradex.io",
+  },
+  "radarRelay": Object {
+    "id": "radarRelay",
+    "lookupId": 7,
+    "name": "Radar Relay",
+    "slug": "radar-relay",
+    "url": "https://radarrelay.com",
+  },
+  "sharkRelay": Object {
+    "id": "sharkRelay",
+    "lookupId": 8,
+    "name": "Shark Relay",
+    "slug": "shark-relay",
+    "url": "https://sharkrelay.com",
+  },
+  "starBit": Object {
+    "id": "starBit",
+    "lookupId": 9,
+    "name": "STAR BIT",
+    "slug": "star-bit",
+    "url": "https://www.starbitex.com",
+  },
+  "theOcean": Object {
+    "id": "theOcean",
+    "lookupId": 13,
+    "name": "The Ocean",
+    "slug": "the-ocean",
+    "url": "https://theocean.trade/",
+  },
+  "tokenJar": Object {
+    "id": "tokenJar",
+    "lookupId": 10,
+    "name": "Token Jar",
+    "slug": "token-jar",
+    "url": "https://tokenjar.io/",
+  },
+  "tokenlon": Object {
+    "id": "tokenlon",
+    "lookupId": 11,
+    "name": "Tokenlon",
+    "slug": "tokenlon",
+    "url": "https://tokenlon.token.im/",
+  },
+}
+`;
