@@ -47,7 +47,7 @@
     "bugsnag": "2.4.3",
     "config": "2.0.1",
     "dotenv-safe": "6.0.0",
-    "koa": "2.5.2",
+    "koa": "2.5.3",
     "koa-combine-routers": "^4.0.1",
     "koa-compress": "3.0.0",
     "koa-cors": "0.0.16",
