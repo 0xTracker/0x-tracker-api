@@ -30,6 +30,7 @@ const schema = Schema({
     taker: Number,
     saved: { default: false, type: Boolean, index: true },
   },
+  protocolVersion: Number,
   rates: {
     data: Schema.Types.Mixed,
     saved: { default: false, type: Boolean, index: true },

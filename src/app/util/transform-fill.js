@@ -41,6 +41,7 @@ const transformFill = (fill, tokens) => {
     },
     makerToken: formatToken(makerToken),
     orderHash: fill.orderHash,
+    protocolVersion: fill.protocolVersion,
     relayer: formatRelayer(relayer),
     status: formatFillStatus(fill.status),
     takerAddress: fill.taker,
