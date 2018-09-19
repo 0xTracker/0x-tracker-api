@@ -4,13 +4,10 @@ const ms = require('ms');
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../constants');
-// const getDatesForTimePeriod = require('../../util/get-dates-for-time-period');
 const getFilterForRelayer = require('../../relayers/get-filter-for-relayer');
-// const getFilterForTimePeriod = require('../../shared/util/get-filter-for-time-period');
-// const getIntervalForTimePeriod = require('../../shared/util/get-interval-for-time-period');
 const getNetworkMetrics = require('../../metrics/get-network-metrics');
 const getTokens = require('../../tokens/get-tokens');
-// const getTokenVolume = require('../../shared/metrics/get-token-volume');
+const getTokenVolumeMetrics = require('../../metrics/get-token-volume-metrics');
 
 const router = new Router({ prefix: '/metrics' });
 
@@ -40,25 +37,24 @@ router.get('/network', async ({ request, response }, next) => {
   await next();
 });
 
-// router.get('/token-volume', async ({ request, response }, next) => {
-//   const period = request.query.period || TIME_PERIOD.MONTH;
-//   const { token } = request.query;
-//   const cacheKey = `metrics.volume.${token}.${period}`;
-//   const cachedMetrics = memoryCache.get(cacheKey);
+router.get('/token-volume', async ({ request, response }, next) => {
+  const { token } = request.query;
+  const period = request.query.period || TIME_PERIOD.MONTH;
+  const cacheKey = `metrics.volume.${token}.${period}`;
+  const cachedMetrics = memoryCache.get(cacheKey);
 
-//   if (isArray(cachedMetrics)) {
-//     response.body = cachedMetrics;
-//   } else {
-//     const { dateFrom } = getFilterForTimePeriod(period);
-//     const interval = getIntervalForTimePeriod(period);
-//     const metrics = await getTokenVolume(token, currency, interval, dateFrom);
+  if (_.isArray(cachedMetrics)) {
+    response.body = cachedMetrics;
+    await next();
+    return;
+  }
 
-//     memoryCache.put(cacheKey, metrics, ms('1 minute'));
+  const metrics = await getTokenVolumeMetrics(token, period);
 
-//     response.body = metrics;
-//   }
+  memoryCache.put(cacheKey, metrics, ms('1 minute'));
+  response.body = metrics;
 
-//   await next();
-// });
+  await next();
+});
 
 module.exports = router;

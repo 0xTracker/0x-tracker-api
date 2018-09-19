@@ -15,7 +15,7 @@ const getNetworkMetrics = async (period, tokens, { relayerId } = {}) => {
     { date: { $gte: dateFrom, $lte: dateTo } },
     ...optionalCriteria,
   );
-  const metrics = await Fill.aggregate([
+  const dataPoints = await Fill.aggregate([
     {
       $match: query,
     },
@@ -24,11 +24,11 @@ const getNetworkMetrics = async (period, tokens, { relayerId } = {}) => {
         _id: {
           date: `$roundedDates.${metricInterval}`,
         },
+        count: { $sum: 1 },
         localizedMakerFees: { $sum: `$conversions.USD.makerFee` },
         localizedTakerFees: { $sum: `$conversions.USD.takerFee` },
         makerFees: { $sum: '$makerFee' },
         takerFees: { $sum: '$takerFee' },
-        tradeCount: { $sum: 1 },
         volume: { $sum: `$conversions.USD.amount` },
       },
     },
@@ -39,19 +39,19 @@ const getNetworkMetrics = async (period, tokens, { relayerId } = {}) => {
     throw new Error('Cannot find ZRX token');
   }
 
-  return metrics.map(metric => {
-    const totalFees = new BigNumber(metric.makerFees.toString()).plus(
-      metric.takerFees.toString(),
+  return dataPoints.map(dataPoint => {
+    const totalFees = new BigNumber(dataPoint.makerFees.toString()).plus(
+      dataPoint.takerFees.toString(),
     );
 
     return {
-      date: metric._id.date,
+      date: dataPoint._id.date,
       fees: {
-        USD: metric.localizedMakerFees + metric.localizedTakerFees,
+        USD: dataPoint.localizedMakerFees + dataPoint.localizedTakerFees,
         ZRX: formatTokenAmount(totalFees, zrxToken),
       },
-      trades: metric.tradeCount,
-      volume: metric.volume,
+      fills: dataPoint.count,
+      volume: dataPoint.volume,
     };
   });
 };
