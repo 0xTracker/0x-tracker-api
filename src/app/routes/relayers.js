@@ -6,8 +6,9 @@ const getAllRelayers = require('../../relayers/get-all-relayers');
 const router = new Router({ prefix: '/relayers' });
 
 router.get('/', async ({ response }, next) => {
-  const relayers = _.mapValues(getAllRelayers(), relayer =>
-    _.pick(relayer, ['name', 'slug', 'url']),
+  console.log(getAllRelayers());
+  const relayers = _.map(getAllRelayers(), relayer =>
+    _.pick(relayer, ['id', 'name', 'slug', 'url']),
   );
 
   response.body = relayers;

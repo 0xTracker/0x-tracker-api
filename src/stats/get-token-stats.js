@@ -108,11 +108,12 @@ const getTokenStats = async (dateFrom, dateTo, filter) => {
   const tokenAddresses = _.keys(stats);
   const tokens = await getTokensByAddresses(tokenAddresses);
 
-  return _.mapValues(tokens, token => {
+  return _.map(tokens, token => {
     const statsForToken = stats[token.address];
 
     return {
-      tradeCount: Math.ceil(statsForToken.tradeCount),
+      token: token.address,
+      trades: Math.ceil(statsForToken.tradeCount),
       volume: {
         USD: statsForToken.volume,
         [token.symbol]: formatTokenAmount(

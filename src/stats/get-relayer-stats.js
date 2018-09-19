@@ -23,7 +23,7 @@ const getRelayerStats = async (dateFrom, dateTo) => {
         localisedTakerFees: { $sum: `$conversions.USD.takerFee` },
         makerFee: { $sum: '$makerFee' },
         takerFee: { $sum: 'takerFee' },
-        tradeCount: { $sum: 1 },
+        trades: { $sum: 1 },
         volume: { $sum: `$conversions.USD.amount` },
       },
     },
@@ -33,11 +33,16 @@ const getRelayerStats = async (dateFrom, dateTo) => {
   const tokens = await getTokens();
   const zrxToken = tokens[ZRX_TOKEN_ADDRESS];
 
-  const stats = _.mapValues(relayers, (relayer, relayerId) => {
+  const stats = _.map(relayers, relayer => {
     const metric = _.find(metrics, { _id: { relayerId: relayer.lookupId } });
 
     if (_.isUndefined(metric)) {
-      return { fees: { USD: 0, ZRX: 0 }, tradeCount: 0, volume: 0 };
+      return {
+        fees: { USD: 0, ZRX: 0 },
+        relayer: relayer.id,
+        tradeCount: 0,
+        volume: 0,
+      };
     }
 
     const {
@@ -45,7 +50,7 @@ const getRelayerStats = async (dateFrom, dateTo) => {
       localisedTakerFees,
       makerFee,
       takerFee,
-      tradeCount,
+      trades,
       volume,
     } = metric;
 
@@ -54,14 +59,16 @@ const getRelayerStats = async (dateFrom, dateTo) => {
         USD: localisedMakerFees + localisedTakerFees,
         ZRX: formatTokenAmount(makerFee + takerFee, zrxToken),
       },
-      tradeCount,
+      relayer: relayer.id,
+      trades,
       volume,
     };
 
-    if (_.includes(['paradex', 'ddex', 'theOcean', 'starBit'], relayerId)) {
+    if (_.includes(['paradex', 'ddex', 'theOcean', 'starBit'], relayer.id)) {
       return {
         fees: stat.fees,
-        tradeCount: Math.ceil(stat.tradeCount / 2),
+        relayer: relayer.id,
+        trades: Math.ceil(stat.trades / 2),
         volume: stat.volume / 2,
       };
     }

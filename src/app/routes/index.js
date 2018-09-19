@@ -5,15 +5,15 @@ const metrics = require('./metrics');
 const relayers = require('./relayers');
 const stats = require('./stats');
 const tokens = require('./tokens');
-const trades = require('./trades');
+const fills = require('./fills');
 const zrxPrice = require('./zrx-price');
 
 const router = combineRouters(
   articles,
+  fills,
   metrics,
   relayers,
   stats,
-  trades,
   tokens,
   zrxPrice,
 );

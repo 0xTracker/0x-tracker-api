@@ -7,7 +7,7 @@ const getTokens = require('../../tokens/get-tokens');
 const searchFills = require('../../fills/search-fills');
 const transformFill = require('../util/transform-fill');
 
-const router = new Router({ prefix: '/trades' });
+const router = new Router({ prefix: '/fills' });
 
 const DEFAULT_LIMIT = 50;
 const DEFAULT_PAGE = 1;
@@ -41,11 +41,11 @@ router.get('/', async ({ request, response }, next) => {
   const tokens = await getTokens();
 
   response.body = {
+    fills: fills.docs.map(fill => transformFill(fill, tokens)),
     limit: fills.limit,
-    total: fills.total,
     page: fills.page,
     pageCount: fills.pages,
-    trades: fills.docs.map(fill => transformFill(fill, tokens)),
+    total: fills.total,
   };
 
   await next();
