@@ -5,6 +5,11 @@ module.exports = {
     SUCCESSFUL: 1,
   },
   GENESIS_DATE: new Date('2017-08-15T00:00:00.000Z'),
+  METRIC_INTERVAL: {
+    DAY: 'day',
+    HALF_HOUR: 'halfHour',
+    HOUR: 'hour',
+  },
   TIME_PERIOD: {
     DAY: 'day',
     WEEK: 'week',
