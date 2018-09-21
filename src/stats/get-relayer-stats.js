@@ -40,7 +40,7 @@ const getRelayerStats = async (dateFrom, dateTo) => {
       return {
         fees: { USD: 0, ZRX: 0 },
         relayer: relayer.id,
-        tradeCount: 0,
+        trades: 0,
         volume: 0,
       };
     }
