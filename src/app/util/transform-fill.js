@@ -23,6 +23,19 @@ const transformFill = (fill, tokens) => {
   const takerToken = tokens[fill.takerToken] || fill.takerToken;
   const zrxToken = tokens[ZRX_TOKEN_ADDRESS];
 
+  const makerFee = {
+    USD: _.get(conversions, 'makerFee'),
+    ZRX: formatTokenAmount(fill.makerFee, zrxToken),
+  };
+  const takerFee = {
+    USD: _.get(conversions, 'takerFee'),
+    ZRX: formatTokenAmount(fill.takerFee, zrxToken),
+  };
+  const totalFees = {
+    USD: makerFee.USD + takerFee.USD,
+    ZRX: makerFee.ZRX.plus(takerFee.ZRX),
+  };
+
   return {
     amount: {
       USD: _.get(fill, `conversions.USD.amount`),
@@ -32,10 +45,7 @@ const transformFill = (fill, tokens) => {
     id: fill.id,
     makerAddress: fill.maker,
     makerAmount: formatTokenAmount(fill.makerAmount, makerToken),
-    makerFee: {
-      USD: _.get(conversions, 'makerFee'),
-      ZRX: formatTokenAmount(fill.makerFee, zrxToken),
-    },
+    makerFee,
     makerPrice: {
       USD: _.get(conversions, 'makerPrice'),
     },
@@ -46,14 +56,12 @@ const transformFill = (fill, tokens) => {
     status: formatFillStatus(fill.status),
     takerAddress: fill.taker,
     takerAmount: formatTokenAmount(fill.takerAmount, takerToken),
-    takerFee: {
-      USD: _.get(conversions, 'takerFee'),
-      ZRX: formatTokenAmount(fill.takerFee, zrxToken),
-    },
+    takerFee,
     takerPrice: {
       USD: _.get(conversions, 'takerPrice'),
     },
     takerToken: formatToken(takerToken),
+    totalFees,
     transactionHash: fill.transactionHash,
   };
 };
