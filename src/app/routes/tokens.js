@@ -3,28 +3,18 @@ const Router = require('koa-router');
 const memoryCache = require('memory-cache');
 const ms = require('ms');
 
+const getTokens = require('../../tokens/get-tokens');
 const Token = require('../../model/token');
 const transformToken = require('../util/transform-token');
 
 const router = new Router({ prefix: '/tokens' });
 
 router.get('/', async ({ response }, next) => {
-  const cacheKey = 'tokens';
-  const cachedTokens = memoryCache.get(cacheKey);
-
-  if (_.isArray(cachedTokens)) {
-    response.body = cachedTokens;
-    await next();
-    return;
-  }
-
-  const tokenModels = await Token.find();
+  const tokenModels = await getTokens();
   const tokens = _(tokenModels)
     .map(transformToken)
     .sortBy('symbol')
     .value();
-
-  memoryCache.put(cacheKey, tokens, ms('1 minute'));
 
   response.body = tokens;
 
@@ -49,7 +39,7 @@ router.get('/:tokenAddress', async ({ params, response }, next) => {
     return;
   }
 
-  memoryCache.put(cacheKey, token, ms('5 seconds'));
+  memoryCache.put(cacheKey, token, ms('1 minute'));
   response.body = transformToken(token);
   await next();
 });
