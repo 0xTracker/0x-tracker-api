@@ -22,7 +22,7 @@ const getRelayerStats = async (dateFrom, dateTo) => {
         localisedMakerFees: { $sum: `$conversions.USD.makerFee` },
         localisedTakerFees: { $sum: `$conversions.USD.takerFee` },
         makerFee: { $sum: '$makerFee' },
-        takerFee: { $sum: 'takerFee' },
+        takerFee: { $sum: '$takerFee' },
         trades: { $sum: 1 },
         volume: { $sum: `$conversions.USD.amount` },
       },

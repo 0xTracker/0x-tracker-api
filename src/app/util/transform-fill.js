@@ -33,7 +33,7 @@ const transformFill = (fill, tokens) => {
   };
   const totalFees = {
     USD: makerFee.USD + takerFee.USD,
-    ZRX: makerFee.ZRX.plus(takerFee.ZRX),
+    ZRX: makerFee.ZRX === null ? null : makerFee.ZRX.plus(takerFee.ZRX),
   };
 
   return {
