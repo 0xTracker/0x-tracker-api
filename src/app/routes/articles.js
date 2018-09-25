@@ -2,6 +2,7 @@ const _ = require('lodash');
 const Router = require('koa-router');
 
 const Article = require('../../model/article');
+const transformArticle = require('../util/transform-article');
 
 const router = new Router({ prefix: '/articles' });
 
@@ -13,17 +14,7 @@ router.get('/', async ({ response, request }, next) => {
   );
 
   response.body = {
-    articles: _(articles.docs).map(model =>
-      _.pick(model, [
-        'author',
-        'date',
-        'feed',
-        'guid',
-        'summary',
-        'title',
-        'url',
-      ]),
-    ),
+    articles: _(articles.docs).map(transformArticle),
     limit: articles.limit,
     page: parseInt(articles.page, 10),
     pageCount: articles.pages,
