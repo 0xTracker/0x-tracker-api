@@ -2,16 +2,16 @@ const BigNumber = require('bignumber.js');
 
 const formatTokenAmount = require('./format-token-amount');
 
-it('should return unformatted amount when token is null', () => {
+it('should return null when token is unknown', () => {
   const amount = formatTokenAmount(10500, null);
 
-  expect(amount).toBe(10500);
+  expect(amount).toBe(null);
 });
 
-it('should return unformatted amount when token does not have decimals', () => {
+it('should return null when token does not have decimals', () => {
   const amount = formatTokenAmount(12, { name: 'Random' });
 
-  expect(amount).toBe(12);
+  expect(amount).toBe(null);
 });
 
 it('should return formatted amount', () => {

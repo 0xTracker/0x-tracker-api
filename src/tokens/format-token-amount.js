@@ -4,7 +4,7 @@ const { Web3Wrapper } = require('@0xproject/web3-wrapper');
 
 module.exports = (amount, token) => {
   if (_.get(token, 'decimals') === undefined) {
-    return amount;
+    return null;
   }
 
   const bigNumber = new BigNumber(amount.toString());

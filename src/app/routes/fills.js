@@ -9,9 +9,9 @@ const transformFill = require('../util/transform-fill');
 
 const router = new Router({ prefix: '/fills' });
 
-const DEFAULT_LIMIT = 50;
+const DEFAULT_LIMIT = 20;
 const DEFAULT_PAGE = 1;
-const MAX_LIMIT = 100;
+const MAX_LIMIT = 50;
 const MAX_PAGE = Infinity;
 
 router.get('/', async ({ request, response }, next) => {

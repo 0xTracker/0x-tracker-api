@@ -11,7 +11,7 @@ const getTokens = async ({ ttl = ms('1 minute') } = {}) => {
     return cached;
   }
 
-  const tokens = await Token.find({});
+  const tokens = await Token.find({}).lean();
   const keyedTokens = _.keyBy(tokens, 'address');
 
   memoryCache.put('tokens', keyedTokens, ttl);
