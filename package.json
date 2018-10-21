@@ -42,7 +42,7 @@
     "bignumber.js": "7.2.1",
     "bugsnag": "2.4.3",
     "config": "2.0.1",
-    "dotenv-safe": "6.0.0",
+    "dotenv-safe": "6.1.0",
     "koa": "2.5.3",
     "koa-combine-routers": "4.0.2",
     "koa-compress": "3.0.0",
