@@ -1,29 +1,29 @@
 # 0x Tracker API
 
-[![Travis (.org)](https://img.shields.io/travis/cbovis/0x-tracker-api.svg?style=flat-square)](https://travis-ci.org/0xTracker/0x-tracker-worker)
-[![David](https://img.shields.io/david/cbovis/0x-tracker-api.svg?style=flat-square)](https://github.com/0xTracker/0x-tracker-worker)
-[![Codecov](https://img.shields.io/codecov/c/github/cbovis/0x-tracker-api.svg?style=flat-square)](https://codecov.io/gh/0xTracker/0x-tracker-worker)
+[![Travis (.org)](https://img.shields.io/travis/0xTracker/0x-tracker-api.svg?style=flat-square)](https://travis-ci.org/0xTracker/0x-tracker-api)
+[![David](https://img.shields.io/david/0xTracker/0x-tracker-api.svg?style=flat-square)](https://github.com/0xTracker/0x-tracker-api)
+[![Codecov](https://img.shields.io/codecov/c/github/0xTracker/0x-tracker-api.svg?style=flat-square)](https://codecov.io/gh/0xTracker/0x-tracker-api)
 [![Chat on Spectrum](https://img.shields.io/badge/chat%20on-spectrum-752bf2.svg?style=flat-square)](https://spectrum.chat/0x-tracker)
 
 > NodeJS API built for [0x Tracker](https://0xtracker.com) which exposes 0x protocol data and metrics for consumption by the [0x Tracker Client](https://github.com/0xTracker/0x-tracker-client) application.
 
 ## Contents
 
-- [Requirements](#requirements)
-- [Getting Started](#getting-started)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [NPM Scripts](#npm-scripts)
-- [Nodemon](#nodemon)
-- [Continuous Integration](#continuous-integration)
-- [Maintainers](#maintainers)
-- [License](#license)
+- [Requirements](#-requirements)
+- [Getting Started](#-getting-started)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [NPM Scripts](#-npm-scripts)
+- [Nodemon](#-nodemon)
+- [Continuous Integration](#-continuous-integration)
+- [Maintainers](#-maintainers)
+- [License](#-license)
 
 ## 👮‍♂️ Requirements
 
-Whilst the application is served as an API at https://api.0xtracker.com, you'll need [Node.js](https://nodejs.org/en/) installed if you wish to run the application sources locally. A `.nvmrc` file is provided for the convenience of using [NVM](https://github.com/creationix/nvm).
+[Node.js](https://nodejs.org/en/) is required to run the server application. A `.nvmrc` file is provided for the convenience of using [NVM](https://github.com/creationix/nvm).
 
-You'll also need a MongoDB database populated with data from the [0x Tracker Worker](https://github.com/0xTracker/0x-tracker-worker) process. For the time being this will need to be done by running the 0x Tracker Worker against your database. In the future the goal is to have a subset of data available as backups for getting up and running quickly.
+You'll need a MongoDB database populated with data from the [0x Tracker Worker](https://github.com/0xTracker/0x-tracker-worker) process. For the time being this will need to be done by running the 0x Tracker Worker against your database. In the future the goal is to have a subset of data available as backups for getting up and running quickly.
 
 It's recommended that you use [Prettier](https://prettier.io) and [ESLint](https://eslint.org) editor plugins if contributing to the project. Pre-commit hooks are in place which will prevent code which doesn't conform to Prettier/ESLint rules from being committed.
 
@@ -73,6 +73,14 @@ If a convention exists for locating configuration files related to developer too
 
 - **config** - Tooling configuration which doesn't have a conventional location.
 - **src** - Application specific code and test files.
+  - **app** - Koa application files.
+    - **middleware** - Custom Koa middleware.
+    - **routes** - Koa routers.
+    - **util** - Utilities used by Koa application files.
+  - **config** - Application configuration files used by Node-config.
+  - **[feature]** - Business logic and helpers related to a specific feature.
+    - **...**
+  - **model** - Mongoose document models.
   - **util** - All other helper functions used to support the codebase.
   - **constants.js** - Shared constants. Each constant should be a named export.
   - **index.js** - Application entry point.
