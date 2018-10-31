@@ -1,7 +1,5 @@
 {
-  "name": "0x-tracker-api",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint .",
@@ -9,21 +7,6 @@
     "test": "jest --coverage",
     "test:watch": "jest --watch"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/0xTracker/0x-tracker-api.git"
-  },
-  "keywords": [
-    "ethereum",
-    "0x",
-    "web3"
-  ],
-  "author": "Craig Bovis",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/0xTracker/0x-tracker-api/issues"
-  },
-  "homepage": "https://0xtracker.com",
   "devDependencies": {
     "eslint": "5.8.0",
     "eslint-config-airbnb-base": "13.1.0",
