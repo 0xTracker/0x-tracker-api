@@ -1,7 +1,6 @@
 module.exports = {
   collectCoverageFrom: [
     '**/*.js',
-    '!jest/**/*.js',
     '!**/.*.js',
     '!**/coverage/**',
     '!**/node_modules/**',
@@ -9,7 +8,7 @@ module.exports = {
     '!*.config.js',
     '!config/**',
   ],
-  setupFiles: ['<rootDir>/jest/setup'],
+  setupFiles: ['<rootDir>/config/jest/setup'],
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.js', '**/*.test.js'],
 };
