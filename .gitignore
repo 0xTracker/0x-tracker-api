@@ -9,4 +9,4 @@ node_modules/
 
 # Local config
 .env
-config/local.js
+src/config/local.js

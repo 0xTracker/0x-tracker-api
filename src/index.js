@@ -1,3 +1,7 @@
+const path = require('path');
+
+process.env.NODE_CONFIG_DIR = path.join(__dirname, 'config');
+
 // Load environment variables from .env in development and throw an
 // error if any required variables are missing in production
 require('dotenv-safe').config({
