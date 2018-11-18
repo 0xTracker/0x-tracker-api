@@ -1,0 +1,26 @@
+{
+  "name": "0x-tracker-api",
+  "scripts": {
+  },
+  "env": {
+    "BUGSNAG_TOKEN": {
+      "required": true
+    },
+    "CONNECTION_STRING": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [
+
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
