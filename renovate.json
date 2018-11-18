@@ -15,10 +15,7 @@
     {
       "packageNames": ["jest"],
       "groupName": "testing packages",
-      "automerge": true,
-      "major": {
-        "automerge": false
-      }
+      "automerge": true
     }
   ]
 }
