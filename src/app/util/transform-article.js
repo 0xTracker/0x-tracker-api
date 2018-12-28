@@ -24,7 +24,7 @@ const sources = {
     url: 'https://dydx.exchange/',
     imageUrl: 'https://0xtracker.com/assets/logos/dydx.png',
   },
-  ercdex: { name: 'ERC dEX', url: 'https://ercdex.com/', relayer: 'erc-dex' },
+  ercdex: { name: 'ERC dEX', url: 'https://ercdex.com/', relayer: 'ercDex' },
   ethfinex: {
     name: 'Ethfinex',
     url: 'https://www.ethfinex.com/',
@@ -34,28 +34,28 @@ const sources = {
   ledgerDex: {
     name: 'LedgerDex',
     url: 'https://ledgerdex.com/',
-    relayer: 'ledger-dex',
+    relayer: 'ledgerDex',
   },
   openRelay: {
     name: 'OpenRelay',
     url: 'https://openrelay.xyz/',
-    relayer: 'open-relay',
+    relayer: 'openRelay',
   },
   paradex: { name: 'Paradex', url: 'https://paradex.io/', relayer: 'paradex' },
   radarrelay: {
     name: 'Radar Relay',
     url: 'https://radarrelay.com/',
-    relayer: 'radar-relay',
+    relayer: 'radarRelay',
   },
   sharkRelay: {
     name: 'Shark Relay',
     url: 'https://sharkrelay.com/',
-    relayer: 'shark-relay',
+    relayer: 'sharkRelay',
   },
   theOcean: {
     name: 'The Ocean',
     url: 'https://theocean.trade/',
-    relayer: 'the-ocean',
+    relayer: 'theOcean',
   },
 };
 
