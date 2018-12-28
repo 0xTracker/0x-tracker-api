@@ -13,6 +13,7 @@ it('should return ercDEX when relayerId matches', () => {
 
   expect(relayer).toEqual({
     id: 'ercDex',
+    imageUrl: 'https://0xtracker.com/assets/logos/erc-dex.png',
     lookupId: 3,
     name: 'ERC dEX',
     slug: 'erc-dex',

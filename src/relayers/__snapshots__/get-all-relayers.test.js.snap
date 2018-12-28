@@ -4,6 +4,7 @@ exports[`should return all relayers 1`] = `
 Object {
   "bambooRelay": Object {
     "id": "bambooRelay",
+    "imageUrl": "https://0xtracker.com/assets/logos/bamboo-relay.png",
     "lookupId": 1,
     "name": "Bamboo Relay",
     "slug": "bamboo-relay",
@@ -11,6 +12,7 @@ Object {
   },
   "ddex": Object {
     "id": "ddex",
+    "imageUrl": "https://0xtracker.com/assets/logos/ddex.png",
     "lookupId": 2,
     "name": "DDEX",
     "slug": "ddex",
@@ -18,6 +20,7 @@ Object {
   },
   "ercDex": Object {
     "id": "ercDex",
+    "imageUrl": "https://0xtracker.com/assets/logos/erc-dex.png",
     "lookupId": 3,
     "name": "ERC dEX",
     "slug": "erc-dex",
@@ -28,10 +31,10 @@ Object {
     "lookupId": 4,
     "name": "IDT Exchange",
     "slug": "idt-exchange",
-    "url": "https://www.idtexchange.com",
   },
   "ledgerDex": Object {
     "id": "ledgerDex",
+    "imageUrl": "https://0xtracker.com/assets/logos/ledger-dex.png",
     "lookupId": 12,
     "name": "LedgerDex",
     "slug": "ledger-dex",
@@ -39,6 +42,7 @@ Object {
   },
   "openRelay": Object {
     "id": "openRelay",
+    "imageUrl": "https://0xtracker.com/assets/logos/open-relay.png",
     "lookupId": 5,
     "name": "OpenRelay",
     "slug": "open-relay",
@@ -46,6 +50,7 @@ Object {
   },
   "paradex": Object {
     "id": "paradex",
+    "imageUrl": "https://0xtracker.com/assets/logos/paradex.png",
     "lookupId": 6,
     "name": "Paradex",
     "slug": "paradex",
@@ -53,6 +58,7 @@ Object {
   },
   "radarRelay": Object {
     "id": "radarRelay",
+    "imageUrl": "https://0xtracker.com/assets/logos/radar-relay.png",
     "lookupId": 7,
     "name": "Radar Relay",
     "slug": "radar-relay",
@@ -60,6 +66,7 @@ Object {
   },
   "sharkRelay": Object {
     "id": "sharkRelay",
+    "imageUrl": "https://0xtracker.com/assets/logos/shark-relay.png",
     "lookupId": 8,
     "name": "Shark Relay",
     "slug": "shark-relay",
@@ -67,6 +74,7 @@ Object {
   },
   "starBit": Object {
     "id": "starBit",
+    "imageUrl": "https://0xtracker.com/assets/logos/starbit.png",
     "lookupId": 9,
     "name": "STAR BIT",
     "slug": "star-bit",
@@ -74,6 +82,7 @@ Object {
   },
   "theOcean": Object {
     "id": "theOcean",
+    "imageUrl": "https://0xtracker.com/assets/logos/the-ocean.png",
     "lookupId": 13,
     "name": "The Ocean",
     "slug": "the-ocean",
@@ -81,6 +90,7 @@ Object {
   },
   "tokenJar": Object {
     "id": "tokenJar",
+    "imageUrl": "https://0xtracker.com/assets/logos/token-jar.png",
     "lookupId": 10,
     "name": "Token Jar",
     "slug": "token-jar",
@@ -88,10 +98,11 @@ Object {
   },
   "tokenlon": Object {
     "id": "tokenlon",
+    "imageUrl": "https://0xtracker.com/assets/logos/tokenlon.png",
     "lookupId": 11,
     "name": "Tokenlon",
     "slug": "tokenlon",
-    "url": "https://tokenlon.token.im/",
+    "url": "https://tokenlon.token.im/tokenlon",
   },
 }
 `;
