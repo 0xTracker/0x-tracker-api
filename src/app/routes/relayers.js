@@ -7,7 +7,7 @@ const router = new Router({ prefix: '/relayers' });
 
 router.get('/', async ({ response }, next) => {
   const relayers = _.map(getAllRelayers(), relayer =>
-    _.pick(relayer, ['id', 'name', 'slug', 'url']),
+    _.pick(relayer, ['id', 'imageUrl', 'name', 'slug', 'url']),
   );
 
   response.body = relayers;

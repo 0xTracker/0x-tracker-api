@@ -5,6 +5,7 @@ it('should get radar relay', () => {
 
   expect(radarRelay).toEqual({
     id: 'radarRelay',
+    imageUrl: 'https://0xtracker.com/assets/logos/radar-relay.png',
     lookupId: 7,
     name: 'Radar Relay',
     slug: 'radar-relay',
@@ -17,6 +18,7 @@ it('should get paradex', () => {
 
   expect(paradex).toEqual({
     id: 'paradex',
+    imageUrl: 'https://0xtracker.com/assets/logos/paradex.png',
     lookupId: 6,
     name: 'Paradex',
     slug: 'paradex',
@@ -29,6 +31,7 @@ it('should get erc dex', () => {
 
   expect(paradex).toEqual({
     id: 'ercDex',
+    imageUrl: 'https://0xtracker.com/assets/logos/erc-dex.png',
     lookupId: 3,
     name: 'ERC dEX',
     slug: 'erc-dex',
