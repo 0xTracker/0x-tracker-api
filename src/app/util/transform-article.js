@@ -1,14 +1,14 @@
 const _ = require('lodash');
 
-const { ARTICLE_SOURCES } = require('../../constants');
-const transformArticleSource = require('./transform-article-source');
+const getArticleSources = require('../../articles/get-article-sources');
 
 const transformArticle = article => {
-  const source = ARTICLE_SOURCES[article.feed];
+  const sources = getArticleSources();
+  const source = sources[article.feed];
 
   return {
     ..._.pick(article, ['date', 'id', 'summary', 'title', 'url']),
-    source: transformArticleSource(source),
+    source,
   };
 };
 

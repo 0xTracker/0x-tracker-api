@@ -1,13 +1,11 @@
-const _ = require('lodash');
 const Router = require('koa-router');
 
-const { ARTICLE_SOURCES } = require('../../constants');
-const transformArticleSource = require('../util/transform-article-source');
+const getArticleSources = require('../../articles/get-article-sources');
 
 const router = new Router({ prefix: '/article-sources' });
 
 router.get('/', async ({ response }, next) => {
-  response.body = _(ARTICLE_SOURCES).map(transformArticleSource);
+  response.body = Object.values(getArticleSources());
 
   await next();
 });
