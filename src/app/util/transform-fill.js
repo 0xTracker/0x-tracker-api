@@ -5,7 +5,7 @@ const formatTokenAmount = require('../../tokens/format-token-amount');
 const getRelayerForFill = require('../../fills/get-relayer-for-fill');
 
 const formatRelayer = relayer =>
-  relayer === null ? null : _.pick(relayer, 'slug', 'name');
+  relayer === null ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
 
 const formatToken = token => ({
   address: token.address,
