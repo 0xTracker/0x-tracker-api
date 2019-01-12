@@ -16,6 +16,10 @@ Object {
     "type": "other",
     "url": "https://amadeusrelay.org/",
   },
+  "boxSwap": Object {
+    "relayer": "box-swap",
+    "type": "other",
+  },
   "dYdX": Object {
     "imageUrl": "https://0xtracker.com/assets/logos/dydx.png",
     "name": "dYdX",
@@ -97,6 +101,20 @@ Object {
     "slug": "the-ocean",
     "type": "relayer",
     "url": "https://theocean.trade/",
+  },
+  "tokenmom": Object {
+    "imageUrl": "https://0xtracker.com/assets/logos/tokenmom.png",
+    "name": "Tokenmom",
+    "slug": "tokenmom",
+    "type": "relayer",
+    "url": "https://tokenmom.com",
+  },
+  "veil": Object {
+    "imageUrl": "https://0xtracker.com/assets/logos/veil.png",
+    "name": "Veil",
+    "slug": "veil",
+    "type": "other",
+    "url": "https://veil.co",
   },
 }
 `;

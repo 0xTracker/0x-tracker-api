@@ -31,7 +31,10 @@ module.exports = {
       imageUrl: 'https://0xtracker.com/assets/logos/amadeus-relay.png',
       slug: 'amadeus-relay',
     },
-    ddex: { name: 'DDEX', url: 'https://ddex.io/', relayer: 'ddex' },
+    boxSwap: {
+      relayer: 'box-swap',
+    },
+    ddex: { relayer: 'ddex' },
     dharma: {
       name: 'Dharma',
       url: 'https://dharma.io/',
@@ -44,7 +47,7 @@ module.exports = {
       imageUrl: 'https://0xtracker.com/assets/logos/dydx.png',
       slug: 'dydx',
     },
-    ercdex: { name: 'ERC dEX', url: 'https://ercdex.com/', relayer: 'ercDex' },
+    ercdex: { relayer: 'ercDex' },
     ethfinex: {
       name: 'Ethfinex',
       url: 'https://www.ethfinex.com/',
@@ -53,34 +56,31 @@ module.exports = {
     },
     kinalpha: { name: 'Kin Alpha', slug: 'kin-alpha' },
     ledgerDex: {
-      name: 'LedgerDex',
-      url: 'https://ledgerdex.com/',
       relayer: 'ledgerDex',
     },
     openRelay: {
-      name: 'OpenRelay',
-      url: 'https://openrelay.xyz/',
       relayer: 'openRelay',
     },
     paradex: {
-      name: 'Paradex',
-      url: 'https://paradex.io/',
       relayer: 'paradex',
     },
     radarrelay: {
-      name: 'Radar Relay',
-      url: 'https://radarrelay.com/',
       relayer: 'radarRelay',
     },
     sharkRelay: {
-      name: 'Shark Relay',
-      url: 'https://sharkrelay.com/',
       relayer: 'sharkRelay',
     },
     theOcean: {
-      name: 'The Ocean',
-      url: 'https://theocean.trade/',
       relayer: 'theOcean',
+    },
+    tokenmom: {
+      relayer: 'tokenmom',
+    },
+    veil: {
+      name: 'Veil',
+      url: 'https://veil.co',
+      imageUrl: 'https://0xtracker.com/assets/logos/veil.png',
+      slug: 'veil',
     },
   },
 };
