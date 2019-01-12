@@ -64,7 +64,12 @@ const getRelayerStats = async (dateFrom, dateTo) => {
       volume,
     };
 
-    if (_.includes(['paradex', 'ddex', 'theOcean', 'starBit'], relayer.id)) {
+    if (
+      _.includes(
+        ['paradex', 'ddex', 'theOcean', 'starBit', 'tokenmom'],
+        relayer.id,
+      )
+    ) {
       return {
         fees: stat.fees,
         relayer: relayer.id,
