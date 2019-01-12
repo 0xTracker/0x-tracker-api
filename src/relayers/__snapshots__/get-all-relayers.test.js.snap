@@ -10,6 +10,14 @@ Object {
     "slug": "bamboo-relay",
     "url": "https://bamboorelay.com/",
   },
+  "boxSwap": Object {
+    "id": "boxSwap",
+    "imageUrl": "https://0xtracker.com/assets/logos/box-swap.png",
+    "lookupId": 14,
+    "name": "Box Swap",
+    "slug": "box-swap",
+    "url": "https://beta.boxswap.io/",
+  },
   "ddex": Object {
     "id": "ddex",
     "imageUrl": "https://0xtracker.com/assets/logos/ddex.png",
@@ -25,6 +33,14 @@ Object {
     "name": "ERC dEX",
     "slug": "erc-dex",
     "url": "https://ercdex.com",
+  },
+  "guDecks": Object {
+    "id": "guDecks",
+    "imageUrl": "https://0xtracker.com/assets/logos/gudecks.png",
+    "lookupId": 16,
+    "name": "GUDecks",
+    "slug": "gu-decks",
+    "url": "https://gudecks.com/",
   },
   "idtExchange": Object {
     "id": "idtExchange",
@@ -103,6 +119,14 @@ Object {
     "name": "Tokenlon",
     "slug": "tokenlon",
     "url": "https://tokenlon.token.im/tokenlon",
+  },
+  "tokenmom": Object {
+    "id": "tokenmom",
+    "imageUrl": "https://0xtracker.com/assets/logos/tokenmom.png",
+    "lookupId": 15,
+    "name": "Tokenmom",
+    "slug": "tokenmom",
+    "url": "https://tokenmom.com",
   },
 }
 `;

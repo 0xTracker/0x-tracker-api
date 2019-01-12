@@ -90,6 +90,27 @@ const RELAYERS = {
     slug: 'tokenlon',
     url: 'https://tokenlon.token.im/tokenlon',
   },
+  tokenmom: {
+    imageUrl: 'https://0xtracker.com/assets/logos/tokenmom.png',
+    lookupId: 15,
+    name: 'Tokenmom',
+    slug: 'tokenmom',
+    url: 'https://tokenmom.com',
+  },
+  boxSwap: {
+    imageUrl: 'https://0xtracker.com/assets/logos/box-swap.png',
+    lookupId: 14,
+    name: 'Box Swap',
+    slug: 'box-swap',
+    url: 'https://beta.boxswap.io/',
+  },
+  guDecks: {
+    imageUrl: 'https://0xtracker.com/assets/logos/gudecks.png',
+    lookupId: 16,
+    name: 'GUDecks',
+    slug: 'gu-decks',
+    url: 'https://gudecks.com/',
+  },
 };
 
 const getAllRelayers = () => {
