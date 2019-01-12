@@ -32,7 +32,7 @@ module.exports = {
       slug: 'amadeus-relay',
     },
     boxSwap: {
-      relayer: 'box-swap',
+      relayer: 'boxSwap',
     },
     ddex: { relayer: 'ddex' },
     dharma: {
