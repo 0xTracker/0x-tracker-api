@@ -25,6 +25,12 @@ module.exports = {
       imageUrl: 'https://0xtracker.com/assets/logos/0x.png',
       slug: '0x',
     },
+    '0xtracker': {
+      name: '0x Tracker',
+      url: 'https://0xtracker.com',
+      imageUrl: 'https://0xtracker.com/assets/logos/0x-tracker.png',
+      slug: '0x-tracker',
+    },
     amadeus: {
       name: 'Amadeus Relay',
       url: 'https://amadeusrelay.org/',
