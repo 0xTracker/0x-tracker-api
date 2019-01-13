@@ -112,13 +112,6 @@ Object {
     "type": "relayer",
     "url": "https://theocean.trade/",
   },
-  "tokenmom": Object {
-    "imageUrl": "https://0xtracker.com/assets/logos/tokenmom.png",
-    "name": "Tokenmom",
-    "slug": "tokenmom",
-    "type": "relayer",
-    "url": "https://tokenmom.com",
-  },
   "veil": Object {
     "imageUrl": "https://0xtracker.com/assets/logos/veil.png",
     "name": "Veil",

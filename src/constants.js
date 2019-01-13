@@ -79,9 +79,6 @@ module.exports = {
     theOcean: {
       relayer: 'theOcean',
     },
-    tokenmom: {
-      relayer: 'tokenmom',
-    },
     veil: {
       name: 'Veil',
       url: 'https://veil.co',
