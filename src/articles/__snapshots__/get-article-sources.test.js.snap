@@ -9,6 +9,13 @@ Object {
     "type": "other",
     "url": "https://0x.org",
   },
+  "0xtracker": Object {
+    "imageUrl": "https://0xtracker.com/assets/logos/0x-tracker.png",
+    "name": "0x Tracker",
+    "slug": "0x-tracker",
+    "type": "other",
+    "url": "https://0xtracker.com",
+  },
   "amadeus": Object {
     "imageUrl": "https://0xtracker.com/assets/logos/amadeus-relay.png",
     "name": "Amadeus Relay",
