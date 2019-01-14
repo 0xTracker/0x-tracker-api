@@ -1,27 +1,26 @@
 const _ = require('lodash');
-const bugsnag = require('bugsnag');
+const bugsnag = require('@bugsnag/js');
 const signale = require('signale');
 
-let useBugsnag = false;
+let bugsnagClient;
 
 const logger = signale.scope('application');
 
 const logError = error => {
-  if (useBugsnag) {
-    bugsnag.notify(error);
+  if (bugsnagClient) {
+    bugsnagClient.notify(error);
   }
 
   logger.error(error);
 };
 
-const configure = ({ bugsnagToken }) => {
+const configure = ({ appVersion, bugsnagToken }) => {
   if (_.isString(bugsnagToken)) {
-    bugsnag.register(bugsnagToken);
-    useBugsnag = true;
+    bugsnagClient = bugsnag({ apiKey: bugsnagToken, appVersion });
   }
 
-  process.on('uncaughtException', logError);
-  process.on('unhandledRejection', logError);
+  process.on('uncaughtException', logger.error);
+  process.on('unhandledRejection', logger.error);
 };
 
 module.exports = {

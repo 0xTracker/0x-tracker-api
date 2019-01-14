@@ -8,6 +8,7 @@ const logger = signale.scope('application');
 
 const configure = () => {
   errorLogger.configure({
+    appVersion: config.get('appVersion'),
     bugsnagToken: config.get('bugsnag.token'),
   });
   db.connect(config.get('database.connectionString'));
