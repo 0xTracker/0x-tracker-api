@@ -3,12 +3,12 @@ const transformToken = require('./transform-token');
 it('should rewrite image urls to be served from CDN', () => {
   const token = {
     imageUrl:
-      'https://raw.githubusercontent.com/TrustWallet/tokens/master/images/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359.png',
+      'https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359.png',
   };
   const transformed = transformToken(token);
 
   expect(transformed.imageUrl).toBe(
-    'https://cdn.staticaly.com/gh/TrustWallet/tokens/master/images/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359.png',
+    'https://cdn.staticaly.com/gh/TrustWallet/tokens/master/tokens/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359.png',
   );
 });
 
