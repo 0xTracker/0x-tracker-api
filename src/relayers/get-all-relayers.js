@@ -111,6 +111,20 @@ const RELAYERS = {
     slug: 'gu-decks',
     url: 'https://gudecks.com/',
   },
+  instex: {
+    imageUrl: 'https://0xtracker.com/assets/logos/instex.png',
+    lookupId: 17,
+    name: 'Instex',
+    slug: 'instex',
+    url: 'https://instex.io',
+  },
+  veil: {
+    imageUrl: 'https://0xtracker.com/assets/logos/veil.png',
+    lookupId: 18,
+    name: 'Veil',
+    slug: 'veil',
+    url: 'https://veil.co/',
+  },
 };
 
 const getAllRelayers = () => {
