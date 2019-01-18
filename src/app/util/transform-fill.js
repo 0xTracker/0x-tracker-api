@@ -7,11 +7,14 @@ const getRelayerForFill = require('../../fills/get-relayer-for-fill');
 const formatRelayer = relayer =>
   relayer === null ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
 
-const formatToken = token => ({
-  address: token.address,
-  name: token.name,
-  symbol: token.symbol,
-});
+const formatToken = token =>
+  _.isString(token)
+    ? { address: token }
+    : {
+        address: token.address,
+        name: token.name,
+        symbol: token.symbol,
+      };
 
 const formatFillStatus = status =>
   _.findKey(FILL_STATUS, value => status === value).toLowerCase();
