@@ -26,6 +26,14 @@ Object {
     "slug": "ddex",
     "url": "https://ddex.io",
   },
+  "emoon": Object {
+    "id": "emoon",
+    "imageUrl": "https://0xtracker.com/assets/logos/emoon.png",
+    "lookupId": 19,
+    "name": "Emoon",
+    "slug": "emoon",
+    "url": "https://emoon.io",
+  },
   "ercDex": Object {
     "id": "ercDex",
     "imageUrl": "https://0xtracker.com/assets/logos/erc-dex.png",

@@ -125,6 +125,13 @@ const RELAYERS = {
     slug: 'veil',
     url: 'https://veil.co/',
   },
+  emoon: {
+    imageUrl: 'https://0xtracker.com/assets/logos/emoon.png',
+    lookupId: 19,
+    name: 'Emoon',
+    slug: 'emoon',
+    url: 'https://emoon.io',
+  },
 };
 
 const getAllRelayers = () => {
