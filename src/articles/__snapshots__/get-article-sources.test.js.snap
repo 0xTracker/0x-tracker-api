@@ -51,6 +51,13 @@ Object {
     "type": "other",
     "url": "https://dharma.io/",
   },
+  "emoon": Object {
+    "imageUrl": "https://0xtracker.com/assets/logos/emoon.png",
+    "name": "Emoon",
+    "slug": "emoon",
+    "type": "relayer",
+    "url": "https://emoon.io",
+  },
   "ercdex": Object {
     "imageUrl": "https://0xtracker.com/assets/logos/erc-dex.png",
     "name": "ERC dEX",

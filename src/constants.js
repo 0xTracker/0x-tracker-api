@@ -53,6 +53,9 @@ module.exports = {
       imageUrl: 'https://0xtracker.com/assets/logos/dydx.png',
       slug: 'dydx',
     },
+    emoon: {
+      relayer: 'emoon',
+    },
     ercdex: { relayer: 'ercDex' },
     ethfinex: {
       name: 'Ethfinex',
