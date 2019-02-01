@@ -6,7 +6,7 @@ const ms = require('ms');
 const Token = require('../../../model/token');
 const transformToken = require('./util/transform-token');
 
-const createRouter = () => {
+const createRouter = ({ transformer } = {}) => {
   const router = new Router();
 
   router.get('/tokens/:tokenAddress', async ({ params, response }, next) => {
@@ -28,7 +28,7 @@ const createRouter = () => {
     }
 
     memoryCache.put(cacheKey, token, ms('1 minute'));
-    response.body = transformToken(token);
+    response.body = transformer ? transformer(token) : transformToken(token);
     await next();
   });
 
