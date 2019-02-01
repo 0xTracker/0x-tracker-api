@@ -22,7 +22,7 @@ const start = port => {
   app.use(cors());
   app.use(consoleLogger());
   app.use(compress());
-  app.use(routes());
+  app.use(routes);
   app.use(invalidUrl());
 
   app.listen(port);

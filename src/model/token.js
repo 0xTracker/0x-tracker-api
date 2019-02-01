@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate');
 
 const { Schema } = mongoose;
 
@@ -16,6 +17,8 @@ const schema = Schema({
   },
   symbol: String,
 });
+
+schema.plugin(mongoosePaginate);
 
 const Model = mongoose.model('Token', schema);
 
