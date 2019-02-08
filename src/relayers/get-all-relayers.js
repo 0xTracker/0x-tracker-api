@@ -132,6 +132,13 @@ const RELAYERS = {
     slug: 'emoon',
     url: 'https://emoon.io',
   },
+  fordex: {
+    imageUrl: 'https://0xtracker.com/assets/logos/fordex.png',
+    lookupId: 20,
+    name: 'Fordex',
+    slug: 'fordex',
+    url: 'https://fordex.co',
+  },
 };
 
 const getAllRelayers = () => {

@@ -42,6 +42,14 @@ Object {
     "slug": "erc-dex",
     "url": "https://ercdex.com",
   },
+  "fordex": Object {
+    "id": "fordex",
+    "imageUrl": "https://0xtracker.com/assets/logos/fordex.png",
+    "lookupId": 20,
+    "name": "Fordex",
+    "slug": "fordex",
+    "url": "https://fordex.co",
+  },
   "guDecks": Object {
     "id": "guDecks",
     "imageUrl": "https://0xtracker.com/assets/logos/gudecks.png",
