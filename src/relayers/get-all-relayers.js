@@ -137,7 +137,7 @@ const RELAYERS = {
     lookupId: 20,
     name: 'Fordex',
     slug: 'fordex',
-    url: 'https://fordex.co',
+    url: 'https://www.fordex.co',
   },
 };
 
