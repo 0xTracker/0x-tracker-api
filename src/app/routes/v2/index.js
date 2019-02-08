@@ -3,8 +3,6 @@ const Router = require('koa-router');
 const createArticlesRouter = require('../v1/articles');
 const createArticleSourcesRouter = require('../v1/article-sources');
 const createFillsRouter = require('../v1/fills');
-const createMetricsRouter = require('../v1/metrics');
-const createRelayersRouter = require('../v1/relayers');
 const createTokenRouter = require('../v1/token');
 const createTokensRouter = require('./tokens');
 const transformToken = require('./util/transform-token');
@@ -16,8 +14,6 @@ const createRouter = () => {
     createArticlesRouter().routes(),
     createArticleSourcesRouter().routes(),
     createFillsRouter().routes(),
-    createMetricsRouter().routes(),
-    createRelayersRouter().routes(),
     createTokenRouter({ transformer: transformToken }).routes(),
     createTokensRouter().routes(),
   );
