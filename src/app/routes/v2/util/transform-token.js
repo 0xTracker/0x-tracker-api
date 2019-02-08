@@ -1,6 +1,18 @@
 const _ = require('lodash');
 
+const formatTokenAmount = require('../../../../tokens/format-token-amount');
 const getCdnTokenImageUrl = require('../../../../tokens/get-cdn-token-image-url');
+
+const formatStats = (stats, token) =>
+  _.isEmpty(stats)
+    ? undefined
+    : {
+        trades: stats.trades,
+        volume: {
+          token: formatTokenAmount(stats.volume.token, token).toString(),
+          USD: stats.volume.USD,
+        },
+      };
 
 const transformToken = token => {
   const transformed = {
@@ -8,9 +20,15 @@ const transformToken = token => {
     imageUrl: token.imageUrl ? getCdnTokenImageUrl(token.imageUrl) : undefined,
     lastTrade: _.get(token, 'price.lastTrade'),
     name: token.name,
-    price: {
-      last: _.get(token, 'price.lastPrice'),
-    },
+    price: _.has(token, 'price.lastPrice')
+      ? {
+          last: _.get(token, 'price.lastPrice'),
+        }
+      : undefined,
+    stats:
+      _.isEmpty(token.stats) || _.every(Object.values(token.stats), _.isEmpty)
+        ? undefined
+        : _.mapValues(token.stats, stats => formatStats(stats, token)),
     symbol: token.symbol,
   };
 

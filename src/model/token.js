@@ -15,6 +15,15 @@ const schema = Schema({
     },
     lastPrice: Number,
   },
+  stats: {
+    '1y': {
+      trades: Number,
+      volume: {
+        token: Number,
+        USD: Number,
+      },
+    },
+  },
   symbol: String,
 });
 

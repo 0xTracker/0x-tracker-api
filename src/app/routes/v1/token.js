@@ -19,7 +19,7 @@ const createRouter = ({ transformer } = {}) => {
       return;
     }
 
-    const token = await Token.findOne({ address: params.tokenAddress });
+    const token = await Token.findOne({ address: params.tokenAddress }).lean();
 
     if (_.isNull(token)) {
       response.status = 404;

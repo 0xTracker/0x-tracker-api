@@ -13,6 +13,7 @@ const createRouter = () => {
     async ({ pagination: { limit, page }, response }, next) => {
       const { docs, pages, total } = await Token.paginate(undefined, {
         sort: { date: -1 },
+        lean: true,
         limit,
         page,
       });
