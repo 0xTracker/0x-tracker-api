@@ -4,9 +4,9 @@ const cache = require('memory-cache');
 const ms = require('ms');
 const Router = require('koa-router');
 
-const router = new Router({ prefix: '/zrx-price' });
-
 const createRouter = () => {
+  const router = new Router({ prefix: '/zrx-price' });
+
   router.get('/', async ({ response, request }, next) => {
     const currency = request.query.currency || 'USD';
     const cacheKey = `zrxPrice.${currency}`;
