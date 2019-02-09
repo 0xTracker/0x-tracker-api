@@ -4,7 +4,7 @@ const mongoosePaginate = require('mongoose-paginate');
 const { Schema } = mongoose;
 
 const schema = Schema({
-  address: { type: String, index: true, unique: true },
+  address: String,
   decimals: Number,
   imageUrl: { type: String, trim: true },
   name: String,
