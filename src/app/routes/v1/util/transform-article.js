@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const getArticleSources = require('../../articles/get-article-sources');
+const getArticleSources = require('../../../../articles/get-article-sources');
 
 const transformArticle = article => {
   const sources = getArticleSources();

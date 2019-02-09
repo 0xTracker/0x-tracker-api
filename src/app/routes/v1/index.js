@@ -1,0 +1,31 @@
+const Router = require('koa-router');
+
+const createArticlesRouter = require('./articles');
+const createArticleSourcesRouter = require('./article-sources');
+const createFillsRouter = require('./fills');
+const createMetricsRouter = require('./metrics');
+const createRelayersRouter = require('./relayers');
+const createStatsRouter = require('./stats');
+const createTokenRouter = require('./token');
+const createTokensRouter = require('./tokens');
+const createZrxPriceRouter = require('./zrx-price');
+
+const createRouter = () => {
+  const router = new Router();
+
+  router.use(
+    createArticlesRouter().routes(),
+    createArticleSourcesRouter().routes(),
+    createFillsRouter().routes(),
+    createMetricsRouter().routes(),
+    createRelayersRouter().routes(),
+    createStatsRouter().routes(),
+    createTokenRouter().routes(),
+    createTokensRouter().routes(),
+    createZrxPriceRouter().routes(),
+  );
+
+  return router;
+};
+
+module.exports = createRouter;

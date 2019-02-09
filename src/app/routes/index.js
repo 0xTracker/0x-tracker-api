@@ -1,23 +1,12 @@
-const combineRouters = require('koa-combine-routers');
+const Router = require('koa-router');
 
-const articles = require('./articles');
-const articleSources = require('./article-sources');
-const metrics = require('./metrics');
-const relayers = require('./relayers');
-const stats = require('./stats');
-const tokens = require('./tokens');
-const fills = require('./fills');
-const zrxPrice = require('./zrx-price');
+const createV1Router = require('./v1');
+const createV2Router = require('./v2');
 
-const router = combineRouters(
-  articles,
-  articleSources,
-  fills,
-  metrics,
-  relayers,
-  stats,
-  tokens,
-  zrxPrice,
-);
+const router = new Router();
 
-module.exports = router;
+router.use(createV1Router().routes());
+router.use('/v1', createV1Router().routes());
+router.use('/v2', createV2Router().routes());
+
+module.exports = router.routes();

@@ -1,8 +1,8 @@
 const _ = require('lodash');
 
-const { FILL_STATUS, ZRX_TOKEN_ADDRESS } = require('../../constants');
-const formatTokenAmount = require('../../tokens/format-token-amount');
-const getRelayerForFill = require('../../fills/get-relayer-for-fill');
+const { FILL_STATUS, ZRX_TOKEN_ADDRESS } = require('../../../../constants');
+const formatTokenAmount = require('../../../../tokens/format-token-amount');
+const getRelayerForFill = require('../../../../fills/get-relayer-for-fill');
 
 const formatRelayer = relayer =>
   relayer === null ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');

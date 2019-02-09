@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate');
 
 const { Schema } = mongoose;
 
@@ -14,8 +15,19 @@ const schema = Schema({
     },
     lastPrice: Number,
   },
+  stats: {
+    '1y': {
+      trades: Number,
+      volume: {
+        token: Number,
+        USD: Number,
+      },
+    },
+  },
   symbol: String,
 });
+
+schema.plugin(mongoosePaginate);
 
 const Model = mongoose.model('Token', schema);
 
