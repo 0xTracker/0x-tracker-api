@@ -3,9 +3,9 @@ const mongoosePaginate = require('mongoose-paginate');
 
 const schema = mongoose.Schema({
   author: String,
-  date: { type: Date, index: -1 },
+  date: Date,
   feed: String,
-  guid: { type: String, index: true },
+  guid: String,
   summary: String,
   title: String,
   url: String,
