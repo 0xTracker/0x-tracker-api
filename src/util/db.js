@@ -9,10 +9,7 @@ mongoose.Promise = global.Promise;
 
 module.exports = {
   connect: connectionString => {
-    mongoose.connect(
-      connectionString,
-      { useNewUrlParser: true },
-    );
+    mongoose.connect(connectionString, { useNewUrlParser: true });
 
     mongoose.connection.on('connected', () => {
       logger.success('database connection established');
