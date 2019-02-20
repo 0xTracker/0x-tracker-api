@@ -25,10 +25,10 @@ Object {
   },
   "boxSwap": Object {
     "imageUrl": "https://0xtracker.com/assets/logos/box-swap.png",
-    "name": "Box Swap",
-    "slug": "box-swap",
+    "name": "Boxswap",
+    "slug": "boxswap",
     "type": "relayer",
-    "url": "https://beta.boxswap.io/",
+    "url": "https://boxswap.io/",
   },
   "dYdX": Object {
     "imageUrl": "https://0xtracker.com/assets/logos/dydx.png",

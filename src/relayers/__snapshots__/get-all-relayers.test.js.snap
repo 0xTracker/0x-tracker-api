@@ -14,9 +14,9 @@ Object {
     "id": "boxSwap",
     "imageUrl": "https://0xtracker.com/assets/logos/box-swap.png",
     "lookupId": 14,
-    "name": "Box Swap",
-    "slug": "box-swap",
-    "url": "https://beta.boxswap.io/",
+    "name": "Boxswap",
+    "slug": "boxswap",
+    "url": "https://boxswap.io/",
   },
   "ddex": Object {
     "id": "ddex",
