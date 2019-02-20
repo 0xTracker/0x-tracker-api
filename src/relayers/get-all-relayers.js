@@ -100,9 +100,9 @@ const RELAYERS = {
   boxSwap: {
     imageUrl: 'https://0xtracker.com/assets/logos/box-swap.png',
     lookupId: 14,
-    name: 'Box Swap',
-    slug: 'box-swap',
-    url: 'https://beta.boxswap.io/',
+    name: 'Boxswap',
+    slug: 'boxswap',
+    url: 'https://boxswap.io/',
   },
   guDecks: {
     imageUrl: 'https://0xtracker.com/assets/logos/gudecks.png',
