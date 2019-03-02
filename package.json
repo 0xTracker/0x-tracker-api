@@ -21,7 +21,7 @@
   "dependencies": {
     "@0xproject/utils": "2.0.2",
     "@0xproject/web3-wrapper": "3.0.3",
-    "@bugsnag/js": "5.1.0",
+    "@bugsnag/js": "6.0.0",
     "@bugsnag/plugin-koa": "5.1.0",
     "axios": "0.18.0",
     "bignumber.js": "8.0.2",
