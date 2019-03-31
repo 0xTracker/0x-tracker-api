@@ -139,6 +139,13 @@ const RELAYERS = {
     slug: 'fordex',
     url: 'https://www.fordex.co',
   },
+  ethfinex: {
+    imageUrl: 'https://0xtracker.com/assets/logos/ethfinex.png',
+    lookupId: 21,
+    name: 'Ethfinex',
+    slug: 'ethfinex',
+    url: 'https://ethfinex.com',
+  },
 };
 
 const getAllRelayers = () => {
