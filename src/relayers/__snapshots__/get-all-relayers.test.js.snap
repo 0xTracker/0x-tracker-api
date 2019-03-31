@@ -42,6 +42,14 @@ Object {
     "slug": "erc-dex",
     "url": "https://ercdex.com",
   },
+  "ethfinex": Object {
+    "id": "ethfinex",
+    "imageUrl": "https://0xtracker.com/assets/logos/ethfinex.png",
+    "lookupId": 21,
+    "name": "Ethfinex",
+    "slug": "ethfinex",
+    "url": "https://ethfinex.com",
+  },
   "fordex": Object {
     "id": "fordex",
     "imageUrl": "https://0xtracker.com/assets/logos/fordex.png",
