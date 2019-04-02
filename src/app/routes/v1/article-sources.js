@@ -6,7 +6,9 @@ const createRouter = () => {
   const router = new Router({ prefix: '/article-sources' });
 
   router.get('/', async ({ response }, next) => {
-    response.body = Object.values(getArticleSources());
+    const sources = await getArticleSources();
+
+    response.body = Object.values(sources);
 
     await next();
   });

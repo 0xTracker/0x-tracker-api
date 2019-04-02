@@ -1,17 +1,17 @@
-const _ = require('lodash');
 const Router = require('koa-router');
 
-const getAllRelayers = require('../../../relayers/get-all-relayers');
+const Relayer = require('../../../model/relayer');
+const transformRelayer = require('./util/transform-relayer');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/relayers' });
 
   router.get('/', async ({ response }, next) => {
-    const relayers = _.map(getAllRelayers(), relayer =>
-      _.pick(relayer, ['id', 'imageUrl', 'name', 'slug', 'url']),
-    );
+    const relayers = await Relayer.find();
+    const viewModels = relayers.map(transformRelayer);
 
-    response.body = relayers;
+    response.body = viewModels;
+
     await next();
   });
 
