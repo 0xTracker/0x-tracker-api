@@ -44,7 +44,7 @@ const transformAsset = (tokens, fill, asset, traderType) => {
 const getAssetsForFill = (tokens, fill) => {
   const assets = [];
 
-  if (!_.isEmpty(fill.makerAsset)) {
+  if (_.get(fill, 'makerAsset.tokenAddress') !== undefined) {
     assets.push(
       transformAsset(tokens, fill, fill.makerAsset, TRADER_TYPE.MAKER),
       transformAsset(tokens, fill, fill.takerAsset, TRADER_TYPE.TAKER),
