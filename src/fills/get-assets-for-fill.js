@@ -44,12 +44,12 @@ const transformAsset = (tokens, fill, asset, traderType) => {
 const getAssetsForFill = (tokens, fill) => {
   const assets = [];
 
-  if (_.isPlainObject(fill.makerAsset)) {
+  if (!_.isEmpty(fill.makerAsset)) {
     assets.push(
       transformAsset(tokens, fill, fill.makerAsset, TRADER_TYPE.MAKER),
       transformAsset(tokens, fill, fill.takerAsset, TRADER_TYPE.TAKER),
     );
-  } else if (_.isString(fill.makerToken)) {
+  } else {
     // Before 0x v2, fills would have a makerToken and takerToken field. Therefore
     // we need to support that legacy data structure.
     assets.push(
