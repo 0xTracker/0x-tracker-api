@@ -1,4 +1,20 @@
+const { AssetProxyId } = require('@0x/contract-wrappers');
+
+const ASSET_TYPE = {
+  ERC20: 'erc-20',
+  ERC721: 'erc-721',
+};
+
 module.exports = {
+  ASSET_TYPE,
+  ASSET_TYPE_BY_PROXY: {
+    [AssetProxyId.ERC20]: ASSET_TYPE.ERC20,
+    [AssetProxyId.ERC721]: ASSET_TYPE.ERC721,
+  },
+  TRADER_TYPE: {
+    MAKER: 'maker',
+    TAKER: 'taker',
+  },
   FILL_STATUS: {
     FAILED: 2,
     PENDING: 0,
