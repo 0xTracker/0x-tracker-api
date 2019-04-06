@@ -6,7 +6,7 @@ const schema = mongoose.Schema({
   feeRecipients: [String],
   id: String,
   imageUrl: String,
-  lookupId: { type: Number, index: true },
+  lookupId: Number,
   name: String,
   orderMatcher: Boolean,
   prices: Schema.Types.Mixed,
