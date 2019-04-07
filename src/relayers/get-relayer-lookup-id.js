@@ -1,13 +1,14 @@
 const _ = require('lodash');
 
-const Relayer = require('../model/relayer');
+const getRelayers = require('../relayers/get-relayers');
 
 const getRelayerLookupId = async relayerId => {
   if (_.isEmpty(relayerId)) {
     return undefined;
   }
 
-  const relayer = await Relayer.findOne({ id: relayerId });
+  const relayers = await getRelayers();
+  const relayer = relayers[relayerId];
 
   return _.get(relayer, 'lookupId');
 };
