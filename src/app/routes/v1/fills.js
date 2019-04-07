@@ -3,9 +3,9 @@ const Router = require('koa-router');
 
 const Fill = require('../../../model/fill');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
+const getRelayers = require('../../../relayers/get-relayers');
 const getTokens = require('../../../tokens/get-tokens');
 const pagination = require('../../middleware/pagination');
-const Relayer = require('../../../model/relayer');
 const searchFills = require('../../../fills/search-fills');
 const transformFill = require('./util/transform-fill');
 
@@ -19,7 +19,6 @@ const createRouter = () => {
       const { address, token } = request.query;
       const relayerId = request.query.relayer;
       const query = request.query.q;
-
       const relayerLookupId = await getRelayerLookupId(relayerId);
 
       const { docs, pages, total } = await searchFills({
@@ -32,7 +31,7 @@ const createRouter = () => {
       });
 
       const tokens = await getTokens();
-      const relayers = await Relayer.find().lean();
+      const relayers = await getRelayers();
 
       response.body = {
         fills: docs.map(_.partial(transformFill, tokens, relayers)),
@@ -56,7 +55,7 @@ const createRouter = () => {
     }
 
     const tokens = await getTokens();
-    const relayers = await Relayer.find().lean();
+    const relayers = await getRelayers();
 
     response.body = transformFill(tokens, relayers, fill);
 
