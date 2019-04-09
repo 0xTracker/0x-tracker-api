@@ -26,7 +26,7 @@
     "@bugsnag/plugin-koa": "5.1.0",
     "axios": "0.18.0",
     "bignumber.js": "8.0.2",
-    "config": "3.0.1",
+    "config": "3.1.0",
     "dotenv-safe": "6.1.0",
     "koa": "2.7.0",
     "koa-combine-routers": "4.0.2",
