@@ -32,6 +32,7 @@
     "koa-combine-routers": "4.0.2",
     "koa-compress": "3.0.0",
     "koa-cors": "0.0.16",
+    "koa-etag": "3.0.0",
     "koa-helmet": "4.0.0",
     "koa-logger": "3.2.0",
     "koa-router": "7.4.0",

@@ -1,10 +1,12 @@
 const compress = require('koa-compress');
 const consoleLogger = require('koa-logger');
 const cors = require('koa-cors');
+const etag = require('koa-etag');
 const helmet = require('koa-helmet');
 const Koa = require('koa');
 const signale = require('signale');
 
+const cacheControl = require('./middleware/cache-control');
 const error = require('./middleware/error');
 const errorLogger = require('../util/error-logger');
 const invalidUrl = require('./middleware/invalid-url');
@@ -22,6 +24,8 @@ const start = port => {
   app.use(cors());
   app.use(consoleLogger());
   app.use(compress());
+  app.use(etag());
+  app.use(cacheControl());
   app.use(routes);
   app.use(invalidUrl());
 
