@@ -3,7 +3,7 @@ const _ = require('lodash');
 const { ZRX_TOKEN_ADDRESS } = require('../constants');
 const Fill = require('../model/fill');
 const formatTokenAmount = require('../tokens/format-token-amount');
-const getAllRelayers = require('../relayers/get-all-relayers');
+const getRelayers = require('../relayers/get-relayers');
 const getTokens = require('../tokens/get-tokens');
 
 const getRelayerStats = async (dateFrom, dateTo) => {
@@ -29,7 +29,7 @@ const getRelayerStats = async (dateFrom, dateTo) => {
     },
   ]);
 
-  const relayers = getAllRelayers();
+  const relayers = await getRelayers();
   const tokens = await getTokens();
   const zrxToken = tokens[ZRX_TOKEN_ADDRESS];
 

@@ -4,8 +4,8 @@ const ms = require('ms');
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
-const getFilterForRelayer = require('../../../relayers/get-filter-for-relayer');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
+const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getTokens = require('../../../tokens/get-tokens');
 const getTokenVolumeMetrics = require('../../../metrics/get-token-volume-metrics');
 
@@ -25,12 +25,11 @@ const createRouter = () => {
       return;
     }
 
+    const relayerLookupId = await getRelayerLookupId(relayerId);
     const tokens = await getTokens();
-    const metrics = await getNetworkMetrics(
-      period,
-      tokens,
-      getFilterForRelayer(relayerId),
-    );
+    const metrics = await getNetworkMetrics(period, tokens, {
+      relayerId: relayerLookupId,
+    });
 
     memoryCache.put(cacheKey, metrics, ms('1 minute'));
     response.body = metrics;

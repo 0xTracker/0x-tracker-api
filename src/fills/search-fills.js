@@ -13,6 +13,7 @@ const searchFills = ({ address, limit, page, query, relayerId, token }) => {
         { orderHash: query },
         { taker: query },
         { transactionHash: query },
+        { senderAddress: query },
       ],
     };
   } else if (_.isString(token)) {

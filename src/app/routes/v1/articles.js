@@ -9,12 +9,14 @@ const createRouter = () => {
   const router = new Router({ prefix: '/articles' });
 
   router.get('/', async ({ response, request }, next) => {
-    const sources = getArticleSources();
+    const sources = await getArticleSources();
     const page = request.query.page || 1;
+
     const feed = _.findKey(
       sources,
       source => source.slug === request.query.source,
     );
+
     const articles = await Article.paginate(
       request.query.source ? { feed } : {},
       {
@@ -25,12 +27,13 @@ const createRouter = () => {
     );
 
     response.body = {
-      articles: _(articles.docs).map(transformArticle),
+      articles: _(articles.docs).map(_.partial(transformArticle, sources)),
       limit: articles.limit,
       page: parseInt(articles.page, 10),
       pageCount: articles.pages,
       total: articles.total,
     };
+
     await next();
   });
 
