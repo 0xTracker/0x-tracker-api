@@ -9,4 +9,8 @@ router.use(createV1Router().routes());
 router.use('/v1', createV1Router().routes());
 router.use('/v2', createV2Router().routes());
 
+router.get('/', ({ response }) => {
+  response.body = 'OK';
+});
+
 module.exports = router.routes();
