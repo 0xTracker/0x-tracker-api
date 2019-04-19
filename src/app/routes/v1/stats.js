@@ -1,6 +1,3 @@
-const _ = require('lodash');
-const memoryCache = require('memory-cache');
-const ms = require('ms');
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
@@ -16,23 +13,12 @@ const createRouter = () => {
   router.get('/tokens', async ({ request, response }, next) => {
     const period = request.query.period || TIME_PERIOD.DAY;
     const relayerId = request.query.relayer;
-    const cacheKey = `stats.tokens.${period}.${relayerId || 'all'}`;
-    const cachedStats = memoryCache.get(cacheKey);
-
-    if (_.isPlainObject(cachedStats)) {
-      response.body = cachedStats;
-      await next();
-      return;
-    }
-
     const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-
     const relayerLookupId = await getRelayerLookupId(relayerId);
     const stats = await getTokenStats(dateFrom, dateTo, {
       relayerId: relayerLookupId,
     });
 
-    memoryCache.put(cacheKey, stats, ms('1 minute'));
     response.body = stats;
 
     await next();
@@ -40,19 +26,9 @@ const createRouter = () => {
 
   router.get('/relayers', async ({ request, response }, next) => {
     const period = request.query.period || TIME_PERIOD.DAY;
-    const cacheKey = `stats.relayers.${period}`;
-    const cachedStats = memoryCache.get(cacheKey);
-
-    if (_.isPlainObject(cachedStats)) {
-      response.body = cachedStats;
-      await next();
-      return;
-    }
-
     const { dateFrom, dateTo } = getDatesForTimePeriod(period);
     const stats = await getRelayerStats(dateFrom, dateTo);
 
-    memoryCache.put(cacheKey, stats, ms('1 minute'));
     response.body = stats;
 
     await next();
@@ -60,19 +36,9 @@ const createRouter = () => {
 
   router.get('/network', async ({ request, response }, next) => {
     const period = request.query.period || TIME_PERIOD.DAY;
-    const cacheKey = `stats.network.${period}`;
-    const cachedStats = memoryCache.get(cacheKey);
-
-    if (_.isPlainObject(cachedStats)) {
-      response.body = cachedStats;
-      await next();
-      return;
-    }
-
     const { dateFrom, dateTo } = getDatesForTimePeriod(period);
     const stats = await getNetworkStats(dateFrom, dateTo);
 
-    memoryCache.put(cacheKey, stats, ms('1 minute'));
     response.body = stats;
 
     await next();

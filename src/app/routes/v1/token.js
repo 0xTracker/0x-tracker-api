@@ -1,7 +1,5 @@
 const _ = require('lodash');
 const Router = require('koa-router');
-const memoryCache = require('memory-cache');
-const ms = require('ms');
 
 const Token = require('../../../model/token');
 const transformToken = require('./util/transform-token');
@@ -10,15 +8,6 @@ const createRouter = ({ transformer } = {}) => {
   const router = new Router();
 
   router.get('/tokens/:tokenAddress', async ({ params, response }, next) => {
-    const cacheKey = `tokens.${params.tokenAddress}`;
-    const cachedToken = memoryCache.get(cacheKey);
-
-    if (_.isObject(cachedToken)) {
-      response.body = transformToken(cachedToken);
-      await next();
-      return;
-    }
-
     const token = await Token.findOne({ address: params.tokenAddress }).lean();
 
     if (_.isNull(token)) {
@@ -27,8 +16,8 @@ const createRouter = ({ transformer } = {}) => {
       return;
     }
 
-    memoryCache.put(cacheKey, token, ms('1 minute'));
     response.body = transformer ? transformer(token) : transformToken(token);
+
     await next();
   });
 
