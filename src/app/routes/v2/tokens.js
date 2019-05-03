@@ -4,15 +4,26 @@ const pagination = require('../../middleware/pagination');
 const Token = require('../../../model/token');
 const transformToken = require('./util/transform-token');
 
+const SORT_BY_DEFAULT = '24h-volume-share';
+const SORT_BY_MAPPINGS = {
+  '24h-volume-share': 'stats.24h.volumeShare',
+  '7d-volume-share': 'stats.7d.volumeShare',
+  '1m-volume-share': 'stats.1m.volumeShare',
+};
+
 const createRouter = () => {
   const router = new Router();
 
   router.get(
     '/tokens',
     pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
-    async ({ pagination: { limit, page }, response }, next) => {
+    async ({ pagination: { limit, page }, request, response }, next) => {
+      const sortBy =
+        SORT_BY_MAPPINGS[request.query.sortBy] ||
+        SORT_BY_MAPPINGS[SORT_BY_DEFAULT];
+
       const { docs, pages, total } = await Token.paginate(undefined, {
-        sort: { 'stats.24h.volume.USD': -1 },
+        sort: { [sortBy]: -1 },
         lean: true,
         limit,
         page,
