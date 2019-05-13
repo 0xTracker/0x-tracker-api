@@ -3,6 +3,15 @@ const mongoosePaginate = require('mongoose-paginate');
 
 const { Schema } = mongoose;
 
+const tokenStatsShape = {
+  trades: Number,
+  volume: {
+    token: Number,
+    USD: Number,
+  },
+  volumeShare: Number,
+};
+
 const schema = Schema({
   address: String,
   decimals: Number,
@@ -16,13 +25,9 @@ const schema = Schema({
     lastPrice: Number,
   },
   stats: {
-    '1y': {
-      trades: Number,
-      volume: {
-        token: Number,
-        USD: Number,
-      },
-    },
+    '1m': tokenStatsShape,
+    '7d': tokenStatsShape,
+    '24h': tokenStatsShape,
   },
   symbol: String,
 });

@@ -12,6 +12,7 @@ const formatStats = (stats, token) =>
           token: formatTokenAmount(stats.volume.token, token).toString(),
           USD: stats.volume.USD,
         },
+        volumeShare: stats.volumeShare,
       };
 
 const transformToken = token => {
