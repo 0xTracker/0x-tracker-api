@@ -1,28 +1,47 @@
 const _ = require('lodash');
-const BigNumber = require('bignumber.js');
 
-const getRelayerStats = require('./get-relayer-stats');
+const { ZRX_TOKEN_ADDRESS } = require('../constants');
+const Fill = require('../model/fill');
+const formatTokenAmount = require('../tokens/format-token-amount');
+const getTokens = require('../tokens/get-tokens');
 
 const getNetworkStats = async (dateFrom, dateTo) => {
-  const relayerStats = await getRelayerStats(dateFrom, dateTo);
-  const stats = _.reduce(
-    relayerStats,
-    (acc, stat) => ({
-      fees: {
-        USD: acc.fees.USD + stat.fees.USD,
-        ZRX: acc.fees.ZRX.plus(stat.fees.ZRX.toString()),
-      },
-      trades: acc.trades + stat.trades,
-      volume: acc.volume + stat.volume,
-    }),
+  const metrics = await Fill.aggregate([
     {
-      fees: { USD: 0, ZRX: new BigNumber(0) },
-      trades: 0,
-      volume: 0,
+      $match: {
+        date: { $gte: new Date(dateFrom), $lte: new Date(dateTo) },
+      },
     },
-  );
+    {
+      $group: {
+        _id: null,
+        localisedMakerFees: { $sum: `$conversions.USD.makerFee` },
+        localisedTakerFees: { $sum: `$conversions.USD.takerFee` },
+        fills: { $sum: 1 },
+        makerFee: { $sum: '$makerFee' },
+        takerFee: { $sum: '$takerFee' },
+        volume: { $sum: `$conversions.USD.amount` },
+      },
+    },
+  ]);
 
-  return stats;
+  const tokens = await getTokens();
+  const zrxToken = tokens[ZRX_TOKEN_ADDRESS];
+  const metric = metrics[0];
+
+  return {
+    fees: {
+      USD:
+        _.get(metric, 'localisedMakerFees', 0) +
+        _.get(metric, 'localisedTakerFees', 0),
+      ZRX: formatTokenAmount(
+        _.get(metric, 'makerFee', 0) + _.get(metric, 'takerFee', 0),
+        zrxToken,
+      ),
+    },
+    fills: _.get(metric, 'fills', 0),
+    volume: _.get(metric, 'volume', 0),
+  };
 };
 
 module.exports = getNetworkStats;
