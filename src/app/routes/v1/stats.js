@@ -35,20 +35,16 @@ const createRouter = () => {
     await next();
   });
 
-  router.get('/network', async ({ request, response }, next) => {
-    const period = request.query.period || TIME_PERIOD.DAY;
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const stats = await getNetworkStats(dateFrom, dateTo);
+  router.get('/network', async ({ response }, next) => {
+    const stats = await getNetworkStats();
 
     response.body = stats;
 
     await next();
   });
 
-  router.get('/relayer', async ({ request, response }, next) => {
-    const period = request.query.period || TIME_PERIOD.DAY;
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const stats = await getRelayerStats(dateFrom, dateTo);
+  router.get('/relayer', async ({ response }, next) => {
+    const stats = await getRelayerStats();
 
     response.body = stats;
 
