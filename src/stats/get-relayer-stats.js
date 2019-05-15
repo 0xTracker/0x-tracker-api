@@ -13,12 +13,12 @@ const getRelayerStats = async (dateFrom, dateTo) => {
         ZRX: acc.fees.ZRX.plus(stat.fees.ZRX.toString()),
       },
       trades: acc.trades + stat.trades,
-      volume: acc.volume + stat.volume,
+      tradeVolume: acc.tradeVolume + stat.volume,
     }),
     {
       fees: { USD: 0, ZRX: new BigNumber(0) },
       trades: 0,
-      volume: 0,
+      tradeVolume: 0,
     },
   );
 
