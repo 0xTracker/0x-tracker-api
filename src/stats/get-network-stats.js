@@ -1,47 +1,18 @@
 const _ = require('lodash');
 
-const { ZRX_TOKEN_ADDRESS } = require('../constants');
-const Fill = require('../model/fill');
-const formatTokenAmount = require('../tokens/format-token-amount');
-const getTokens = require('../tokens/get-tokens');
+const CacheEntry = require('../model/cache-entry');
 
-const getNetworkStats = async (dateFrom, dateTo) => {
-  const metrics = await Fill.aggregate([
-    {
-      $match: {
-        date: { $gte: new Date(dateFrom), $lte: new Date(dateTo) },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        localisedMakerFees: { $sum: `$conversions.USD.makerFee` },
-        localisedTakerFees: { $sum: `$conversions.USD.takerFee` },
-        fills: { $sum: 1 },
-        makerFee: { $sum: '$makerFee' },
-        takerFee: { $sum: '$takerFee' },
-        volume: { $sum: `$conversions.USD.amount` },
-      },
-    },
-  ]);
+const getNetworkStats = async () => {
+  const cacheEntry = await CacheEntry.findOne({ key: 'networkStats.24h' });
 
-  const tokens = await getTokens();
-  const zrxToken = tokens[ZRX_TOKEN_ADDRESS];
-  const metric = metrics[0];
-
-  return {
+  return _.get(cacheEntry, 'data', {
     fees: {
-      USD:
-        _.get(metric, 'localisedMakerFees', 0) +
-        _.get(metric, 'localisedTakerFees', 0),
-      ZRX: formatTokenAmount(
-        _.get(metric, 'makerFee', 0) + _.get(metric, 'takerFee', 0),
-        zrxToken,
-      ),
+      USD: 0,
+      ZRX: '0',
     },
-    fills: _.get(metric, 'fills', 0),
-    volume: _.get(metric, 'volume', 0),
-  };
+    fills: 0,
+    volume: 0,
+  });
 };
 
 module.exports = getNetworkStats;
