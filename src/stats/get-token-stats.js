@@ -106,7 +106,7 @@ const getTokenStats = async (dateFrom, dateTo, filter) => {
   }
 
   const tokenAddresses = _.keys(stats);
-  const tokens = await getTokensByAddresses(tokenAddresses);
+  const tokens = getTokensByAddresses(tokenAddresses);
 
   return _.map(tokens, token => {
     const statsForToken = stats[token.address];

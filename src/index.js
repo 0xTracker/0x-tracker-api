@@ -13,7 +13,12 @@ require('dotenv-safe').config({
 
 const config = require('config');
 
+const { logError } = require('./util/error-logger');
 const app = require('./app');
 
-app.configure();
-app.start(config.get('port'));
+app
+  .initialise()
+  .then(() => {
+    app.start(config.get('port'));
+  })
+  .catch(logError);

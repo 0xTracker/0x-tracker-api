@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const Router = require('koa-router');
 
+const { getTokens } = require('../../../tokens/token-cache');
 const Fill = require('../../../model/fill');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getRelayers = require('../../../relayers/get-relayers');
-const getTokens = require('../../../tokens/get-tokens');
 const pagination = require('../../middleware/pagination');
 const searchFills = require('../../../fills/search-fills');
 const transformFill = require('./util/transform-fill');
@@ -30,7 +30,7 @@ const createRouter = () => {
         token,
       });
 
-      const tokens = await getTokens();
+      const tokens = getTokens();
       const relayers = await getRelayers();
 
       response.body = {
@@ -54,7 +54,7 @@ const createRouter = () => {
       return;
     }
 
-    const tokens = await getTokens();
+    const tokens = getTokens();
     const relayers = await getRelayers();
 
     response.body = transformFill(tokens, relayers, fill);

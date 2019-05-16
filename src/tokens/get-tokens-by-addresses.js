@@ -1,15 +1,15 @@
 const _ = require('lodash');
 
-const Token = require('../model/token');
+const { getTokens } = require('./token-cache');
 
-const getTokensByAddresses = async addresses => {
+const getTokensByAddresses = addresses => {
   if (addresses.length === 0) {
     return {};
   }
 
-  const tokens = await Token.find({ address: { $in: addresses } });
+  const allTokens = getTokens();
 
-  return _.keyBy(tokens, 'address');
+  return _.pick(allTokens, addresses);
 };
 
 module.exports = getTokensByAddresses;
