@@ -21,6 +21,7 @@ const createRouter = () => {
       request.query.source ? { feed } : {},
       {
         sort: { date: -1 },
+        lean: true,
         limit: 12,
         page,
       },

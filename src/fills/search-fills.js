@@ -32,6 +32,7 @@ const searchFills = ({ address, limit, page, query, relayerId, token }) => {
 
   return Fill.paginate(filter, {
     sort: { date: -1 },
+    lean: true,
     limit,
     page,
   });
