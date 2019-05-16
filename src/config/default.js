@@ -7,6 +7,7 @@ module.exports = {
   },
   database: {
     connectionString: process.env.CONNECTION_STRING,
+    poolSize: process.env.POOL_SIZE || 30,
   },
   port: process.env.PORT || 3001,
 };
