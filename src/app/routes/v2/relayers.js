@@ -23,6 +23,7 @@ const createRouter = () => {
         SORT_BY_MAPPINGS[SORT_BY_DEFAULT];
 
       const { docs, pages, total } = await Relayer.paginate(undefined, {
+        select: 'id imageUrl name slug stats url',
         sort: { [sortBy]: -1 },
         lean: true,
         limit,
