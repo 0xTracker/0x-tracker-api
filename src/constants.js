@@ -47,21 +47,8 @@ module.exports = {
       imageUrl: 'https://0xtracker.com/assets/logos/0x-tracker.png',
       slug: '0x-tracker',
     },
-    amadeus: {
-      name: 'Amadeus Relay',
-      url: 'https://amadeusrelay.org/',
-      imageUrl: 'https://0xtracker.com/assets/logos/amadeus-relay.png',
-      slug: 'amadeus-relay',
-    },
     boxSwap: {
       relayer: 'boxSwap',
-    },
-    ddex: { relayer: 'ddex' },
-    dharma: {
-      name: 'Dharma',
-      url: 'https://dharma.io/',
-      imageUrl: 'https://0xtracker.com/assets/logos/dharma.png',
-      slug: 'dharma',
     },
     dYdX: {
       name: 'dYdX',
@@ -79,7 +66,6 @@ module.exports = {
       imageUrl: 'https://0xtracker.com/assets/logos/ethfinex.png',
       slug: 'ethfinex',
     },
-    kinalpha: { name: 'Kin Alpha', slug: 'kin-alpha' },
     ledgerDex: {
       relayer: 'ledgerDex',
     },
@@ -91,9 +77,6 @@ module.exports = {
     },
     radarrelay: {
       relayer: 'radarRelay',
-    },
-    sharkRelay: {
-      relayer: 'sharkRelay',
     },
     theOcean: {
       relayer: 'theOcean',
