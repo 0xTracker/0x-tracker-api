@@ -1,59 +1,119 @@
 const _ = require('lodash');
-const BigNumber = require('bignumber.js');
+const moment = require('moment');
 
-const { ZRX_TOKEN_ADDRESS } = require('../constants');
-const Fill = require('../model/fill');
+const { METRIC_INTERVAL, ZRX_TOKEN_ADDRESS } = require('../constants');
+const { getToken } = require('../tokens/token-cache');
 const formatTokenAmount = require('../tokens/format-token-amount');
-const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
-const getMetricIntervalForTimePeriod = require('./get-metric-interval-for-time-period');
+const RelayerMetric = require('../model/relayer-metric');
 
-const getNetworkMetrics = async (period, tokens, { relayerId } = {}) => {
-  const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-  const metricInterval = getMetricIntervalForTimePeriod(period);
-  const optionalCriteria = _.compact([_.isNumber(relayerId) && { relayerId }]);
-  const query = _.merge(
-    { date: { $gte: dateFrom, $lte: dateTo } },
-    ...optionalCriteria,
-  );
-  const dataPoints = await Fill.aggregate([
+const getNetworkMetrics = async (
+  dateFrom,
+  dateTo,
+  metricInterval,
+  filter = {},
+) => {
+  const dayFrom = moment
+    .utc(dateFrom)
+    .startOf('day')
+    .toDate();
+  const dayTo = moment
+    .utc(dateTo)
+    .endOf('day')
+    .toDate();
+  const hourFrom = moment
+    .utc(dateFrom)
+    .startOf('hour')
+    .toDate();
+  const hourTo = moment
+    .utc(dateTo)
+    .endOf('hour')
+    .toDate();
+
+  const pipeline = _.compact([
     {
-      $match: query,
+      $match: _.merge(
+        { date: { $gte: dayFrom, $lte: dayTo } },
+        ..._.compact([
+          _.isNumber(filter.relayerId) && { relayerId: filter.relayerId },
+        ]),
+      ),
     },
     {
-      $group: {
-        _id: {
-          date: `$roundedDates.${metricInterval}`,
-        },
-        count: { $sum: 1 },
-        localizedMakerFees: { $sum: `$conversions.USD.makerFee` },
-        localizedTakerFees: { $sum: `$conversions.USD.takerFee` },
-        makerFees: { $sum: '$makerFee' },
-        takerFees: { $sum: '$takerFee' },
-        volume: { $sum: `$conversions.USD.amount` },
+      $unwind: {
+        path: '$hours',
       },
     },
-  ]).sort({ '_id.date': 'asc' });
-  const zrxToken = tokens[ZRX_TOKEN_ADDRESS];
+    {
+      $project: {
+        day: '$date',
+        hour: '$hours.date',
+        fees: {
+          USD: '$hours.fees.USD',
+          ZRX: '$hours.fees.ZRX',
+        },
+        fillCount: '$hours.fillCount',
+        fillVolume: '$hours.fillVolume',
+        tradeCount: '$hours.tradeCount',
+        tradeVolume: '$hours.tradeVolume',
+      },
+    },
+    metricInterval === METRIC_INTERVAL.HOUR
+      ? {
+          $match: { hour: { $gte: hourFrom, $lte: hourTo } },
+        }
+      : { $match: { hour: { $gte: dayFrom, $lte: dayTo } } },
+    {
+      $group: {
+        _id: metricInterval === METRIC_INTERVAL.HOUR ? '$hour' : '$day',
+        feesUSD: {
+          $sum: '$fees.USD',
+        },
+        feesZRX: {
+          $sum: '$fees.ZRX',
+        },
+        fillCount: {
+          $sum: '$fillCount',
+        },
+        fillVolume: {
+          $sum: '$fillVolume',
+        },
+        tradeCount: {
+          $sum: '$tradeCount',
+        },
+        tradeVolume: {
+          $sum: '$tradeVolume',
+        },
+      },
+    },
+    {
+      $sort: {
+        _id: 1,
+      },
+    },
+  ]);
+
+  const dataPoints = await RelayerMetric.aggregate(pipeline);
+  const zrxToken = getToken(ZRX_TOKEN_ADDRESS);
 
   if (zrxToken === undefined) {
     throw new Error('Cannot find ZRX token');
   }
 
-  return dataPoints.map(dataPoint => {
-    const totalFees = new BigNumber(dataPoint.makerFees.toString()).plus(
-      dataPoint.takerFees.toString(),
-    );
-
+  const result = dataPoints.map(dataPoint => {
     return {
-      date: dataPoint._id.date,
+      date: dataPoint._id,
       fees: {
-        USD: dataPoint.localizedMakerFees + dataPoint.localizedTakerFees,
-        ZRX: formatTokenAmount(totalFees, zrxToken),
+        USD: dataPoint.feesUSD,
+        ZRX: formatTokenAmount(dataPoint.feesZRX, zrxToken),
       },
-      fills: dataPoint.count,
-      volume: dataPoint.volume,
+      fillCount: dataPoint.fillCount,
+      fillVolume: dataPoint.fillVolume,
+      tradeCount: dataPoint.tradeCount,
+      tradeVolume: dataPoint.tradeVolume,
     };
   });
+
+  return result;
 };
 
 module.exports = getNetworkMetrics;

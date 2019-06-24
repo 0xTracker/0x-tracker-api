@@ -33,3 +33,11 @@ it('should format large amount', () => {
 
   expect(amount).toEqual(new BigNumber(100000000));
 });
+
+it('should return null when amount is null', () => {
+  const amount = formatTokenAmount(null, {
+    decimals: 18,
+  });
+
+  expect(amount).toBeNull();
+});
