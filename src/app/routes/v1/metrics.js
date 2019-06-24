@@ -1,7 +1,8 @@
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
-const { getTokens } = require('../../../tokens/token-cache');
+const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
+const getMetricIntervalForTimePeriod = require('../../../metrics/get-metric-interval-for-time-period');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getTokenVolumeMetrics = require('../../../metrics/get-token-volume-metrics');
@@ -13,12 +14,19 @@ const createRouter = () => {
     const period = request.query.period || TIME_PERIOD.MONTH;
     const relayerId = request.query.relayer;
     const relayerLookupId = await getRelayerLookupId(relayerId);
-    const tokens = getTokens();
-    const metrics = await getNetworkMetrics(period, tokens, {
+
+    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+    const metricInterval = getMetricIntervalForTimePeriod(period);
+    const metrics = await getNetworkMetrics(dateFrom, dateTo, metricInterval, {
       relayerId: relayerLookupId,
     });
 
-    response.body = metrics;
+    response.body = metrics.map(metric => ({
+      date: metric.date,
+      fees: metric.fees,
+      fills: metric.fillCount,
+      volume: metric.fillVolume,
+    }));
 
     await next();
   });

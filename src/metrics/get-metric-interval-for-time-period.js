@@ -3,7 +3,6 @@ const { METRIC_INTERVAL, TIME_PERIOD } = require('../constants');
 const getIntervalForTimePeriod = timePeriod => {
   switch (timePeriod) {
     case TIME_PERIOD.DAY:
-      return METRIC_INTERVAL.HALF_HOUR;
     case TIME_PERIOD.WEEK:
       return METRIC_INTERVAL.HOUR;
     case TIME_PERIOD.MONTH:
