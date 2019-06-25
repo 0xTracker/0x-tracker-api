@@ -4,7 +4,6 @@ const { TIME_PERIOD } = require('../../../constants');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getNetworkStats = require('../../../stats/get-network-stats');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
-const getRelayerStats = require('../../../stats/get-relayer-stats');
 const getTokenStats = require('../../../stats/get-token-stats');
 
 const createRouter = () => {
@@ -38,10 +37,15 @@ const createRouter = () => {
     await next();
   });
 
-  router.get('/relayer', async ({ response }, next) => {
-    const stats = await getRelayerStats();
+  router.get('/relayer', async ({ request, response }, next) => {
+    const period = request.query.period || TIME_PERIOD.DAY;
+    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+    const stats = await getNetworkStats(dateFrom, dateTo);
 
-    response.body = stats;
+    response.body = {
+      trades: stats.tradeCount,
+      tradeVolume: stats.tradeVolume,
+    };
 
     await next();
   });

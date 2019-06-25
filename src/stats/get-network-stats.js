@@ -12,15 +12,15 @@ const getNetworkStats = async (dateFrom, dateTo) => {
     .utc(dateTo)
     .endOf('day')
     .toDate();
-  const results = await RelayerMetric.aggregate([
-    {
-      $match: {
-        date: {
-          $gte: dayFrom,
-          $lte: dayTo,
-        },
-      },
+
+  const baseQuery = {
+    date: {
+      $gte: dayFrom,
+      $lte: dayTo,
     },
+  };
+
+  const basePipeline = [
     {
       $unwind: {
         path: '$hours',
@@ -39,51 +39,64 @@ const getNetworkStats = async (dateFrom, dateTo) => {
         },
       },
     },
-    {
-      $group: {
-        _id: null,
-        feesUSD: {
-          $sum: '$hours.minutes.fees.USD',
-        },
-        feesZRX: {
-          $sum: '$hours.minutes.fees.ZRX',
-        },
-        fillCount: {
-          $sum: '$hours.minutes.fillCount',
-        },
-        fillVolume: {
-          $sum: '$hours.minutes.fillVolume',
-        },
-        tradeCount: {
-          $sum: '$hours.minutes.tradeCount',
-        },
-        tradeVolume: {
-          $sum: '$hours.minutes.tradeVolume',
-        },
-      },
-    },
-  ]);
+  ];
 
-  if (results.length === 0) {
-    return {
-      fees: {
-        USD: 0,
-        ZRX: 0,
+  const [fillResults, tradeResults] = await Promise.all([
+    RelayerMetric.aggregate([
+      {
+        $match: baseQuery,
       },
-      fills: 0,
-      volume: 0,
-    };
-  }
+      ...basePipeline,
+      {
+        $group: {
+          _id: null,
+          feesUSD: {
+            $sum: '$hours.minutes.fees.USD',
+          },
+          feesZRX: {
+            $sum: '$hours.minutes.fees.ZRX',
+          },
+          fillCount: {
+            $sum: '$hours.minutes.fillCount',
+          },
+          fillVolume: {
+            $sum: '$hours.minutes.fillVolume',
+          },
+        },
+      },
+    ]),
+
+    RelayerMetric.aggregate([
+      {
+        $match: {
+          ...baseQuery,
+          relayerId: { $ne: null },
+        },
+      },
+      ...basePipeline,
+      {
+        $group: {
+          _id: null,
+          tradeCount: {
+            $sum: '$hours.minutes.tradeCount',
+          },
+          tradeVolume: {
+            $sum: '$hours.minutes.tradeVolume',
+          },
+        },
+      },
+    ]),
+  ]);
 
   return {
     fees: {
-      USD: _.get(results, '0.feesUSD'),
-      ZRX: _.get(results, '0.feesZRX'),
+      USD: _.get(fillResults, '0.feesUSD', 0),
+      ZRX: _.get(fillResults, '0.feesZRX', 0),
     },
-    fillCount: _.get(results, '0.fillCount'),
-    fillVolume: _.get(results, '0.fillVolume'),
-    tradeCount: _.get(results, '0.tradeCount'),
-    tradeVolume: _.get(results, '0.tradeVolume'),
+    fillCount: _.get(fillResults, '0.fillCount', 0),
+    fillVolume: _.get(fillResults, '0.fillVolume', 0),
+    tradeCount: _.get(tradeResults, '0.tradeCount', 0),
+    tradeVolume: _.get(tradeResults, '0.tradeVolume', 0),
   };
 };
 
