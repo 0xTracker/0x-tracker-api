@@ -24,10 +24,16 @@ const createRouter = () => {
     await next();
   });
 
-  router.get('/network', async ({ response }, next) => {
-    const stats = await getNetworkStats();
+  router.get('/network', async ({ request, response }, next) => {
+    const period = request.query.period || TIME_PERIOD.DAY;
+    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+    const stats = await getNetworkStats(dateFrom, dateTo);
 
-    response.body = stats;
+    response.body = {
+      fees: stats.fees,
+      fills: stats.fillCount,
+      volume: stats.fillVolume,
+    };
 
     await next();
   });
