@@ -1,66 +1,34 @@
 const _ = require('lodash');
-const moment = require('moment');
 
 const RelayerMetric = require('../model/relayer-metric');
 
-const getNetworkStats = async (dateFrom, dateTo) => {
-  const dayFrom = moment
-    .utc(dateFrom)
-    .startOf('day')
-    .toDate();
-  const dayTo = moment
-    .utc(dateTo)
-    .endOf('day')
-    .toDate();
-
+const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
   const baseQuery = {
     date: {
-      $gte: dayFrom,
-      $lte: dayTo,
+      $gte: dateFrom,
+      $lte: dateTo,
     },
   };
-
-  const basePipeline = [
-    {
-      $unwind: {
-        path: '$hours',
-      },
-    },
-    {
-      $unwind: {
-        path: '$hours.minutes',
-      },
-    },
-    {
-      $match: {
-        'hours.minutes.date': {
-          $gte: dateFrom,
-          $lte: dateTo,
-        },
-      },
-    },
-  ];
 
   const [fillResults, tradeResults] = await Promise.all([
     RelayerMetric.aggregate([
       {
         $match: baseQuery,
       },
-      ...basePipeline,
       {
         $group: {
           _id: null,
           feesUSD: {
-            $sum: '$hours.minutes.fees.USD',
+            $sum: '$fees.USD',
           },
           feesZRX: {
-            $sum: '$hours.minutes.fees.ZRX',
+            $sum: '$fees.ZRX',
           },
           fillCount: {
-            $sum: '$hours.minutes.fillCount',
+            $sum: '$fillCount',
           },
           fillVolume: {
-            $sum: '$hours.minutes.fillVolume',
+            $sum: '$fillVolume',
           },
         },
       },
@@ -73,15 +41,14 @@ const getNetworkStats = async (dateFrom, dateTo) => {
           relayerId: { $ne: null },
         },
       },
-      ...basePipeline,
       {
         $group: {
           _id: null,
           tradeCount: {
-            $sum: '$hours.minutes.tradeCount',
+            $sum: '$tradeCount',
           },
           tradeVolume: {
-            $sum: '$hours.minutes.tradeVolume',
+            $sum: '$tradeVolume',
           },
         },
       },
@@ -100,4 +67,4 @@ const getNetworkStats = async (dateFrom, dateTo) => {
   };
 };
 
-module.exports = getNetworkStats;
+module.exports = computeNetworkStatsForDates;
