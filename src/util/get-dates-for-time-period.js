@@ -13,11 +13,20 @@ const getStartDate = (timePeriod, endDate) => {
     case TIME_PERIOD.DAY:
       return endMoment.subtract(1, 'days').toDate();
     case TIME_PERIOD.WEEK:
-      return endMoment.subtract(1, 'weeks').toDate();
+      return endMoment
+        .subtract(1, 'weeks')
+        .startOf('day')
+        .toDate();
     case TIME_PERIOD.MONTH:
-      return endMoment.subtract(1, 'months').toDate();
+      return endMoment
+        .subtract(1, 'months')
+        .startOf('day')
+        .toDate();
     case TIME_PERIOD.YEAR:
-      return endMoment.subtract(1, 'years').toDate();
+      return endMoment
+        .subtract(1, 'years')
+        .startOf('day')
+        .toDate();
     default:
       throw new Error(`Invalid time period: ${timePeriod}`);
   }
