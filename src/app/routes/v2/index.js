@@ -5,6 +5,7 @@ const createArticleSourcesRouter = require('../v1/article-sources');
 const createFillsRouter = require('../v1/fills');
 const createRelayerRouter = require('./relayer');
 const createRelayersRouter = require('./relayers');
+const createStatsRouter = require('./stats');
 const createTokenRouter = require('../v1/token');
 const createTokensRouter = require('./tokens');
 const transformToken = require('./util/transform-token');
@@ -20,6 +21,7 @@ const createRouter = () => {
     createTokensRouter().routes(),
     createRelayerRouter().routes(),
     createRelayersRouter().routes(),
+    createStatsRouter().routes(),
   );
 
   return router;
