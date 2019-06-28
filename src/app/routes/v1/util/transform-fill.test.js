@@ -110,18 +110,18 @@ describe('transformFill', () => {
     const fill = { ...simpleV1Fill, makerToken: '0x1234' };
     const viewModel = transformFill(tokens, relayers, fill);
 
-    expect(viewModel.makerToken).toEqual({
-      address: '0x1234',
-    });
+    expect(
+      viewModel.assets.find(asset => asset.traderType === 'maker'),
+    ).toMatchSnapshot();
   });
 
   it('should transform V1 fill with unrecognised taker token', () => {
     const fill = { ...simpleV1Fill, takerToken: '0x9999' };
     const viewModel = transformFill(tokens, relayers, fill);
 
-    expect(viewModel.takerToken).toEqual({
-      address: '0x9999',
-    });
+    expect(
+      viewModel.assets.find(asset => asset.traderType === 'taker'),
+    ).toMatchSnapshot();
   });
 
   it('should transform fill with unrecognised relayer', () => {
