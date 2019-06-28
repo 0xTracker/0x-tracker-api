@@ -10,13 +10,14 @@ const createRouter = () => {
 
   router.get('/network', async ({ request, response }, next) => {
     const period = request.query.period || TIME_PERIOD.DAY;
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const stats =
-      period === TIME_PERIOD.DAY
-        ? await compute24HourNetworkStats()
-        : await computeNetworkStatsForDates(dateFrom, dateTo);
 
-    response.body = stats;
+    if (period === TIME_PERIOD.DAY) {
+      response.body = await compute24HourNetworkStats();
+    } else {
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+
+      response.body = await computeNetworkStatsForDates(dateFrom, dateTo);
+    }
 
     await next();
   });
