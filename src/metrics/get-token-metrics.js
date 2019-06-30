@@ -30,55 +30,54 @@ const getTokenMetrics = async (
     .endOf('hour')
     .toDate();
 
-  const pipeline = _.compact([
-    {
-      $match: { date: { $gte: dayFrom, $lte: dayTo }, tokenAddress },
-    },
-    metricInterval === METRIC_INTERVAL.HOUR && {
-      $unwind: {
-        path: '$hours',
-      },
-    },
-    metricInterval === METRIC_INTERVAL.HOUR
-      ? {
-          $project: {
-            hour: '$hours.date',
-            fillCount: '$hours.fillCount',
-            tokenVolume: '$hours.tokenVolume',
-            usdVolume: '$hours.usdVolume',
+  const pipeline =
+    metricInterval === METRIC_INTERVAL.DAY
+      ? [
+          {
+            $match: { date: { $gte: dayFrom, $lte: dayTo }, tokenAddress },
           },
-        }
-      : {
-          $project: {
-            _id: '$date',
-            fillCount: 1,
-            tokenVolume: 1,
-            usdVolume: 1,
+          { $sort: { date: 1 } },
+        ]
+      : [
+          {
+            $match: { date: { $gte: dayFrom, $lte: dayTo }, tokenAddress },
           },
-        },
-    metricInterval === METRIC_INTERVAL.HOUR && {
-      $match: { hour: { $gte: hourFrom, $lte: hourTo } },
-    },
-    metricInterval === METRIC_INTERVAL.HOUR && {
-      $group: {
-        _id: '$hour',
-        fillCount: {
-          $sum: '$fillCount',
-        },
-        tokenVolume: {
-          $sum: '$tokenVolume',
-        },
-        usdVolume: {
-          $sum: '$usdVolume',
-        },
-      },
-    },
-    {
-      $sort: {
-        _id: 1,
-      },
-    },
-  ]);
+          {
+            $unwind: {
+              path: '$hours',
+            },
+          },
+          {
+            $project: {
+              hour: '$hours.date',
+              fillCount: '$hours.fillCount',
+              tokenVolume: '$hours.tokenVolume',
+              usdVolume: '$hours.usdVolume',
+            },
+          },
+          {
+            $match: { hour: { $gte: hourFrom, $lte: hourTo } },
+          },
+          {
+            $group: {
+              _id: '$hour',
+              fillCount: {
+                $sum: '$fillCount',
+              },
+              tokenVolume: {
+                $sum: '$tokenVolume',
+              },
+              usdVolume: {
+                $sum: '$usdVolume',
+              },
+            },
+          },
+          {
+            $sort: {
+              _id: 1,
+            },
+          },
+        ];
 
   const dataPoints = await TokenMetric.aggregate(pipeline);
   const zrxToken = getToken(ZRX_TOKEN_ADDRESS);
@@ -90,7 +89,7 @@ const getTokenMetrics = async (
   const token = await Token.findOne({ address: tokenAddress });
   const result = dataPoints.map(dataPoint => {
     return {
-      date: dataPoint._id,
+      date: _.get(dataPoint, 'date', dataPoint._id),
       fillCount: dataPoint.fillCount,
       volume: {
         USD: dataPoint.usdVolume,
