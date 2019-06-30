@@ -5,7 +5,7 @@ const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period')
 const getMetricIntervalForTimePeriod = require('../../../metrics/get-metric-interval-for-time-period');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
-const getTokenVolumeMetrics = require('../../../metrics/get-token-volume-metrics');
+const getTokenMetrics = require('../../../metrics/get-token-metrics');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/metrics' });
@@ -34,7 +34,16 @@ const createRouter = () => {
   router.get('/token-volume', async ({ request, response }, next) => {
     const { token } = request.query;
     const period = request.query.period || TIME_PERIOD.MONTH;
-    const metrics = await getTokenVolumeMetrics(token, period);
+
+    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+
+    const metricInterval = getMetricIntervalForTimePeriod(period);
+    const metrics = await getTokenMetrics(
+      token,
+      dateFrom,
+      dateTo,
+      metricInterval,
+    );
 
     response.body = metrics;
 
