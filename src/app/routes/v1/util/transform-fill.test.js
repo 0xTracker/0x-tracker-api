@@ -43,7 +43,7 @@ const simpleFill = {
   makerFee: 15000000000000000000,
   orderHash:
     '0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5',
-  protocolVersion: 1,
+  protocolVersion: 2,
   relayerId: 21,
   roundedDates: {
     day: '2018-09-06T00:00:00.000Z',
@@ -73,6 +73,7 @@ const simpleV1Fill = {
   makerAmount: 7137340500000000000,
   makerAsset: undefined,
   makerToken: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+  protocolVersion: 1,
   prices: { maker: 42032.46293209634, taker: 0.000023791135, saved: true },
   rates: {
     data: { ZRX: { USD: 0.6085 }, ETH: { USD: 224.42 } },

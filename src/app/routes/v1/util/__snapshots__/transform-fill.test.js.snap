@@ -3,6 +3,9 @@
 exports[`transformFill should transform ERC20 asset 1`] = `
 Object {
   "amount": "0.275",
+  "price": Object {
+    "USD": 137.36999999999998,
+  },
   "tokenAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
   "tokenId": undefined,
   "tokenSymbol": "WETH",
@@ -15,6 +18,9 @@ Object {
 exports[`transformFill should transform ERC721 asset 1`] = `
 Object {
   "amount": "1",
+  "price": Object {
+    "USD": 37.77675,
+  },
   "tokenAddress": "0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d",
   "tokenId": 43381,
   "tokenSymbol": "AXIE",
@@ -32,6 +38,9 @@ Object {
   "assets": Array [
     Object {
       "amount": "300000",
+      "price": Object {
+        "USD": 0.0053392065167000005,
+      },
       "tokenAddress": "0xd7732e3783b0047aa251928960063f863ad022d8",
       "tokenSymbol": "BRM",
       "tokenType": "BrahmaOS",
@@ -40,6 +49,9 @@ Object {
     },
     Object {
       "amount": "7.1373405",
+      "price": Object {
+        "USD": 224.42000000000002,
+      },
       "tokenAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       "tokenSymbol": "WETH",
       "tokenType": "Wrapped Ether",
@@ -89,6 +101,9 @@ Object {
 exports[`transformFill should transform V1 fill with unrecognised maker token 1`] = `
 Object {
   "amount": null,
+  "price": Object {
+    "USD": 224.42000000000002,
+  },
   "tokenAddress": "0x1234",
   "tokenSymbol": undefined,
   "tokenType": undefined,
@@ -100,6 +115,9 @@ Object {
 exports[`transformFill should transform V1 fill with unrecognised taker token 1`] = `
 Object {
   "amount": null,
+  "price": Object {
+    "USD": 0.0053392065167000005,
+  },
   "tokenAddress": "0x9999",
   "tokenSymbol": undefined,
   "tokenType": undefined,
@@ -116,6 +134,9 @@ Object {
   "assets": Array [
     Object {
       "amount": "1",
+      "price": Object {
+        "USD": 37.77675,
+      },
       "tokenAddress": "0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d",
       "tokenId": 43381,
       "tokenSymbol": "AXIE",
@@ -125,6 +146,9 @@ Object {
     },
     Object {
       "amount": "0.275",
+      "price": Object {
+        "USD": 137.36999999999998,
+      },
       "tokenAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       "tokenId": undefined,
       "tokenSymbol": "WETH",
@@ -145,7 +169,7 @@ Object {
     "USD": 37.77675,
   },
   "orderHash": "0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5",
-  "protocolVersion": 1,
+  "protocolVersion": 2,
   "relayer": Object {
     "imageUrl": "https://0xtracker.com/assets/logos/ethfinex.png",
     "name": "Ethfinex",
@@ -175,6 +199,9 @@ Object {
 exports[`transformFill should transform fill with unknown maker asset 1`] = `
 Object {
   "amount": null,
+  "price": Object {
+    "USD": 37.77675,
+  },
   "tokenAddress": "0x12345",
   "tokenId": 43381,
   "tokenSymbol": undefined,
@@ -187,6 +214,9 @@ Object {
 exports[`transformFill should transform fill with unknown taker asset 1`] = `
 Object {
   "amount": null,
+  "price": Object {
+    "USD": 137.36999999999998,
+  },
   "tokenAddress": "0x12345",
   "tokenId": undefined,
   "tokenSymbol": undefined,

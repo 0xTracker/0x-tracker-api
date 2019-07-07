@@ -12,10 +12,20 @@ const formatTokenAmount = require('../tokens/format-token-amount');
 const createAsset = (tokens, fill, tokenAddress, traderType) => {
   const amount =
     traderType === TRADER_TYPE.MAKER ? fill.makerAmount : fill.takerAmount;
+  const price =
+    traderType === TRADER_TYPE.MAKER
+      ? _.get(fill, 'conversions.USD.makerPrice')
+      : _.get(fill, 'conversions.USD.takerPrice');
   const token = tokens[tokenAddress];
 
   return {
     amount: amount !== undefined ? formatTokenAmount(amount, token) : undefined,
+    price:
+      price !== undefined
+        ? {
+            USD: price,
+          }
+        : undefined,
     tokenAddress,
     tokenSymbol: _.get(token, 'symbol'),
     tokenType: _.get(token, 'name'),
@@ -28,10 +38,20 @@ const createAsset = (tokens, fill, tokenAddress, traderType) => {
 const transformAsset = (tokens, fill, asset, traderType) => {
   const amount =
     traderType === TRADER_TYPE.MAKER ? fill.makerAmount : fill.takerAmount;
+  const price =
+    traderType === TRADER_TYPE.MAKER
+      ? _.get(fill, 'conversions.USD.makerPrice')
+      : _.get(fill, 'conversions.USD.takerPrice');
   const token = tokens[asset.tokenAddress];
 
   return {
     amount: amount !== undefined ? formatTokenAmount(amount, token) : undefined,
+    price:
+      price !== undefined
+        ? {
+            USD: price,
+          }
+        : undefined,
     tokenAddress: asset.tokenAddress,
     tokenId: asset.tokenId,
     tokenSymbol: _.get(token, 'symbol'),
@@ -44,7 +64,7 @@ const transformAsset = (tokens, fill, asset, traderType) => {
 const getAssetsForFill = (tokens, fill) => {
   const assets = [];
 
-  if (_.get(fill, 'makerAsset.tokenAddress') !== undefined) {
+  if (fill.protocolVersion === 2) {
     assets.push(
       transformAsset(tokens, fill, fill.makerAsset, TRADER_TYPE.MAKER),
       transformAsset(tokens, fill, fill.takerAsset, TRADER_TYPE.TAKER),
