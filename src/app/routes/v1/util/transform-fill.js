@@ -32,9 +32,9 @@ const transformFill = (tokens, relayers, fill) => {
   };
 
   return {
-    amount: _.has(fill, `conversions.USD.amount`)
+    amount: _.has(conversions, 'amount')
       ? {
-          USD: _.get(fill, `conversions.USD.amount`),
+          USD: _.get(conversions, 'amount'),
         }
       : undefined,
     assets,
@@ -58,9 +58,9 @@ const transformFill = (tokens, relayers, fill) => {
     },
     totalFees,
     transactionHash: fill.transactionHash,
-    value: _.has(fill, `conversions.USD.amount`)
+    value: _.has(conversions, 'amount')
       ? {
-          USD: _.get(fill, `conversions.USD.amount`),
+          USD: _.get(conversions, 'amount'),
         }
       : undefined,
   };
