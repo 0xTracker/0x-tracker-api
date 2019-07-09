@@ -12,7 +12,10 @@ const compute24HourNetworkStats = async () => {
 
   const baseQuery = {
     date: {
-      $gte: dateFrom,
+      $gte: moment
+        .utc(dateFrom)
+        .startOf('day')
+        .toDate(),
       $lte: dateTo,
     },
   };
