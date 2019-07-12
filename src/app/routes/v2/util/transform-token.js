@@ -9,7 +9,9 @@ const formatStats = (stats, token) =>
     : {
         trades: stats.trades,
         volume: {
-          token: formatTokenAmount(stats.volume.token, token).toString(),
+          token: _.has(token, 'decimals')
+            ? formatTokenAmount(stats.volume.token, token).toString()
+            : null,
           USD: stats.volume.USD,
         },
         volumeShare: stats.volumeShare,
