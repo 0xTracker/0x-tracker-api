@@ -21,13 +21,19 @@ const createRouter = () => {
       const sortBy =
         SORT_BY_MAPPINGS[request.query.sortBy] ||
         SORT_BY_MAPPINGS[SORT_BY_DEFAULT];
+      const { resolved } = request.query;
 
-      const { docs, pages, total } = await Token.paginate(undefined, {
-        sort: { [sortBy]: -1 },
-        lean: true,
-        limit,
-        page,
-      });
+      const { docs, pages, total } = await Token.paginate(
+        resolved !== undefined
+          ? { resolved: resolved === 'true' ? { $in: [null, true] } : false }
+          : undefined,
+        {
+          sort: { [sortBy]: -1 },
+          lean: true,
+          limit,
+          page,
+        },
+      );
 
       response.body = {
         limit,
