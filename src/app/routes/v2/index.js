@@ -3,6 +3,7 @@ const Router = require('koa-router');
 const createArticlesRouter = require('../v1/articles');
 const createArticleSourcesRouter = require('../v1/article-sources');
 const createFillsRouter = require('../v1/fills');
+const createMetricsRouter = require('./metrics');
 const createRelayerRouter = require('./relayer');
 const createRelayersRouter = require('./relayers');
 const createStatsRouter = require('./stats');
@@ -22,6 +23,7 @@ const createRouter = () => {
     createRelayerRouter().routes(),
     createRelayersRouter().routes(),
     createStatsRouter().routes(),
+    createMetricsRouter().routes(),
   );
 
   return router;
