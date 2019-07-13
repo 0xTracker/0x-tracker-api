@@ -32,9 +32,6 @@ Object {
 
 exports[`transformFill should transform V1 fill 1`] = `
 Object {
-  "amount": Object {
-    "USD": 1601.76195501,
-  },
   "assets": Array [
     Object {
       "amount": "300000",
@@ -67,9 +64,6 @@ Object {
     "USD": 9.13,
     "ZRX": "15",
   },
-  "makerPrice": Object {
-    "USD": 224.42000000000002,
-  },
   "orderHash": "0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5",
   "protocolVersion": 1,
   "relayer": Object {
@@ -83,9 +77,6 @@ Object {
   "takerFee": Object {
     "USD": 3.04,
     "ZRX": "5",
-  },
-  "takerPrice": Object {
-    "USD": 0.0053392065167000005,
   },
   "totalFees": Object {
     "USD": 12.170000000000002,
@@ -128,9 +119,6 @@ Object {
 
 exports[`transformFill should transform V2 fill 1`] = `
 Object {
-  "amount": Object {
-    "USD": 37.77675,
-  },
   "assets": Array [
     Object {
       "amount": "1",
@@ -165,9 +153,6 @@ Object {
     "USD": 0,
     "ZRX": "15",
   },
-  "makerPrice": Object {
-    "USD": 37.77675,
-  },
   "orderHash": "0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5",
   "protocolVersion": 2,
   "relayer": Object {
@@ -181,9 +166,6 @@ Object {
   "takerFee": Object {
     "USD": 0,
     "ZRX": "5",
-  },
-  "takerPrice": Object {
-    "USD": 137.36999999999998,
   },
   "totalFees": Object {
     "USD": 0,
