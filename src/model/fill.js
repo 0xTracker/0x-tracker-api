@@ -6,8 +6,6 @@ const { FILL_STATUS } = require('../constants');
 const { Schema } = mongoose;
 
 const schema = Schema({
-  blockHash: String,
-  blockNumber: Number,
   conversions: {
     USD: {
       amount: Number,
@@ -19,7 +17,6 @@ const schema = Schema({
   },
   date: Date,
   feeRecipient: String,
-  logIndex: Number,
   maker: String,
   makerAsset: {
     assetProxyId: String,
@@ -41,12 +38,6 @@ const schema = Schema({
     saved: { default: false, type: Boolean },
   },
   relayerId: Number,
-  roundedDates: {
-    day: Date,
-    halfHour: Date,
-    hour: Date,
-    minute: Date,
-  },
   senderAddress: String,
   status: { default: FILL_STATUS.PENDING, type: Number },
   taker: String,

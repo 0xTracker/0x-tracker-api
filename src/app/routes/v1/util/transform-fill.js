@@ -32,20 +32,12 @@ const transformFill = (tokens, relayers, fill) => {
   };
 
   return {
-    amount: _.has(conversions, 'amount')
-      ? {
-          USD: _.get(conversions, 'amount'),
-        }
-      : undefined,
     assets,
     date: fill.date,
     feeRecipient: fill.feeRecipient,
     id: fill.id,
     makerAddress: fill.maker,
     makerFee,
-    makerPrice: {
-      USD: _.get(conversions, 'makerPrice'),
-    },
     orderHash: fill.orderHash,
     protocolVersion: fill.protocolVersion,
     relayer: formatRelayer(fillRelayer),
@@ -53,9 +45,6 @@ const transformFill = (tokens, relayers, fill) => {
     status: formatFillStatus(fill.status),
     takerAddress: fill.taker,
     takerFee,
-    takerPrice: {
-      USD: _.get(conversions, 'takerPrice'),
-    },
     totalFees,
     transactionHash: fill.transactionHash,
     value: _.has(conversions, 'amount')
