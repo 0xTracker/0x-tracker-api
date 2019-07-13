@@ -24,9 +24,6 @@ const simpleFill = {
     tokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   },
   takerToken: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-  blockHash:
-    '0x104c0f29a6c776379a3d0e094d5321aa80d881139a654b179712a4cb6ab6a213',
-  blockNumber: 103290935,
   conversions: {
     USD: {
       amount: 37.77675,
@@ -38,19 +35,12 @@ const simpleFill = {
   },
   date: '2018-09-06T10:47:38.000Z',
   feeRecipient: '0xe269e891a2ec8585a378882ffa531141205e92e9',
-  logIndex: 25,
   maker: '0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb',
   makerFee: 15000000000000000000,
   orderHash:
     '0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5',
   protocolVersion: 2,
   relayerId: 21,
-  roundedDates: {
-    day: '2018-09-06T00:00:00.000Z',
-    halfHour: '2018-09-06T10:30:00.000Z',
-    hour: '2018-09-06T10:00:00.000Z',
-    minute: '2018-09-06T10:47:00.000Z',
-  },
   status: 1,
   taker: '0xe269e891a2ec8585a378882ffa531141205e92e9',
   takerFee: 5000000000000000000,
