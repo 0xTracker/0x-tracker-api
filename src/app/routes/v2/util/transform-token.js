@@ -7,7 +7,7 @@ const formatStats = (stats, token) =>
   _.isEmpty(stats)
     ? undefined
     : {
-        trades: stats.trades,
+        fillCount: stats.fillCount,
         volume: {
           token: _.has(token, 'decimals')
             ? formatTokenAmount(stats.volume.token, token).toString()

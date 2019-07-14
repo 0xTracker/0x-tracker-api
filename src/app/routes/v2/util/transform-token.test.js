@@ -21,7 +21,7 @@ it('should only return white-listed fields', () => {
     },
     stats: {
       '24h': {
-        trades: 10,
+        fillCount: 10,
         volume: {
           token: 1500000000000000000,
           USD: 1.51,
@@ -44,7 +44,7 @@ it('should only return white-listed fields', () => {
     },
     stats: {
       '24h': {
-        trades: 10,
+        fillCount: 10,
         volume: {
           token: '1.5',
           USD: 1.51,
