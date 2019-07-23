@@ -18,7 +18,7 @@ const searchFills = ({ address, limit, page, query, relayerId, token }) => {
     };
   } else if (_.isString(token)) {
     filter = {
-      $or: [{ makerToken: token }, { takerToken: token }],
+      'assets.tokenAddress': token,
     };
   } else if (_.isString(address)) {
     filter = {
