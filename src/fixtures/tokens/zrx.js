@@ -27,6 +27,7 @@ const ZRX_FIXTURE = {
       volume: { token: 1.7224092669903292e23, USD: 50085.864810255036 },
     },
   },
+  type: 0,
 };
 
 module.exports = ZRX_FIXTURE;

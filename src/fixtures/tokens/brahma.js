@@ -13,6 +13,7 @@ const BRAHMA_FIXTURE = {
     },
     lastPrice: 0.0049861588509090915,
   },
+  type: 0,
 };
 
 module.exports = BRAHMA_FIXTURE;

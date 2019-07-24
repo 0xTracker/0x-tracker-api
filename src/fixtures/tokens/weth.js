@@ -27,6 +27,7 @@ const WETH_FIXTURE = {
       volume: { token: 2.87225873367478e22, USD: 4016464.540882649 },
     },
   },
+  type: 0,
 };
 
 module.exports = WETH_FIXTURE;

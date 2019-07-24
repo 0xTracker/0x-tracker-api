@@ -18,4 +18,5 @@ module.exports = {
     '7d': { trades: 5, volume: { token: 5, USD: 21.372 } },
     '1m': { trades: 19, volume: { token: 19, USD: 788.4161750000001 } },
   },
+  type: 1,
 };
