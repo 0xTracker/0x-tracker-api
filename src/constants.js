@@ -15,6 +15,10 @@ module.exports = {
     MAKER: 0,
     TAKER: 1,
   },
+  TOKEN_TYPE: {
+    ERC20: 0,
+    ERC721: 1,
+  },
   TRADER_TYPE: {
     MAKER: 'maker',
     TAKER: 'taker',
