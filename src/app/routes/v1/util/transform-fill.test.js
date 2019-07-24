@@ -1,5 +1,6 @@
 const _ = require('lodash');
 
+const { FILL_ACTOR } = require('../../../../constants');
 const AXIE_FIXTURE = require('../../../../fixtures/tokens/axie');
 const BRAHMA_FIXTURE = require('../../../../fixtures/tokens/brahma');
 const ETHFINEX_FIXTURE = require('../../../../fixtures/relayers/ethfinex');
@@ -8,29 +9,49 @@ const ZRX_FIXTURE = require('../../../../fixtures/tokens/zrx');
 
 const transformFill = require('./transform-fill');
 
+const axieMaker = {
+  actor: FILL_ACTOR.MAKER,
+  amount: 1,
+  price: {
+    USD: 37.77675,
+  },
+  tokenAddress: '0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d',
+  tokenId: 43381,
+};
+
+const wethTaker = {
+  actor: FILL_ACTOR.TAKER,
+  amount: 275000000000000000,
+  price: {
+    USD: 137.36999999999998,
+  },
+  tokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+};
+
+const brahmaTaker = {
+  actor: FILL_ACTOR.TAKER,
+  amount: 3e23,
+  price: { USD: 0.0053392065167000005 },
+  tokenAddress: '0xd7732e3783b0047aa251928960063f863ad022d8',
+};
+
+const wethMaker = {
+  actor: FILL_ACTOR.MAKER,
+  amount: 7137340500000000000,
+  price: {
+    USD: 224.42000000000002,
+  },
+  tokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+};
+
 const simpleFill = {
+  assets: [axieMaker, wethTaker],
   id: '5b9107e00d05f400042e3494',
-  prices: { maker: 0.275, taker: 3.6363636363636362, saved: true },
-  makerAmount: 1,
-  makerAsset: {
-    assetProxyId: '0x02571792',
-    tokenAddress: '0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d',
-    tokenId: 43381,
-  },
-  makerToken: '0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d',
-  takerAmount: 275000000000000000,
-  takerAsset: {
-    assetProxyId: '0xf47261b0',
-    tokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-  },
-  takerToken: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   conversions: {
     USD: {
       amount: 37.77675,
       makerFee: 0,
       takerFee: 0,
-      makerPrice: 37.77675,
-      takerPrice: 137.36999999999998,
     },
   },
   date: '2018-09-06T10:47:38.000Z',
@@ -44,34 +65,21 @@ const simpleFill = {
   status: 1,
   taker: '0xe269e891a2ec8585a378882ffa531141205e92e9',
   takerFee: 5000000000000000000,
-  tokenSaved: { maker: true, taker: true },
   transactionHash:
     '0x4c69e925be055eec7bc49cc681fd5267d1aca7e1db21f687ab19ab9d75b7447c',
 };
 
 const simpleV1Fill = {
   ...simpleFill,
+  assets: [wethMaker, brahmaTaker],
   conversions: {
     USD: {
       amount: 1601.76195501,
       makerFee: 9.13,
       takerFee: 3.04,
-      makerPrice: 224.42000000000002,
-      takerPrice: 0.0053392065167000005,
     },
   },
-  makerAmount: 7137340500000000000,
-  makerAsset: undefined,
-  makerToken: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   protocolVersion: 1,
-  prices: { maker: 42032.46293209634, taker: 0.000023791135, saved: true },
-  rates: {
-    data: { ZRX: { USD: 0.6085 }, ETH: { USD: 224.42 } },
-    saved: true,
-  },
-  takerAmount: 3e23,
-  takerAsset: undefined,
-  takerToken: '0xd7732e3783b0047aa251928960063f863ad022d8',
 };
 
 const tokens = {
@@ -97,8 +105,11 @@ describe('transformFill', () => {
     expect(viewModel.relayer).toBeNull();
   });
 
-  it('should transform V1 fill with unrecognised maker token', () => {
-    const fill = { ...simpleV1Fill, makerToken: '0x1234' };
+  it('should transform V1 fill with unrecognised maker asset', () => {
+    const fill = {
+      ...simpleV1Fill,
+      assets: [{ ...wethMaker, tokenAddress: '0x1234' }, brahmaTaker],
+    };
     const viewModel = transformFill(tokens, relayers, fill);
 
     expect(
@@ -106,8 +117,11 @@ describe('transformFill', () => {
     ).toMatchSnapshot();
   });
 
-  it('should transform V1 fill with unrecognised taker token', () => {
-    const fill = { ...simpleV1Fill, takerToken: '0x9999' };
+  it('should transform V1 fill with unrecognised taker asset', () => {
+    const fill = {
+      ...simpleV1Fill,
+      assets: [wethMaker, { ...brahmaTaker, tokenAddress: '0x9999' }],
+    };
     const viewModel = transformFill(tokens, relayers, fill);
 
     expect(
@@ -146,35 +160,6 @@ describe('transformFill', () => {
     const viewModel = transformFill(tokens, relayers, simpleFill);
 
     expect(viewModel).toMatchSnapshot();
-  });
-
-  it('should transform fill with unknown maker asset', () => {
-    const viewModel = transformFill(tokens, relayers, {
-      ...simpleFill,
-      makerAsset: {
-        assetProxyId: '0x02571792',
-        tokenAddress: '0x12345',
-        tokenId: 43381,
-      },
-    });
-
-    const asset = _.find(viewModel.assets, { traderType: 'maker' });
-
-    expect(asset).toMatchSnapshot();
-  });
-
-  it('should transform fill with unknown taker asset', () => {
-    const viewModel = transformFill(tokens, relayers, {
-      ...simpleFill,
-      takerAsset: {
-        assetProxyId: '0xf47261b0',
-        tokenAddress: '0x12345',
-      },
-    });
-
-    const asset = _.find(viewModel.assets, { traderType: 'taker' });
-
-    expect(asset).toMatchSnapshot();
   });
 
   it('should transform ERC721 asset', () => {

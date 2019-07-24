@@ -1,84 +1,34 @@
 const _ = require('lodash');
 
-const {
-  ASSET_TYPE,
-  ASSET_TYPE_BY_PROXY,
-  TRADER_TYPE,
-} = require('../constants');
+const { FILL_ACTOR, TOKEN_TYPE, TRADER_TYPE } = require('../constants');
 const formatTokenAmount = require('../tokens/format-token-amount');
 
-// Creates an asset for the given token address and trader type.
-// Only applies to fills from 0x v1.
-const createAsset = (tokens, fill, tokenAddress, traderType) => {
-  const amount =
-    traderType === TRADER_TYPE.MAKER ? fill.makerAmount : fill.takerAmount;
-  const price =
-    traderType === TRADER_TYPE.MAKER
-      ? _.get(fill, 'conversions.USD.makerPrice')
-      : _.get(fill, 'conversions.USD.takerPrice');
-  const token = tokens[tokenAddress];
-
-  return {
-    amount: amount !== undefined ? formatTokenAmount(amount, token) : undefined,
-    price:
-      price !== undefined
-        ? {
-            USD: price,
-          }
-        : undefined,
-    tokenAddress,
-    tokenSymbol: _.get(token, 'symbol'),
-    tokenType: _.get(token, 'name'),
-    traderType,
-    type: ASSET_TYPE.ERC20,
-  };
+const TOKEN_TYPE_LABELS = {
+  [TOKEN_TYPE.ERC20]: 'erc-20',
+  [TOKEN_TYPE.ERC721]: 'erc-721',
 };
 
-// Transforms a given 0x asset into our preferred shape
-const transformAsset = (tokens, fill, asset, traderType) => {
-  const amount =
-    traderType === TRADER_TYPE.MAKER ? fill.makerAmount : fill.takerAmount;
-  const price =
-    traderType === TRADER_TYPE.MAKER
-      ? _.get(fill, 'conversions.USD.makerPrice')
-      : _.get(fill, 'conversions.USD.takerPrice');
+const transformAsset = (tokens, asset) => {
   const token = tokens[asset.tokenAddress];
+  const price = _.get(asset.price, 'USD');
 
   return {
-    amount: amount !== undefined ? formatTokenAmount(amount, token) : undefined,
-    price:
-      price !== undefined
-        ? {
-            USD: price,
-          }
-        : undefined,
+    amount: formatTokenAmount(asset.amount, token),
+    price: _.isNumber(price) ? { USD: price } : undefined,
     tokenAddress: asset.tokenAddress,
     tokenId: asset.tokenId,
     tokenSymbol: _.get(token, 'symbol'),
     tokenType: _.get(token, 'name'),
-    traderType,
-    type: ASSET_TYPE_BY_PROXY[asset.assetProxyId],
+    traderType:
+      asset.actor === FILL_ACTOR.MAKER ? TRADER_TYPE.MAKER : TRADER_TYPE.TAKER,
+    type: TOKEN_TYPE_LABELS[_.get(token, 'type')],
   };
 };
 
 const getAssetsForFill = (tokens, fill) => {
-  const assets = [];
+  const mapAsset = _.partial(transformAsset, tokens);
 
-  if (fill.protocolVersion === 2) {
-    assets.push(
-      transformAsset(tokens, fill, fill.makerAsset, TRADER_TYPE.MAKER),
-      transformAsset(tokens, fill, fill.takerAsset, TRADER_TYPE.TAKER),
-    );
-  } else {
-    // Before 0x v2, fills would have a makerToken and takerToken field. Therefore
-    // we need to support that legacy data structure.
-    assets.push(
-      createAsset(tokens, fill, fill.takerToken, TRADER_TYPE.TAKER),
-      createAsset(tokens, fill, fill.makerToken, TRADER_TYPE.MAKER),
-    );
-  }
-
-  return assets;
+  return _.map(fill.assets, mapAsset);
 };
 
 module.exports = getAssetsForFill;

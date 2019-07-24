@@ -34,25 +34,27 @@ exports[`transformFill should transform V1 fill 1`] = `
 Object {
   "assets": Array [
     Object {
-      "amount": "300000",
-      "price": Object {
-        "USD": 0.0053392065167000005,
-      },
-      "tokenAddress": "0xd7732e3783b0047aa251928960063f863ad022d8",
-      "tokenSymbol": "BRM",
-      "tokenType": "BrahmaOS",
-      "traderType": "taker",
-      "type": "erc-20",
-    },
-    Object {
       "amount": "7.1373405",
       "price": Object {
         "USD": 224.42000000000002,
       },
       "tokenAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "tokenId": undefined,
       "tokenSymbol": "WETH",
       "tokenType": "Wrapped Ether",
       "traderType": "maker",
+      "type": "erc-20",
+    },
+    Object {
+      "amount": "300000",
+      "price": Object {
+        "USD": 0.0053392065167000005,
+      },
+      "tokenAddress": "0xd7732e3783b0047aa251928960063f863ad022d8",
+      "tokenId": undefined,
+      "tokenSymbol": "BRM",
+      "tokenType": "BrahmaOS",
+      "traderType": "taker",
       "type": "erc-20",
     },
   ],
@@ -89,31 +91,33 @@ Object {
 }
 `;
 
-exports[`transformFill should transform V1 fill with unrecognised maker token 1`] = `
+exports[`transformFill should transform V1 fill with unrecognised maker asset 1`] = `
 Object {
   "amount": null,
   "price": Object {
     "USD": 224.42000000000002,
   },
   "tokenAddress": "0x1234",
+  "tokenId": undefined,
   "tokenSymbol": undefined,
   "tokenType": undefined,
   "traderType": "maker",
-  "type": "erc-20",
+  "type": undefined,
 }
 `;
 
-exports[`transformFill should transform V1 fill with unrecognised taker token 1`] = `
+exports[`transformFill should transform V1 fill with unrecognised taker asset 1`] = `
 Object {
   "amount": null,
   "price": Object {
     "USD": 0.0053392065167000005,
   },
   "tokenAddress": "0x9999",
+  "tokenId": undefined,
   "tokenSymbol": undefined,
   "tokenType": undefined,
   "traderType": "taker",
-  "type": "erc-20",
+  "type": undefined,
 }
 `;
 
@@ -175,35 +179,5 @@ Object {
   "value": Object {
     "USD": 37.77675,
   },
-}
-`;
-
-exports[`transformFill should transform fill with unknown maker asset 1`] = `
-Object {
-  "amount": null,
-  "price": Object {
-    "USD": 37.77675,
-  },
-  "tokenAddress": "0x12345",
-  "tokenId": 43381,
-  "tokenSymbol": undefined,
-  "tokenType": undefined,
-  "traderType": "maker",
-  "type": "erc-721",
-}
-`;
-
-exports[`transformFill should transform fill with unknown taker asset 1`] = `
-Object {
-  "amount": null,
-  "price": Object {
-    "USD": 137.36999999999998,
-  },
-  "tokenAddress": "0x12345",
-  "tokenId": undefined,
-  "tokenSymbol": undefined,
-  "tokenType": undefined,
-  "traderType": "taker",
-  "type": "erc-20",
 }
 `;

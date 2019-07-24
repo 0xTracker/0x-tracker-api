@@ -11,6 +11,14 @@ module.exports = {
     [AssetProxyId.ERC20]: ASSET_TYPE.ERC20,
     [AssetProxyId.ERC721]: ASSET_TYPE.ERC721,
   },
+  FILL_ACTOR: {
+    MAKER: 0,
+    TAKER: 1,
+  },
+  TOKEN_TYPE: {
+    ERC20: 0,
+    ERC721: 1,
+  },
   TRADER_TYPE: {
     MAKER: 'maker',
     TAKER: 'taker',
