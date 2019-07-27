@@ -14,6 +14,9 @@ module.exports = {
       useNewUrlParser: true,
     });
 
+    // Queries should time out if they take longer than 10 seconds
+    mongoose.set('maxTimeMS', 10000);
+
     mongoose.connection.on('connected', () => {
       logger.success('database connection established');
     });
