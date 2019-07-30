@@ -37,7 +37,7 @@
     "koa-router": "7.4.0",
     "lodash": "4.17.11",
     "memory-cache": "0.2.0",
-    "moment": "2.23.0",
+    "moment": "2.24.0",
     "mongoose": "5.4.19",
     "mongoose-paginate": "5.0.3",
     "ms": "2.1.1",
