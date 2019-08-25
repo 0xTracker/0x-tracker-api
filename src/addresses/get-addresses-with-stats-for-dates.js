@@ -1,20 +1,37 @@
-const AddressMetric = require('../model/address-metric');
+const _ = require('lodash');
 
-const getAddressesWithStatsForDates = async (
-  dateFrom,
-  dateTo,
-  { page, pageSize } = { page: 1, pageSize: 20 },
-) => {
-  const baseQuery = {
-    date: {
-      $gte: dateFrom,
-      $lte: dateTo,
-    },
-  };
+const AddressMetric = require('../model/address-metric');
+const getRelayers = require('../relayers/get-relayers');
+
+const getAddressesWithStatsForDates = async (dateFrom, dateTo, options) => {
+  const { excludeRelayers, page, limit } = _.defaults({}, options, {
+    excludeRelayers: true,
+    page: 1,
+    limit: 20,
+  });
+
+  const relayers = await getRelayers();
+
+  const relayerTakerAddresses = _(relayers)
+    .map(relayer => relayer.takerAddresses)
+    .flatten()
+    .compact()
+    .value();
 
   const result = await AddressMetric.aggregate([
     {
-      $match: baseQuery,
+      $match: _.pickBy(
+        {
+          address: excludeRelayers
+            ? { $nin: relayerTakerAddresses }
+            : undefined,
+          date: {
+            $gte: dateFrom,
+            $lte: dateTo,
+          },
+        },
+        value => value !== undefined,
+      ),
     },
     {
       $group: {
@@ -31,8 +48,8 @@ const getAddressesWithStatsForDates = async (
       $facet: {
         addresses: [
           { $sort: { fillVolume: -1 } },
-          { $skip: (page - 1) * pageSize },
-          { $limit: pageSize },
+          { $skip: (page - 1) * limit },
+          { $limit: limit },
           {
             $project: {
               _id: 0,
