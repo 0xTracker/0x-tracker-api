@@ -15,6 +15,7 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
           $gte: dateFrom,
           $lte: dateTo,
         },
+        relayerId: { $ne: null },
       },
     },
     {

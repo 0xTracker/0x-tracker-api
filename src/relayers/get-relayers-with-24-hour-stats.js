@@ -25,6 +25,7 @@ const getRelayersWith24HourStats = async options => {
             .toDate(),
           $lte: dateTo,
         },
+        relayerId: { $ne: null },
       },
     },
     {
