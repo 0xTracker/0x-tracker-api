@@ -1,10 +1,15 @@
 const Router = require('koa-router');
 
-const { TIME_PERIOD } = require('../../../constants');
+const { TIME_PERIOD, TOKEN_TYPE } = require('../../../constants');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getTokensWith24HourStats = require('../../../tokens/get-tokens-with-24-hour-stats');
 const getTokensWithStatsForDates = require('../../../tokens/get-tokens-with-stats-for-dates');
 const pagination = require('../../middleware/pagination');
+
+const TOKEN_TYPE_LABELS = {
+  [TOKEN_TYPE.ERC20]: 'erc-20',
+  [TOKEN_TYPE.ERC721]: 'erc-721',
+};
 
 const createRouter = () => {
   const router = new Router();
@@ -28,7 +33,10 @@ const createRouter = () => {
             });
 
       response.body = {
-        tokens,
+        tokens: tokens.map(token => ({
+          ...token,
+          type: TOKEN_TYPE_LABELS[token.type],
+        })),
         page,
         pageCount: Math.ceil(resultCount / limit),
         limit,
