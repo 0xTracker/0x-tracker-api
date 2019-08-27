@@ -91,6 +91,7 @@ const getTokensWith24HourStats = async options => {
                   USD: '$usdVolume',
                 },
               },
+              type: { $arrayElemAt: ['$token.type', 0] },
               url: { $arrayElemAt: ['$token.url', 0] },
             },
           },
