@@ -1,23 +1,43 @@
-const _ = require('lodash');
 const Router = require('koa-router');
 
-const { getTokens } = require('../../../tokens/token-cache');
-const transformToken = require('./util/transform-token');
+const { TIME_PERIOD } = require('../../../constants');
+const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
+const getTokensWith24HourStats = require('../../../tokens/get-tokens-with-24-hour-stats');
+const getTokensWithStatsForDates = require('../../../tokens/get-tokens-with-stats-for-dates');
+const pagination = require('../../middleware/pagination');
 
 const createRouter = () => {
   const router = new Router();
 
-  router.get('/tokens', async ({ response }, next) => {
-    const tokenModels = getTokens();
-    const tokens = _(tokenModels)
-      .map(transformToken)
-      .sortBy('symbol')
-      .value();
+  router.get(
+    '/tokens',
+    pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
+    async ({ pagination: { limit, page }, request, response }, next) => {
+      const statsPeriod = request.query.statsPeriod || TIME_PERIOD.DAY;
+      const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
 
-    response.body = tokens;
+      const { tokens, resultCount } =
+        statsPeriod === TIME_PERIOD.DAY
+          ? await getTokensWith24HourStats({
+              page,
+              limit,
+            })
+          : await getTokensWithStatsForDates(dateFrom, dateTo, {
+              page,
+              limit,
+            });
 
-    await next();
-  });
+      response.body = {
+        tokens,
+        page,
+        pageCount: Math.ceil(resultCount / limit),
+        limit,
+        total: resultCount,
+      };
+
+      await next();
+    },
+  );
 
   return router;
 };

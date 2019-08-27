@@ -2,16 +2,21 @@ const _ = require('lodash');
 const { BigNumber } = require('@0xproject/utils');
 const { Web3Wrapper } = require('@0xproject/web3-wrapper');
 
-module.exports = (amount, token) => {
+module.exports = (amount, tokenOrDecimals) => {
   if (
-    _.get(token, 'decimals') === undefined ||
+    (_.get(tokenOrDecimals, 'decimals') === undefined &&
+      !_.isNumber(tokenOrDecimals)) ||
     _.isNull(amount) ||
     _.isUndefined(amount)
   ) {
     return null;
   }
 
+  const decimals = _.isNumber(tokenOrDecimals)
+    ? tokenOrDecimals
+    : tokenOrDecimals.decimals;
+
   const bigNumber = new BigNumber(amount.toString());
 
-  return Web3Wrapper.toUnitAmount(bigNumber, token.decimals);
+  return Web3Wrapper.toUnitAmount(bigNumber, decimals);
 };
