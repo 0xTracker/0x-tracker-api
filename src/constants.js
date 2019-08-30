@@ -77,6 +77,9 @@ module.exports = {
     ledgerDex: {
       relayer: 'ledgerDex',
     },
+    oc2Dex: {
+      relayer: 'oc2Dex',
+    },
     openRelay: {
       relayer: 'openRelay',
     },
@@ -88,6 +91,9 @@ module.exports = {
     },
     theOcean: {
       relayer: 'theOcean',
+    },
+    tokenlon: {
+      relayer: 'tokenlon',
     },
     veil: {
       name: 'Veil',
