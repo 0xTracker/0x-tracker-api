@@ -12,8 +12,6 @@ script:
   - npm run lint
   - npm test
   - codecov
-before_deploy:
-  - git add -f node_modules/
 deploy:
   provider: elasticbeanstalk
   access_key_id: $AWS_DEPLOY_ACCESS_KEY_ID
