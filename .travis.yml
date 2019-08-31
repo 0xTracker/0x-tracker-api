@@ -4,7 +4,7 @@ branches:
 language: node_js
 cache:
   directories:
-    - 'node_modules'
+    - "node_modules"
 install:
   - npm install
   - npm install -g codecov
@@ -12,3 +12,14 @@ script:
   - npm run lint
   - npm test
   - codecov
+deploy:
+  provider: elasticbeanstalk
+  access_key_id: $AWS_DEPLOY_ACCESS_KEY_ID
+  secret_access_key:
+    secure: "$AWS_DEPLOY_SECRET_ACCESS_KEY"
+  region: "$AWS_DEPLOY_REGION"
+  app: "$AWS_DEPLOY_APP_NAME"
+  env: "$AWS_DEPLOY_ENV"
+  bucket_name: "$AWS_DEPLOY_BUCKET_NAME"
+  on:
+    branch: master
