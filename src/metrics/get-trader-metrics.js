@@ -3,7 +3,7 @@ const moment = require('moment');
 const { METRIC_INTERVAL } = require('../constants');
 const AddressMetric = require('../model/address-metric');
 
-const getAddressMetrics = async (address, dateFrom, dateTo, metricInterval) => {
+const getTraderMetrics = async (address, dateFrom, dateTo, metricInterval) => {
   const dayFrom = moment
     .utc(dateFrom)
     .startOf('day')
@@ -123,15 +123,9 @@ const getAddressMetrics = async (address, dateFrom, dateTo, metricInterval) => {
       date: dataPoint._id,
       fillCount: dataPoint.fillCount,
       fillVolume: {
-        maker: {
-          USD: dataPoint.fillVolume.maker,
-        },
-        taker: {
-          USD: dataPoint.fillVolume.taker,
-        },
-        total: {
-          USD: dataPoint.fillVolume.total,
-        },
+        maker: dataPoint.fillVolume.maker,
+        taker: dataPoint.fillVolume.taker,
+        total: dataPoint.fillVolume.total,
       },
     };
   });
@@ -139,4 +133,4 @@ const getAddressMetrics = async (address, dateFrom, dateTo, metricInterval) => {
   return result;
 };
 
-module.exports = getAddressMetrics;
+module.exports = getTraderMetrics;
