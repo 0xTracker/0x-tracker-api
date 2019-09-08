@@ -4,7 +4,7 @@ const moment = require('moment');
 const AddressMetric = require('../model/address-metric');
 const getRelayers = require('../relayers/get-relayers');
 
-const getAddressesWith24HourStats = async options => {
+const getTradersWith24HourStats = async options => {
   const { excludeRelayers, page, limit } = _.defaults({}, options, {
     excludeRelayers: true,
     page: 1,
@@ -136,9 +136,9 @@ const getAddressesWith24HourStats = async options => {
   ]);
 
   return {
-    addresses: _.get(result, '[0].addresses', []),
+    traders: _.get(result, '[0].addresses', []),
     resultCount: _.get(result, '[0].resultCount[0].value', 0),
   };
 };
 
-module.exports = getAddressesWith24HourStats;
+module.exports = getTradersWith24HourStats;

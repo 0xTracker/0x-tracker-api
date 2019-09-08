@@ -3,7 +3,7 @@ const _ = require('lodash');
 const AddressMetric = require('../model/address-metric');
 const getRelayers = require('../relayers/get-relayers');
 
-const getAddressesWithStatsForDates = async (dateFrom, dateTo, options) => {
+const getTradersWithStatsForDates = async (dateFrom, dateTo, options) => {
   const { excludeRelayers, page, limit } = _.defaults({}, options, {
     excludeRelayers: true,
     page: 1,
@@ -102,9 +102,9 @@ const getAddressesWithStatsForDates = async (dateFrom, dateTo, options) => {
   ]);
 
   return {
-    addresses: result[0].addresses,
+    traders: result[0].addresses,
     resultCount: result[0].resultCount[0].value,
   };
 };
 
-module.exports = getAddressesWithStatsForDates;
+module.exports = getTradersWithStatsForDates;

@@ -2,8 +2,8 @@ const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getAddressesWith24HourStats = require('../../../addresses/get-addresses-with-24-hour-stats');
-const getAddressesWithStatsForDates = require('../../../addresses/get-addresses-with-stats-for-dates');
+const getTradersWith24HourStats = require('../../../traders/get-traders-with-24-hour-stats');
+const getTradersWithStatsForDates = require('../../../traders/get-traders-with-stats-for-dates');
 const pagination = require('../../middleware/pagination');
 
 const parseBooleanString = value => {
@@ -29,25 +29,25 @@ const createRouter = () => {
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
       const excludeRelayers = parseBooleanString(request.query.excludeRelayers);
 
-      const { addresses, resultCount } =
+      const { traders, resultCount } =
         statsPeriod === TIME_PERIOD.DAY
-          ? await getAddressesWith24HourStats({
+          ? await getTradersWith24HourStats({
               excludeRelayers,
               page,
               limit,
             })
-          : await getAddressesWithStatsForDates(dateFrom, dateTo, {
+          : await getTradersWithStatsForDates(dateFrom, dateTo, {
               excludeRelayers,
               page,
               limit,
             });
 
       response.body = {
-        addresses: addresses.map(address => ({
-          address: address.address,
+        addresses: traders.map(trader => ({
+          address: trader.address,
           stats: {
-            fillCount: address.stats.fillCount.total,
-            fillVolume: address.stats.fillVolume.total,
+            fillCount: trader.stats.fillCount.total,
+            fillVolume: trader.stats.fillVolume.total,
           },
         })),
         page,
