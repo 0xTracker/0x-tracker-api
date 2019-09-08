@@ -9,6 +9,7 @@ const createRelayersRouter = require('./relayers');
 const createStatsRouter = require('./stats');
 const createTokenRouter = require('./token');
 const createTokensRouter = require('./tokens');
+const createTradersRouter = require('./traders');
 const createZrxPriceRouter = require('./zrx-price');
 
 const createRouter = () => {
@@ -24,6 +25,7 @@ const createRouter = () => {
     createStatsRouter().routes(),
     createTokenRouter().routes(),
     createTokensRouter().routes(),
+    createTradersRouter().routes(),
     createZrxPriceRouter().routes(),
   );
 

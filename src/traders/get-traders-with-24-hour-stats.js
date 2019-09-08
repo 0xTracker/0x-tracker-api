@@ -4,7 +4,7 @@ const moment = require('moment');
 const AddressMetric = require('../model/address-metric');
 const getRelayers = require('../relayers/get-relayers');
 
-const getAddressesWith24HourStats = async options => {
+const getTradersWith24HourStats = async options => {
   const { excludeRelayers, page, limit } = _.defaults({}, options, {
     excludeRelayers: true,
     page: 1,
@@ -62,20 +62,53 @@ const getAddressesWith24HourStats = async options => {
       },
     },
     {
+      $project: {
+        address: 1,
+        fillCountMaker: '$hours.minutes.fillCount.maker',
+        fillCountTaker: '$hours.minutes.fillCount.taker',
+        fillCountTotal: {
+          $ifNull: [
+            '$hours.minutes.fillCount.total',
+            '$hours.minutes.fillCount',
+          ],
+        },
+        fillVolumeMaker: '$hours.minutes.fillVolume.maker',
+        fillVolumeTaker: '$hours.minutes.fillVolume.taker',
+        fillVolumeTotal: {
+          $ifNull: [
+            '$hours.minutes.fillVolume.total',
+            '$hours.minutes.fillVolume',
+          ],
+        },
+      },
+    },
+    {
       $group: {
         _id: '$address',
-        fillCount: {
-          $sum: '$hours.minutes.fillCount',
+        fillCountMaker: {
+          $sum: '$fillCountMaker',
         },
-        fillVolume: {
-          $sum: '$hours.minutes.fillVolume',
+        fillCountTaker: {
+          $sum: '$fillCountTaker',
+        },
+        fillCountTotal: {
+          $sum: '$fillCountTotal',
+        },
+        fillVolumeMaker: {
+          $sum: '$fillVolumeMaker',
+        },
+        fillVolumeTaker: {
+          $sum: '$fillVolumeTaker',
+        },
+        fillVolumeTotal: {
+          $sum: '$fillVolumeTotal',
         },
       },
     },
     {
       $facet: {
         addresses: [
-          { $sort: { fillVolume: -1 } },
+          { $sort: { fillVolumeTotal: -1 } },
           { $skip: (page - 1) * limit },
           { $limit: limit },
           {
@@ -83,8 +116,16 @@ const getAddressesWith24HourStats = async options => {
               _id: 0,
               address: '$_id',
               stats: {
-                fillCount: '$fillCount',
-                fillVolume: '$fillVolume',
+                fillCount: {
+                  maker: '$fillCountMaker',
+                  taker: '$fillCountTaker',
+                  total: '$fillCountTotal',
+                },
+                fillVolume: {
+                  maker: '$fillVolumeMaker',
+                  taker: '$fillVolumeTaker',
+                  total: '$fillVolumeTotal',
+                },
               },
             },
           },
@@ -95,9 +136,9 @@ const getAddressesWith24HourStats = async options => {
   ]);
 
   return {
-    addresses: _.get(result, '[0].addresses', []),
+    traders: _.get(result, '[0].addresses', []),
     resultCount: _.get(result, '[0].resultCount[0].value', 0),
   };
 };
 
-module.exports = getAddressesWith24HourStats;
+module.exports = getTradersWith24HourStats;
