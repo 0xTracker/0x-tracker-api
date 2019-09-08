@@ -43,18 +43,10 @@ const getAddressMetrics = async (address, dateFrom, dateTo, metricInterval) => {
             $project: {
               hour: '$hours.date',
               fillCount: {
-                $cond: {
-                  $if: { $eq: ['$hours.fillCount.total', null] },
-                  $then: '$hours.fillCount.total',
-                  $else: '$hours.fillCount',
-                },
+                $ifNull: ['$hours.fillCount.total', '$hours.fillCount'],
               },
               fillVolume: {
-                $cond: {
-                  $if: { $eq: ['$hours.fillVolume.total', null] },
-                  $then: '$hours.fillVolume.total',
-                  $else: '$hours.fillVolume',
-                },
+                $ifNull: ['$hours.fillVolume.total', '$hours.fillVolume'],
               },
             },
           },

@@ -62,13 +62,30 @@ const getAddressesWith24HourStats = async options => {
       },
     },
     {
+      $project: {
+        address: 1,
+        fillCount: {
+          $ifNull: [
+            '$hours.minutes.fillCount.total',
+            '$hours.minutes.fillCount',
+          ],
+        },
+        fillVolume: {
+          $ifNull: [
+            '$hours.minutes.fillVolume.total',
+            '$hours.minutes.fillVolume',
+          ],
+        },
+      },
+    },
+    {
       $group: {
         _id: '$address',
         fillCount: {
-          $sum: '$hours.minutes.fillCount',
+          $sum: '$fillCount',
         },
         fillVolume: {
-          $sum: '$hours.minutes.fillVolume',
+          $sum: '$fillVolume',
         },
       },
     },
