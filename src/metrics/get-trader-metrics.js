@@ -118,19 +118,7 @@ const getTraderMetrics = async (address, dateFrom, dateTo, metricInterval) => {
 
   const dataPoints = await AddressMetric.aggregate(pipeline);
 
-  const result = dataPoints.map(dataPoint => {
-    return {
-      date: dataPoint._id,
-      fillCount: dataPoint.fillCount,
-      fillVolume: {
-        maker: dataPoint.fillVolume.maker,
-        taker: dataPoint.fillVolume.taker,
-        total: dataPoint.fillVolume.total,
-      },
-    };
-  });
-
-  return result;
+  return dataPoints;
 };
 
 module.exports = getTraderMetrics;
