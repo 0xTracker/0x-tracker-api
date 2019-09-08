@@ -1,6 +1,8 @@
+const _ = require('lodash');
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
+const getAddressMetrics = require('../../../metrics/get-address-metrics');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getMetricIntervalForTimePeriod = require('../../../metrics/get-metric-interval-for-time-period');
 const getTokenMetrics = require('../../../metrics/get-token-metrics-v2');
@@ -17,6 +19,29 @@ const createRouter = () => {
     const metricInterval = getMetricIntervalForTimePeriod(period);
     const metrics = await getTokenMetrics(
       token,
+      dateFrom,
+      dateTo,
+      metricInterval,
+    );
+
+    response.body = metrics;
+
+    await next();
+  });
+
+  router.get('/address', async ({ request, response }, next) => {
+    const { address } = request.query;
+
+    if (_.isEmpty(address)) {
+      throw new Error('Address must be provided');
+    }
+
+    const period = request.query.period || TIME_PERIOD.MONTH;
+
+    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+    const metricInterval = getMetricIntervalForTimePeriod(period);
+    const metrics = await getAddressMetrics(
+      address,
       dateFrom,
       dateTo,
       metricInterval,

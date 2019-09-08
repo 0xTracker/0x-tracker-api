@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const moment = require('moment');
 
 const { METRIC_INTERVAL } = require('../constants');
@@ -28,6 +27,21 @@ const getAddressMetrics = async (address, dateFrom, dateTo, metricInterval) => {
           {
             $match: { date: { $gte: dayFrom, $lte: dayTo }, address },
           },
+          {
+            $project: {
+              date: 1,
+              fillCount: {
+                maker: '$fillCount.maker',
+                taker: '$fillCount.taker',
+                total: { $ifNull: ['$fillCount.total', '$fillCount'] },
+              },
+              fillVolume: {
+                maker: '$fillVolume.maker',
+                taker: '$fillVolume.taker',
+                total: { $ifNull: ['$fillVolume.total', '$fillVolume'] },
+              },
+            },
+          },
           { $sort: { date: 1 } },
         ]
       : [
@@ -42,10 +56,14 @@ const getAddressMetrics = async (address, dateFrom, dateTo, metricInterval) => {
           {
             $project: {
               hour: '$hours.date',
-              fillCount: {
+              fillCountMaker: '$hours.fillCount.maker',
+              fillCountTaker: '$hours.fillCount.taker',
+              fillCountTotal: {
                 $ifNull: ['$hours.fillCount.total', '$hours.fillCount'],
               },
-              fillVolume: {
+              fillVolumeMaker: '$hours.fillVolume.maker',
+              fillVolumeTaker: '$hours.fillVolume.taker',
+              fillVolumeTotal: {
                 $ifNull: ['$hours.fillVolume.total', '$hours.fillVolume'],
               },
             },
@@ -56,11 +74,38 @@ const getAddressMetrics = async (address, dateFrom, dateTo, metricInterval) => {
           {
             $group: {
               _id: '$hour',
+              fillCountMaker: {
+                $sum: '$fillCountMaker',
+              },
+              fillCountTaker: {
+                $sum: '$fillCountTaker',
+              },
+              fillCountTotal: {
+                $sum: '$fillCountTotal',
+              },
+              fillVolumeMaker: {
+                $sum: '$fillVolumeMaker',
+              },
+              fillVolumeTaker: {
+                $sum: '$fillVolumeTaker',
+              },
+              fillVolumeTotal: {
+                $sum: '$fillVolumeTotal',
+              },
+            },
+          },
+          {
+            $project: {
+              date: '$_id',
               fillCount: {
-                $sum: '$fillCount',
+                maker: '$fillCountMaker',
+                taker: '$fillCountTaker',
+                total: '$fillCountTotal',
               },
               fillVolume: {
-                $sum: '$fillVolume',
+                maker: '$fillVolumeMaker',
+                taker: '$fillVolumeTaker',
+                total: '$fillVolumeTotal',
               },
             },
           },
@@ -75,10 +120,18 @@ const getAddressMetrics = async (address, dateFrom, dateTo, metricInterval) => {
 
   const result = dataPoints.map(dataPoint => {
     return {
-      date: _.get(dataPoint, 'date', dataPoint._id),
+      date: dataPoint._id,
       fillCount: dataPoint.fillCount,
       fillVolume: {
-        USD: dataPoint.fillVolume,
+        maker: {
+          USD: dataPoint.fillVolume.maker,
+        },
+        taker: {
+          USD: dataPoint.fillVolume.taker,
+        },
+        total: {
+          USD: dataPoint.fillVolume.total,
+        },
       },
     };
   });
