@@ -64,13 +64,17 @@ const getAddressesWith24HourStats = async options => {
     {
       $project: {
         address: 1,
-        fillCount: {
+        fillCountMaker: '$hours.minutes.fillCount.maker',
+        fillCountTaker: '$hours.minutes.fillCount.taker',
+        fillCountTotal: {
           $ifNull: [
             '$hours.minutes.fillCount.total',
             '$hours.minutes.fillCount',
           ],
         },
-        fillVolume: {
+        fillVolumeMaker: '$hours.minutes.fillVolume.maker',
+        fillVolumeTaker: '$hours.minutes.fillVolume.taker',
+        fillVolumeTotal: {
           $ifNull: [
             '$hours.minutes.fillVolume.total',
             '$hours.minutes.fillVolume',
@@ -81,18 +85,30 @@ const getAddressesWith24HourStats = async options => {
     {
       $group: {
         _id: '$address',
-        fillCount: {
-          $sum: '$fillCount',
+        fillCountMaker: {
+          $sum: '$fillCountMaker',
         },
-        fillVolume: {
-          $sum: '$fillVolume',
+        fillCountTaker: {
+          $sum: '$fillCountTaker',
+        },
+        fillCountTotal: {
+          $sum: '$fillCountTotal',
+        },
+        fillVolumeMaker: {
+          $sum: '$fillVolumeMaker',
+        },
+        fillVolumeTaker: {
+          $sum: '$fillVolumeTaker',
+        },
+        fillVolumeTotal: {
+          $sum: '$fillVolumeTotal',
         },
       },
     },
     {
       $facet: {
         addresses: [
-          { $sort: { fillVolume: -1 } },
+          { $sort: { fillVolumeTotal: -1 } },
           { $skip: (page - 1) * limit },
           { $limit: limit },
           {
@@ -100,8 +116,16 @@ const getAddressesWith24HourStats = async options => {
               _id: 0,
               address: '$_id',
               stats: {
-                fillCount: '$fillCount',
-                fillVolume: '$fillVolume',
+                fillCount: {
+                  maker: '$fillCountMaker',
+                  taker: '$fillCountTaker',
+                  total: '$fillCountTotal',
+                },
+                fillVolume: {
+                  maker: '$fillVolumeMaker',
+                  taker: '$fillVolumeTaker',
+                  total: '$fillVolumeTotal',
+                },
               },
             },
           },

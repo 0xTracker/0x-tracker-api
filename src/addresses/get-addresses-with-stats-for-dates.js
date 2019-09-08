@@ -34,20 +34,47 @@ const getAddressesWithStatsForDates = async (dateFrom, dateTo, options) => {
       ),
     },
     {
+      $project: {
+        address: 1,
+        fillCountMaker: '$fillCount.maker',
+        fillCountTaker: '$fillCount.taker',
+        fillCountTotal: {
+          $ifNull: ['$fillCount.total', '$fillCount'],
+        },
+        fillVolumeMaker: '$fillVolume.maker',
+        fillVolumeTaker: '$fillVolume.taker',
+        fillVolumeTotal: {
+          $ifNull: ['$fillVolume.total', '$fillVolume'],
+        },
+      },
+    },
+    {
       $group: {
         _id: '$address',
-        fillCount: {
-          $sum: '$fillCount',
+        fillCountMaker: {
+          $sum: '$fillCountMaker',
         },
-        fillVolume: {
-          $sum: '$fillVolume',
+        fillCountTaker: {
+          $sum: '$fillCountTaker',
+        },
+        fillCountTotal: {
+          $sum: '$fillCountTotal',
+        },
+        fillVolumeMaker: {
+          $sum: '$fillVolumeMaker',
+        },
+        fillVolumeTaker: {
+          $sum: '$fillVolumeTaker',
+        },
+        fillVolumeTotal: {
+          $sum: '$fillVolumeTotal',
         },
       },
     },
     {
       $facet: {
         addresses: [
-          { $sort: { fillVolume: -1 } },
+          { $sort: { fillVolumeTotal: -1 } },
           { $skip: (page - 1) * limit },
           { $limit: limit },
           {
@@ -55,8 +82,16 @@ const getAddressesWithStatsForDates = async (dateFrom, dateTo, options) => {
               _id: 0,
               address: '$_id',
               stats: {
-                fillCount: '$fillCount',
-                fillVolume: '$fillVolume',
+                fillCount: {
+                  maker: '$fillCountMaker',
+                  taker: '$fillCountTaker',
+                  total: '$fillCountTotal',
+                },
+                fillVolume: {
+                  maker: '$fillVolumeMaker',
+                  taker: '$fillVolumeTaker',
+                  total: '$fillVolumeTotal',
+                },
               },
             },
           },

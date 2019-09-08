@@ -22,7 +22,7 @@ const createRouter = () => {
   const router = new Router();
 
   router.get(
-    '/addresses',
+    '/traders',
     pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
     async ({ pagination: { limit, page }, request, response }, next) => {
       const statsPeriod = request.query.statsPeriod || TIME_PERIOD.DAY;
@@ -43,17 +43,11 @@ const createRouter = () => {
             });
 
       response.body = {
-        addresses: addresses.map(address => ({
-          address: address.address,
-          stats: {
-            fillCount: address.stats.fillCount.total,
-            fillVolume: address.stats.fillVolume.total,
-          },
-        })),
         page,
         pageCount: Math.ceil(resultCount / limit),
         limit,
         total: resultCount,
+        traders: addresses,
       };
 
       await next();
