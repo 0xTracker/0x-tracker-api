@@ -29,6 +29,7 @@ const getTraderMetrics = async (address, dateFrom, dateTo, metricInterval) => {
           },
           {
             $project: {
+              _id: 0,
               date: 1,
               fillCount: {
                 maker: '$fillCount.maker',
