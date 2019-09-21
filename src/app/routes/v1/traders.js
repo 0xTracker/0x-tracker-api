@@ -26,6 +26,7 @@ const createRouter = () => {
     pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
     async ({ pagination: { limit, page }, request, response }, next) => {
       const statsPeriod = request.query.statsPeriod || TIME_PERIOD.DAY;
+      const { type } = request.query;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
       const excludeRelayers = parseBooleanString(request.query.excludeRelayers);
 
@@ -35,11 +36,13 @@ const createRouter = () => {
               excludeRelayers,
               page,
               limit,
+              type,
             })
           : await getTradersWithStatsForDates(dateFrom, dateTo, {
               excludeRelayers,
               page,
               limit,
+              type,
             });
 
       response.body = {
