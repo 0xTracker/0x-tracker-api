@@ -6,9 +6,14 @@ const getTokensWith24HourStats = require('../../../tokens/get-tokens-with-24-hou
 const getTokensWithStatsForDates = require('../../../tokens/get-tokens-with-stats-for-dates');
 const pagination = require('../../middleware/pagination');
 
-const TOKEN_TYPE_LABELS = {
+const TOKEN_TYPE_MAP = {
   [TOKEN_TYPE.ERC20]: 'erc-20',
   [TOKEN_TYPE.ERC721]: 'erc-721',
+};
+
+const TOKEN_TYPE_REVERSE_MAP = {
+  'erc-20': 0,
+  'erc-721': 1,
 };
 
 const createRouter = () => {
@@ -18,6 +23,7 @@ const createRouter = () => {
     '/tokens',
     pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
     async ({ pagination: { limit, page }, request, response }, next) => {
+      const { type } = request.query;
       const statsPeriod = request.query.statsPeriod || TIME_PERIOD.DAY;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
 
@@ -26,16 +32,18 @@ const createRouter = () => {
           ? await getTokensWith24HourStats({
               page,
               limit,
+              type: TOKEN_TYPE_REVERSE_MAP[type],
             })
           : await getTokensWithStatsForDates(dateFrom, dateTo, {
               page,
               limit,
+              type: TOKEN_TYPE_REVERSE_MAP[type],
             });
 
       response.body = {
         tokens: tokens.map(token => ({
           ...token,
-          type: TOKEN_TYPE_LABELS[token.type],
+          type: TOKEN_TYPE_MAP[token.type],
         })),
         page,
         pageCount: Math.ceil(resultCount / limit),

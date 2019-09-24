@@ -30,6 +30,7 @@ const schema = Schema({
     '24h': tokenStatsShape,
   },
   symbol: String,
+  type: Number,
 });
 
 schema.plugin(mongoosePaginate);
