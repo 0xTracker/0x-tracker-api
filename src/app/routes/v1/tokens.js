@@ -12,8 +12,8 @@ const TOKEN_TYPE_MAP = {
 };
 
 const TOKEN_TYPE_REVERSE_MAP = {
-  'erc-20': 0,
-  'erc-721': 1,
+  'erc-20': TOKEN_TYPE.ERC20,
+  'erc-721': TOKEN_TYPE.ERC721,
 };
 
 const createRouter = () => {
