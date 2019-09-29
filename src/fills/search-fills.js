@@ -2,11 +2,11 @@ const _ = require('lodash');
 
 const Fill = require('../model/fill');
 
-const searchFills = ({ address, limit, page, query, relayerId, token }) => {
-  let filter = {};
+const getFilterForParams = params => {
+  const { address, query, relayerId, token } = params;
 
   if (_.isString(query)) {
-    filter = {
+    return {
       $or: [
         { feeRecipient: query },
         { maker: query },
@@ -16,25 +16,48 @@ const searchFills = ({ address, limit, page, query, relayerId, token }) => {
         { senderAddress: query },
       ],
     };
-  } else if (_.isString(token)) {
-    filter = {
+  }
+
+  if (_.isString(token)) {
+    return {
       'assets.tokenAddress': token,
     };
-  } else if (_.isString(address)) {
-    filter = {
+  }
+
+  if (_.isString(address)) {
+    return {
       $or: [{ maker: address }, { taker: address }],
     };
-  } else if (_.isNumber(relayerId)) {
-    filter = {
+  }
+
+  if (_.isNumber(relayerId)) {
+    return {
       relayerId,
     };
   }
 
+  return {};
+};
+
+const buildFilter = params => {
+  return _.pickBy(
+    {
+      date:
+        params.dateFrom !== undefined ? { $gte: params.dateFrom } : undefined,
+      ...getFilterForParams(params),
+    },
+    value => value !== undefined,
+  );
+};
+
+const searchFills = (params, options) => {
+  const filter = buildFilter(params);
+
   return Fill.paginate(filter, {
     sort: { date: -1 },
     lean: true,
-    limit,
-    page,
+    limit: options.limit,
+    page: options.page,
   });
 };
 
