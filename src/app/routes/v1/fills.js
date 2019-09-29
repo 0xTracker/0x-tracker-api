@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const moment = require('moment');
 const Router = require('koa-router');
 
 const { getTokens } = require('../../../tokens/token-cache');
@@ -21,14 +22,16 @@ const createRouter = () => {
       const query = request.query.q;
       const relayerLookupId = await getRelayerLookupId(relayerId);
 
-      const { docs, pages, total } = await searchFills({
-        address,
-        limit,
-        page,
-        query,
-        relayerId: relayerLookupId,
-        token,
-      });
+      const { docs, pages, total } = await searchFills(
+        {
+          address,
+          dateFrom: moment().subtract(6, 'months'),
+          query,
+          relayerId: relayerLookupId,
+          token,
+        },
+        { limit, page },
+      );
 
       const tokens = getTokens();
       const relayers = await getRelayers();
