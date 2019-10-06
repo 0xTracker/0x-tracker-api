@@ -3,7 +3,6 @@
 [![Travis (.org)](https://img.shields.io/travis/0xTracker/0x-tracker-api.svg?style=flat-square)](https://travis-ci.org/0xTracker/0x-tracker-api)
 [![David](https://img.shields.io/david/0xTracker/0x-tracker-api.svg?style=flat-square)](https://github.com/0xTracker/0x-tracker-api)
 [![Codecov](https://img.shields.io/codecov/c/github/0xTracker/0x-tracker-api.svg?style=flat-square)](https://codecov.io/gh/0xTracker/0x-tracker-api)
-[![Chat on Spectrum](https://img.shields.io/badge/chat%20on-spectrum-752bf2.svg?style=flat-square)](https://spectrum.chat/0x-tracker)
 
 > NodeJS API built for [0x Tracker](https://0xtracker.com) which exposes 0x protocol data and metrics for consumption by the [0x Tracker Client](https://github.com/0xTracker/0x-tracker-client) application.
 
@@ -112,6 +111,18 @@ Continuous integration for the project is handled by [Travis CI](https://travis-
 ## 👨‍💻 Maintainers
 
 - Craig Bovis ([@cbovis](https://github.com/cbovis))
+
+## Supporters
+
+Infrastructure for 0x Tracker is generously supported by these companies.
+
+<table>
+  <tr>
+    <td align="center"><a href="https://bugsnag.com"><img src="https://0xtracker.com/assets/supporters/bugsnag.png" width="120px;" alt="Bugsnag"/><br /><sub><b>Bugsnag</b></sub></a></td>
+    <td align="center"><a href="https://cryptocompare.com"><img src="https://0xtracker.com/assets/supporters/crypto-compare.png" width="120px;" alt="CryptoCompare"/><br /><sub><b>CryptoCompare</b></sub></a></td>
+    <td align="center"><a href="https://netlify.com"><img src="https://0xtracker.com/assets/supporters/netlify.png" width="120px;" alt="Netlify"/><br /><sub><b>Netlify</b></sub></a></td>
+  </tr>
+</table>
 
 ## 👩‍⚖️ License
 
