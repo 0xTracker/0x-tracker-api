@@ -6,9 +6,12 @@ module.exports = (amount, tokenOrDecimals) => {
   if (
     (_.get(tokenOrDecimals, 'decimals') === undefined &&
       !_.isNumber(tokenOrDecimals)) ||
-    _.isNull(amount) ||
     _.isUndefined(amount)
   ) {
+    return undefined;
+  }
+
+  if (_.isNull(amount)) {
     return null;
   }
 
