@@ -29,6 +29,7 @@ const schema = Schema({
   maker: String,
   makerFee: Number,
   orderHash: String,
+  protocolFee: Number,
   protocolVersion: Number,
   relayerId: Number,
   senderAddress: String,
