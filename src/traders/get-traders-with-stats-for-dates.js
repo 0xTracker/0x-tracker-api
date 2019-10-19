@@ -1,6 +1,5 @@
 const _ = require('lodash');
 
-const { TRADER_TYPE } = require('../constants');
 const AddressMetric = require('../model/address-metric');
 const getRelayers = require('../relayers/get-relayers');
 
@@ -76,7 +75,7 @@ const getTradersWithStatsForDates = async (dateFrom, dateTo, options) => {
       type !== undefined
         ? {
             $match:
-              type === TRADER_TYPE.MAKER
+              type === 'maker'
                 ? { fillCountMaker: { $gte: 1 } }
                 : { fillCountTaker: { $gte: 1 } },
           }

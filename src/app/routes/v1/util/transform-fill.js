@@ -7,6 +7,7 @@ const {
 } = require('../../../../constants');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
 const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
+const getFeesForFill = require('../../../../fills/get-fees-for-fill');
 
 const formatRelayer = relayer =>
   relayer === undefined ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
@@ -16,6 +17,7 @@ const formatFillStatus = status =>
 
 const transformFill = (tokens, relayers, fill) => {
   const assets = getAssetsForFill(tokens, fill);
+  const fees = getFeesForFill(tokens, fill);
   const conversions = _.get(fill, `conversions.USD`);
   const fillRelayer = _.find(relayers, { lookupId: fill.relayerId });
   const wethToken = tokens[WETH_TOKEN_ADDRESS];
@@ -59,6 +61,7 @@ const transformFill = (tokens, relayers, fill) => {
   return {
     assets,
     date: fill.date,
+    fees,
     feeRecipient: fill.feeRecipient,
     id: fill.id,
     makerAddress: fill.maker,
