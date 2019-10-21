@@ -2,7 +2,7 @@ const _ = require('lodash');
 
 const formatTokenAmount = require('../tokens/format-token-amount');
 const formatTokenType = require('../tokens/format-token-type');
-const formatTraderType = require('../util/format-trader-type');
+const formatTraderType = require('../traders/format-trader-type');
 
 const transformAsset = (tokens, asset) => {
   const token = tokens[asset.tokenAddress];
