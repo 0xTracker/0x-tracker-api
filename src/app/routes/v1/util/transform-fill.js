@@ -1,19 +1,16 @@
 const _ = require('lodash');
 
 const {
-  FILL_STATUS,
   WETH_TOKEN_ADDRESS,
   ZRX_TOKEN_ADDRESS,
 } = require('../../../../constants');
+const formatFillStatus = require('../../../../fills/format-fill-status');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
 const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
 const getFeesForFill = require('../../../../fills/get-fees-for-fill');
 
 const formatRelayer = relayer =>
   relayer === undefined ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
-
-const formatFillStatus = status =>
-  _.findKey(FILL_STATUS, value => status === value).toLowerCase();
 
 const transformFill = (tokens, relayers, fill) => {
   const assets = getAssetsForFill(tokens, fill);

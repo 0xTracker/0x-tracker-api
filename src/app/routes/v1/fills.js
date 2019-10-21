@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const moment = require('moment');
 const Router = require('koa-router');
 
@@ -9,6 +8,7 @@ const getRelayers = require('../../../relayers/get-relayers');
 const pagination = require('../../middleware/pagination');
 const searchFills = require('../../../fills/search-fills');
 const transformFill = require('./util/transform-fill');
+const transformFills = require('./util/transform-fills');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/fills' });
@@ -37,7 +37,7 @@ const createRouter = () => {
       const relayers = await getRelayers();
 
       response.body = {
-        fills: docs.map(_.partial(transformFill, tokens, relayers)),
+        fills: transformFills(tokens, relayers, docs),
         limit,
         page,
         pageCount: pages,
