@@ -5,6 +5,7 @@ const { FILL_ACTOR } = require('../../../../constants');
 const AXIE_FIXTURE = require('../../../../fixtures/tokens/axie');
 const BRAHMA_FIXTURE = require('../../../../fixtures/tokens/brahma');
 const ETHFINEX_FIXTURE = require('../../../../fixtures/relayers/ethfinex');
+const Fill = require('../../../../model/fill');
 const WETH_FIXTURE = require('../../../../fixtures/tokens/weth');
 const ZRX_FIXTURE = require('../../../../fixtures/tokens/zrx');
 
@@ -178,17 +179,30 @@ describe('transformFill', () => {
   });
 
   it('should transform V3 fill', () => {
-    const fill = {
+    const fill = new Fill({
       ...simpleFill,
       conversions: {
         USD: {
           protocolFee: 0.2,
         },
       },
+      fees: [
+        {
+          amount: { token: 5000000000000000, USD: 0.3 },
+          tokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+          traderType: 0,
+        },
+        {
+          amount: { token: 1 },
+          tokenAddress: '0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d',
+          tokenId: 58,
+          traderType: 1,
+        },
+      ],
       protocolFee: 7000000000000000,
       makerFee: undefined,
       takerFee: undefined,
-    };
+    });
     const viewModel = transformFill(simpleTokens, relayers, fill);
 
     expect(viewModel.makerFee).toBeNull();
@@ -197,6 +211,30 @@ describe('transformFill', () => {
       ETH: new BigNumber(0.007),
       USD: 0.2,
     });
+    expect(viewModel.fees).toEqual([
+      {
+        amount: { token: new BigNumber('0.005'), USD: 0.3 },
+        token: {
+          address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+          id: undefined,
+          name: 'Wrapped Ether',
+          symbol: 'WETH',
+          type: 'erc-20',
+        },
+        traderType: 'maker',
+      },
+      {
+        amount: { token: new BigNumber('1'), USD: undefined },
+        token: {
+          address: '0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d',
+          id: 58,
+          name: 'Axie',
+          symbol: 'AXIE',
+          type: 'erc-721',
+        },
+        traderType: 'taker',
+      },
+    ]);
   });
 
   it('should exclude protocol fee when WETH token unavailable', () => {

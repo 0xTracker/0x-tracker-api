@@ -60,6 +60,7 @@ Object {
   ],
   "date": "2018-09-06T10:47:38.000Z",
   "feeRecipient": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+  "fees": undefined,
   "id": "5b9107e00d05f400042e3494",
   "makerAddress": "0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb",
   "makerFee": Object {
@@ -152,6 +153,7 @@ Object {
   ],
   "date": "2018-09-06T10:47:38.000Z",
   "feeRecipient": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+  "fees": undefined,
   "id": "5b9107e00d05f400042e3494",
   "makerAddress": "0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb",
   "makerFee": Object {

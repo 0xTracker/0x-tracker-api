@@ -20,8 +20,8 @@ module.exports = {
     ERC721: 1,
   },
   TRADER_TYPE: {
-    MAKER: 'maker',
-    TAKER: 'taker',
+    MAKER: 0,
+    TAKER: 1,
   },
   FILL_STATUS: {
     FAILED: 2,

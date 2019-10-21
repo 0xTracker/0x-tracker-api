@@ -1,12 +1,8 @@
 const _ = require('lodash');
 
-const { FILL_ACTOR, TOKEN_TYPE, TRADER_TYPE } = require('../constants');
 const formatTokenAmount = require('../tokens/format-token-amount');
-
-const TOKEN_TYPE_LABELS = {
-  [TOKEN_TYPE.ERC20]: 'erc-20',
-  [TOKEN_TYPE.ERC721]: 'erc-721',
-};
+const formatTokenType = require('../tokens/format-token-type');
+const formatTraderType = require('../traders/format-trader-type');
 
 const transformAsset = (tokens, asset) => {
   const token = tokens[asset.tokenAddress];
@@ -19,9 +15,8 @@ const transformAsset = (tokens, asset) => {
     tokenId: asset.tokenId,
     tokenSymbol: _.get(token, 'symbol'),
     tokenType: _.get(token, 'name'),
-    traderType:
-      asset.actor === FILL_ACTOR.MAKER ? TRADER_TYPE.MAKER : TRADER_TYPE.TAKER,
-    type: TOKEN_TYPE_LABELS[_.get(token, 'type')],
+    traderType: formatTraderType(asset.actor),
+    type: formatTokenType(_.get(token, 'type')),
   };
 };
 

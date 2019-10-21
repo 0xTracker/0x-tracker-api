@@ -21,10 +21,19 @@ const schema = Schema({
     USD: {
       amount: Number,
       makerFee: Number,
+      protocolFee: Number,
       takerFee: Number,
     },
   },
   date: Date,
+  fees: [
+    {
+      amount: { token: Number, USD: Number },
+      tokenAddress: String,
+      tokenId: Number,
+      traderType: Number,
+    },
+  ],
   feeRecipient: String,
   maker: String,
   makerFee: Number,
