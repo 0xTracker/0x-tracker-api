@@ -24,7 +24,7 @@ const transformFee = (tokens, fee) => {
 };
 
 const getFeesForFill = (tokens, fill) =>
-  fill.fees === undefined
+  fill.protocolVersion < 3
     ? undefined
     : _.map(fill.fees, fee => transformFee(tokens, fee));
 
