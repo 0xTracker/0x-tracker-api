@@ -57,6 +57,7 @@ const simpleFill = {
     },
   },
   date: '2018-09-06T10:47:38.000Z',
+  fees: [],
   feeRecipient: '0xe269e891a2ec8585a378882ffa531141205e92e9',
   maker: '0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb',
   makerFee: 15000000000000000000,
@@ -81,6 +82,7 @@ const simpleV1Fill = {
       takerFee: 3.04,
     },
   },
+  fees: [],
   protocolVersion: 1,
 };
 
@@ -200,6 +202,7 @@ describe('transformFill', () => {
         },
       ],
       protocolFee: 7000000000000000,
+      protocolVersion: 3,
       makerFee: undefined,
       takerFee: undefined,
     });
