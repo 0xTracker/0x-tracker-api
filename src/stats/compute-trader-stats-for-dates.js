@@ -1,11 +1,14 @@
 const _ = require('lodash');
 
 const AddressMetric = require('../model/address-metric');
+const getRelayerTakerAddresses = require('../relayers/get-relayer-taker-addresses');
 
 const computeTraderStatsForDates = async (dateFrom, dateTo) => {
+  const relayerTakerAddresses = await getRelayerTakerAddresses();
   const results = await AddressMetric.aggregate([
     {
       $match: {
+        address: { $nin: relayerTakerAddresses },
         date: {
           $gte: dateFrom,
           $lte: dateTo,

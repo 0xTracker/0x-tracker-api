@@ -2,7 +2,7 @@ const _ = require('lodash');
 const moment = require('moment');
 
 const AddressMetric = require('../model/address-metric');
-const getRelayers = require('../relayers/get-relayers');
+const getRelayerTakerAddresses = require('../relayers/get-relayer-taker-addresses');
 
 const getTradersWith24HourStats = async options => {
   const { excludeRelayers, page, limit, type } = _.defaults({}, options, {
@@ -16,14 +16,7 @@ const getTradersWith24HourStats = async options => {
     .utc(dateTo)
     .subtract(24, 'hours')
     .toDate();
-
-  const relayers = await getRelayers();
-
-  const relayerTakerAddresses = _(relayers)
-    .map(relayer => relayer.takerAddresses)
-    .flatten()
-    .compact()
-    .value();
+  const relayerTakerAddresses = await getRelayerTakerAddresses();
 
   const result = await AddressMetric.aggregate(
     _.compact([
