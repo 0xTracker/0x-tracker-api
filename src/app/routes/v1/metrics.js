@@ -6,6 +6,7 @@ const getTraderMetrics = require('../../../metrics/get-trader-metrics');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getMetricIntervalForTimePeriod = require('../../../metrics/get-metric-interval-for-time-period');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
+const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getTokenMetrics = require('../../../metrics/get-token-metrics');
 
@@ -96,6 +97,18 @@ const createRouter = () => {
       dateTo,
       metricInterval,
     );
+
+    response.body = metrics;
+
+    await next();
+  });
+
+  router.get('/protocol', async ({ request, response }, next) => {
+    const period = request.query.period || TIME_PERIOD.MONTH;
+
+    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+    const metricInterval = getMetricIntervalForTimePeriod(period);
+    const metrics = await getProtocolMetrics(dateFrom, dateTo, metricInterval);
 
     response.body = metrics;
 
