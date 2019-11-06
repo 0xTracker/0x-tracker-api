@@ -105,8 +105,8 @@ const getTradersWithStatsForDates = async (dateFrom, dateTo, options) => {
   );
 
   return {
-    traders: result[0].addresses,
-    resultCount: result[0].resultCount[0].value,
+    traders: _.get(result, '0.addresses', []),
+    resultCount: _.get(result, '0.resultCount.0.value', 0),
   };
 };
 

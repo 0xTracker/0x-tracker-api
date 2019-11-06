@@ -5,6 +5,7 @@ const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period')
 const getTokensWith24HourStats = require('../../../tokens/get-tokens-with-24-hour-stats');
 const getTokensWithStatsForDates = require('../../../tokens/get-tokens-with-stats-for-dates');
 const pagination = require('../../middleware/pagination');
+const validatePeriod = require('../../middleware/validate-period');
 
 const TOKEN_TYPE_MAP = {
   [TOKEN_TYPE.ERC20]: 'erc-20',
@@ -22,6 +23,7 @@ const createRouter = () => {
   router.get(
     '/tokens',
     pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
+    validatePeriod('statsPeriod'),
     async ({ pagination: { limit, page }, request, response }, next) => {
       const { type } = request.query;
       const statsPeriod = request.query.statsPeriod || TIME_PERIOD.DAY;
