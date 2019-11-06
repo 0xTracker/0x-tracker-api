@@ -6,6 +6,7 @@ const { getTokens } = require('../../../tokens/token-cache');
 const Fill = require('../../../model/fill');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getRelayers = require('../../../relayers/get-relayers');
+const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const pagination = require('../../middleware/pagination');
 const searchFills = require('../../../fills/search-fills');
 const transformFill = require('./util/transform-fill');
@@ -22,6 +23,13 @@ const createRouter = () => {
       const relayerId = request.query.relayer;
       const query = request.query.q;
       const relayerLookupId = await getRelayerLookupId(relayerId);
+
+      if (relayerId !== undefined && relayerLookupId === undefined) {
+        throw new InvalidParameterError(
+          `No relayer exists with an ID of "${relayerId}"`,
+          `Invalid query parameter: relayer`,
+        );
+      }
 
       const { docs, pages, total } = await searchFills(
         {
