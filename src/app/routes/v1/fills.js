@@ -1,4 +1,5 @@
 const moment = require('moment');
+const mongoose = require('mongoose');
 const Router = require('koa-router');
 
 const { getTokens } = require('../../../tokens/token-cache');
@@ -49,7 +50,10 @@ const createRouter = () => {
   );
 
   router.get('/:id', async ({ params, response }, next) => {
-    const fill = await Fill.findById(params.id);
+    const fillId = params.id;
+    const fill = mongoose.Types.ObjectId.isValid(fillId)
+      ? await Fill.findById(fillId)
+      : null;
 
     if (fill === null) {
       response.status = 404;
