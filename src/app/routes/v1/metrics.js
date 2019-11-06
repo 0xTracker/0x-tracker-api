@@ -8,6 +8,9 @@ const getMetricIntervalForTimePeriod = require('../../../metrics/get-metric-inte
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getTokenMetrics = require('../../../metrics/get-token-metrics');
+const InvalidParameterError = require('../../errors/invalid-parameter-error');
+const MissingParameterError = require('../../errors/missing-parameter-error');
+const Token = require('../../../model/token');
 const validatePeriod = require('../../middleware/validate-period');
 
 const createRouter = () => {
@@ -47,12 +50,26 @@ const createRouter = () => {
     ['/token-volume', '/token'],
     validatePeriod('period'),
     async ({ request, response }, next) => {
-      const { token } = request.query;
+      const tokenAddress = request.query.token;
+
+      if (tokenAddress === undefined) {
+        throw new MissingParameterError('token');
+      }
+
       const period = request.query.period || TIME_PERIOD.MONTH;
 
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
 
       const metricInterval = getMetricIntervalForTimePeriod(period);
+      const token = await Token.findOne({ address: tokenAddress });
+
+      if (token === null) {
+        throw new InvalidParameterError(
+          `No tokens have been traded with an address of "${tokenAddress}"`,
+          'Invalid query parameter: token',
+        );
+      }
+
       const metrics = await getTokenMetrics(
         token,
         dateFrom,
