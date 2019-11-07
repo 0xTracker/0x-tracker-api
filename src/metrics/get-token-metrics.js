@@ -90,6 +90,10 @@ const getTokenMetrics = async (token, dateFrom, dateTo, metricInterval) => {
     return {
       date: _.get(dataPoint, 'date', dataPoint._id),
       fillCount: dataPoint.fillCount,
+      fillVolume: {
+        token: formatTokenAmount(dataPoint.tokenVolume, token),
+        USD: dataPoint.usdVolume,
+      },
       volume: {
         USD: dataPoint.usdVolume,
         [token.symbol]: formatTokenAmount(dataPoint.tokenVolume, token),

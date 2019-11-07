@@ -125,7 +125,15 @@ const getTokensWith24HourStats = async options => {
 
   return {
     tokens: _.get(result, '[0].tokens', []).map(token => ({
-      ...token,
+      ..._.pick(token, [
+        'address',
+        'imageUrl',
+        'lastTrade',
+        'name',
+        'price',
+        'symbol',
+        'type',
+      ]),
       stats: {
         ...token.stats,
         fillVolume: {

@@ -2,6 +2,7 @@ const _ = require('lodash');
 const Router = require('koa-router');
 
 const { TIME_PERIOD, TOKEN_TYPE } = require('../../../constants');
+const formatTokenType = require('../../../tokens/format-token-type');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getTokensWith24HourStats = require('../../../tokens/get-tokens-with-24-hour-stats');
 const getTokensWithStatsForDates = require('../../../tokens/get-tokens-with-stats-for-dates');
@@ -57,7 +58,7 @@ const createRouter = () => {
       response.body = {
         tokens: tokens.map(token => ({
           ...token,
-          type: TOKEN_TYPE_MAP[token.type],
+          type: formatTokenType(token.type),
         })),
         page,
         pageCount: Math.ceil(resultCount / limit),
