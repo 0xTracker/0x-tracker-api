@@ -2,12 +2,13 @@ const _ = require('lodash');
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
-const getTraderMetrics = require('../../../metrics/get-trader-metrics');
+const checkTraderExists = require('../../../traders/check-trader-exists');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getMetricIntervalForTimePeriod = require('../../../metrics/get-metric-interval-for-time-period');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getTokenMetrics = require('../../../metrics/get-token-metrics');
+const getTraderMetrics = require('../../../metrics/get-trader-metrics');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const MissingParameterError = require('../../errors/missing-parameter-error');
 const Token = require('../../../model/token');
@@ -90,7 +91,16 @@ const createRouter = () => {
       const { address } = request.query;
 
       if (_.isEmpty(address)) {
-        throw new Error('Address must be provided');
+        throw new MissingParameterError('address');
+      }
+
+      const traderExists = await checkTraderExists(address);
+
+      if (!traderExists) {
+        throw new InvalidParameterError(
+          `No trader exists with an address of "${address}"`,
+          'Invalid query parameter: address',
+        );
       }
 
       const period = request.query.period || TIME_PERIOD.MONTH;
@@ -121,7 +131,16 @@ const createRouter = () => {
       const { address } = request.query;
 
       if (_.isEmpty(address)) {
-        throw new Error('Address must be provided');
+        throw new MissingParameterError('address');
+      }
+
+      const traderExists = await checkTraderExists(address);
+
+      if (!traderExists) {
+        throw new InvalidParameterError(
+          `No trader exists with an address of "${address}"`,
+          'Invalid query parameter: address',
+        );
       }
 
       const period = request.query.period || TIME_PERIOD.MONTH;
