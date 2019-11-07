@@ -164,6 +164,50 @@ const createRouter = () => {
     },
   );
 
+  router.get(
+    '/relayer',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const period = request.query.period || TIME_PERIOD.MONTH;
+      const relayerId = request.query.relayer;
+
+      if (relayerId === undefined) {
+        throw new MissingParameterError('relayer');
+      }
+
+      const relayerLookupId = await getRelayerLookupId(relayerId);
+
+      if (relayerLookupId === undefined) {
+        throw new InvalidParameterError(
+          `No relayer exists with an ID of "${relayerId}"`,
+          `Invalid query parameter: relayer`,
+        );
+      }
+
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const metricInterval = getMetricIntervalForTimePeriod(period);
+      const metrics = await getNetworkMetrics(
+        dateFrom,
+        dateTo,
+        metricInterval,
+        {
+          relayerId: relayerLookupId,
+        },
+      );
+
+      response.body = metrics.map(metric => ({
+        date: metric.date,
+        fees: metric.fees,
+        fillCount: metric.fillCount,
+        fillVolume: metric.fillVolume,
+        tradeCount: metric.tradeCount,
+        tradeVolume: metric.tradeVolume,
+      }));
+
+      await next();
+    },
+  );
+
   return router;
 };
 
