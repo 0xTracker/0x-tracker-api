@@ -24,7 +24,11 @@ const createRouter = () => {
 
       response.body = {
         fees: stats.fees,
+        fillCount: stats.fillCount,
+        fillVolume: stats.fillVolume,
         fills: stats.fillCount,
+        tradeCount: stats.tradeCount,
+        tradeVolume: stats.tradeVolume,
         volume: stats.fillVolume,
       };
 

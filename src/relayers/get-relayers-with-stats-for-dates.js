@@ -52,6 +52,7 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
           {
             $project: {
               _id: 0,
+              id: { $arrayElemAt: ['$relayer.id', 0] },
               imageUrl: { $arrayElemAt: ['$relayer.imageUrl', 0] },
               name: { $arrayElemAt: ['$relayer.name', 0] },
               slug: { $arrayElemAt: ['$relayer.slug', 0] },

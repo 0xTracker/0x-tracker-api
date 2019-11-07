@@ -39,7 +39,11 @@ const createRouter = () => {
       response.body = metrics.map(metric => ({
         date: metric.date,
         fees: metric.fees,
+        fillCount: metric.fillCount,
+        fillVolume: metric.fillVolume,
         fills: metric.fillCount,
+        tradeCount: metric.tradeCount,
+        tradeVolume: metric.tradeVolume,
         volume: metric.fillVolume,
       }));
 
