@@ -12,13 +12,12 @@ const transformToken = token => {
         : undefined,
     lastTrade: _.get(token, 'price.lastTrade'),
     name: token.name,
-    price:
-      token.price.lastPrice !== undefined
-        ? {
-            ...token.price,
-            last: token.price.lastPrice,
-          }
-        : undefined,
+    price: _.isNumber(token, 'price.lastPrice')
+      ? {
+          ...token.price,
+          last: token.price.lastPrice,
+        }
+      : undefined,
     symbol: token.symbol,
     type: formatTokenType(token.type),
   };
