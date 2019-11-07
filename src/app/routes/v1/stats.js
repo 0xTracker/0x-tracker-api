@@ -6,55 +6,68 @@ const compute24HourNetworkStats = require('../../../stats/compute-24-hour-networ
 const computeNetworkStatsForDates = require('../../../stats/compute-network-stats-for-dates');
 const compute24HourTraderStats = require('../../../stats/compute-24-hour-trader-stats');
 const computeTraderStatsForDates = require('../../../stats/compute-trader-stats-for-dates');
+const validatePeriod = require('../../middleware/validate-period');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/stats' });
 
-  router.get('/network', async ({ request, response }, next) => {
-    const period = request.query.period || TIME_PERIOD.DAY;
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const stats =
-      period === TIME_PERIOD.DAY
-        ? await compute24HourNetworkStats()
-        : await computeNetworkStatsForDates(dateFrom, dateTo);
+  router.get(
+    '/network',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const period = request.query.period || TIME_PERIOD.DAY;
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const stats =
+        period === TIME_PERIOD.DAY
+          ? await compute24HourNetworkStats()
+          : await computeNetworkStatsForDates(dateFrom, dateTo);
 
-    response.body = {
-      fees: stats.fees,
-      fills: stats.fillCount,
-      volume: stats.fillVolume,
-    };
+      response.body = {
+        fees: stats.fees,
+        fills: stats.fillCount,
+        volume: stats.fillVolume,
+      };
 
-    await next();
-  });
+      await next();
+    },
+  );
 
-  router.get('/relayer', async ({ request, response }, next) => {
-    const period = request.query.period || TIME_PERIOD.DAY;
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const stats =
-      period === TIME_PERIOD.DAY
-        ? await compute24HourNetworkStats()
-        : await computeNetworkStatsForDates(dateFrom, dateTo);
+  router.get(
+    '/relayer',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const period = request.query.period || TIME_PERIOD.DAY;
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const stats =
+        period === TIME_PERIOD.DAY
+          ? await compute24HourNetworkStats()
+          : await computeNetworkStatsForDates(dateFrom, dateTo);
 
-    response.body = {
-      trades: stats.tradeCount,
-      tradeVolume: stats.tradeVolume,
-    };
+      response.body = {
+        trades: stats.tradeCount,
+        tradeVolume: stats.tradeVolume,
+      };
 
-    await next();
-  });
+      await next();
+    },
+  );
 
-  router.get('/trader', async ({ request, response }, next) => {
-    const period = request.query.period || TIME_PERIOD.DAY;
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const stats =
-      period === TIME_PERIOD.DAY
-        ? await compute24HourTraderStats()
-        : await computeTraderStatsForDates(dateFrom, dateTo);
+  router.get(
+    '/trader',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const period = request.query.period || TIME_PERIOD.DAY;
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const stats =
+        period === TIME_PERIOD.DAY
+          ? await compute24HourTraderStats()
+          : await computeTraderStatsForDates(dateFrom, dateTo);
 
-    response.body = stats;
+      response.body = stats;
 
-    await next();
-  });
+      await next();
+    },
+  );
 
   return router;
 };
