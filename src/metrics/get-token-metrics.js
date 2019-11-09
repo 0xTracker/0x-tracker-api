@@ -94,10 +94,6 @@ const getTokenMetrics = async (token, dateFrom, dateTo, metricInterval) => {
         token: formatTokenAmount(dataPoint.tokenVolume, token),
         USD: dataPoint.usdVolume,
       },
-      volume: {
-        USD: dataPoint.usdVolume,
-        [token.symbol]: formatTokenAmount(dataPoint.tokenVolume, token),
-      },
     };
   });
 
