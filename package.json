@@ -16,7 +16,7 @@
     "husky": "2.1.0",
     "jest": "24.9.0",
     "lint-staged": "8.1.0",
-    "prettier": "1.19.0"
+    "prettier": "1.19.1"
   },
   "dependencies": {
     "@0x/contract-wrappers": "8.0.5",
