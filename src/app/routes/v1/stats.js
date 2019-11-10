@@ -46,7 +46,7 @@ const createRouter = () => {
           : await computeNetworkStatsForDates(dateFrom, dateTo);
 
       response.body = {
-        // trades: stats.tradeCount,
+        tradeCount: stats.tradeCount,
         tradeVolume: stats.tradeVolume,
       };
 
