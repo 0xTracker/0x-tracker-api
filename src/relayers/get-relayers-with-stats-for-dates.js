@@ -71,7 +71,6 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
             $group: {
               _id: null,
               relayerCount: { $sum: 1 },
-              tradeVolume: { $sum: '$tradeVolume' },
             },
           },
         ],
@@ -79,16 +78,8 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
     },
   ]);
 
-  const totalVolume = _.get(result, '[0].totals[0].tradeVolume', 0);
-
   return {
-    relayers: _.get(result, '[0].relayers', []).map(relayer => ({
-      ...relayer,
-      stats: {
-        ...relayer.stats,
-        tradeVolumeShare: (relayer.stats.tradeVolume / totalVolume) * 100,
-      },
-    })),
+    relayers: _.get(result, '[0].relayers', []),
     resultCount: _.get(result, '[0].totals[0].relayerCount', 0),
   };
 };

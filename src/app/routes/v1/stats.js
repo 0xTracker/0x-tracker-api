@@ -26,10 +26,8 @@ const createRouter = () => {
         fees: stats.fees,
         fillCount: stats.fillCount,
         fillVolume: stats.fillVolume,
-        fills: stats.fillCount,
         tradeCount: stats.tradeCount,
         tradeVolume: stats.tradeVolume,
-        volume: stats.fillVolume,
       };
 
       await next();
@@ -48,7 +46,7 @@ const createRouter = () => {
           : await computeNetworkStatsForDates(dateFrom, dateTo);
 
       response.body = {
-        trades: stats.tradeCount,
+        tradeCount: stats.tradeCount,
         tradeVolume: stats.tradeVolume,
       };
 

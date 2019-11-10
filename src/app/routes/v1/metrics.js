@@ -22,29 +22,18 @@ const createRouter = () => {
     validatePeriod('period'),
     async ({ request, response }, next) => {
       const period = request.query.period || TIME_PERIOD.MONTH;
-      const relayerId = request.query.relayer;
-      const relayerLookupId = await getRelayerLookupId(relayerId);
 
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
       const metricInterval = getMetricIntervalForTimePeriod(period);
-      const metrics = await getNetworkMetrics(
-        dateFrom,
-        dateTo,
-        metricInterval,
-        {
-          relayerId: relayerLookupId,
-        },
-      );
+      const metrics = await getNetworkMetrics(dateFrom, dateTo, metricInterval);
 
       response.body = metrics.map(metric => ({
         date: metric.date,
         fees: metric.fees,
         fillCount: metric.fillCount,
         fillVolume: metric.fillVolume,
-        fills: metric.fillCount,
         tradeCount: metric.tradeCount,
         tradeVolume: metric.tradeVolume,
-        volume: metric.fillVolume,
       }));
 
       await next();
@@ -52,7 +41,7 @@ const createRouter = () => {
   );
 
   router.get(
-    ['/token-volume', '/token'],
+    '/token',
     validatePeriod('period'),
     async ({ request, response }, next) => {
       const tokenAddress = request.query.token;
@@ -83,46 +72,6 @@ const createRouter = () => {
       );
 
       response.body = metrics;
-
-      await next();
-    },
-  );
-
-  router.get(
-    '/address',
-    validatePeriod('period'),
-    async ({ request, response }, next) => {
-      const { address } = request.query;
-
-      if (_.isEmpty(address)) {
-        throw new MissingParameterError('address');
-      }
-
-      const traderExists = await checkTraderExists(address);
-
-      if (!traderExists) {
-        throw new InvalidParameterError(
-          `No trader exists with an address of "${address}"`,
-          'Invalid query parameter: address',
-        );
-      }
-
-      const period = request.query.period || TIME_PERIOD.MONTH;
-
-      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const metricInterval = getMetricIntervalForTimePeriod(period);
-      const metrics = await getTraderMetrics(
-        address,
-        dateFrom,
-        dateTo,
-        metricInterval,
-      );
-
-      response.body = metrics.map(metric => ({
-        date: metric.date,
-        fillCount: metric.fillCount.total,
-        fillVolume: { USD: metric.fillVolume.total },
-      }));
 
       await next();
     },
