@@ -6,10 +6,9 @@ const getCdnTokenImageUrl = require('../../../../tokens/get-cdn-token-image-url'
 const transformToken = token => {
   return {
     address: token.address,
-    imageUrl:
-      token.imageUrl !== undefined
-        ? getCdnTokenImageUrl(token.imageUrl)
-        : undefined,
+    imageUrl: _.isString(token.imageUrl)
+      ? getCdnTokenImageUrl(token.imageUrl)
+      : undefined,
     lastTrade: _.get(token, 'price.lastTrade'),
     name: token.name,
     price: _.isNumber(token, 'price.lastPrice')
