@@ -1,8 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const { METRIC_INTERVAL, ZRX_TOKEN_ADDRESS } = require('../constants');
-const { getToken } = require('../tokens/token-cache');
+const { METRIC_INTERVAL } = require('../constants');
 const formatTokenAmount = require('../tokens/format-token-amount');
 const TokenMetric = require('../model/token-metric');
 
@@ -80,11 +79,6 @@ const getTokenMetrics = async (token, dateFrom, dateTo, metricInterval) => {
         ];
 
   const dataPoints = await TokenMetric.aggregate(pipeline);
-  const zrxToken = getToken(ZRX_TOKEN_ADDRESS);
-
-  if (zrxToken === undefined) {
-    throw new Error('Cannot find ZRX token');
-  }
 
   const result = dataPoints.map(dataPoint => {
     return {
