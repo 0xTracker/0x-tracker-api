@@ -208,8 +208,8 @@ describe('transformFill', () => {
     });
     const viewModel = transformFill(simpleTokens, relayers, fill);
 
-    expect(viewModel.makerFee).toBeNull();
-    expect(viewModel.takerFee).toBeNull();
+    expect(viewModel.makerFee).toBeUndefined();
+    expect(viewModel.takerFee).toBeUndefined();
     expect(viewModel.protocolFee).toEqual({
       ETH: new BigNumber(0.007),
       USD: 0.2,
@@ -238,24 +238,5 @@ describe('transformFill', () => {
         traderType: 'taker',
       },
     ]);
-  });
-
-  it('should exclude protocol fee when WETH token unavailable', () => {
-    const fill = {
-      ...simpleFill,
-      protocolFee: 7000000000000000,
-    };
-    const tokens = { ...simpleTokens, [WETH_FIXTURE.address]: undefined };
-    const viewModel = transformFill(tokens, relayers, fill);
-
-    expect(viewModel.protocolFee).toBeUndefined();
-  });
-
-  it('should exclude maker and taker fee when ZRX token unavailable', () => {
-    const tokens = { ...simpleTokens, [ZRX_FIXTURE.address]: undefined };
-    const viewModel = transformFill(tokens, relayers, simpleFill);
-
-    expect(viewModel.makerFee).toEqual({ USD: 0.2, ZRX: undefined });
-    expect(viewModel.takerFee).toEqual({ USD: 0.3, ZRX: undefined });
   });
 });
