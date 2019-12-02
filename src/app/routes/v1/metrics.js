@@ -158,17 +158,25 @@ const createRouter = () => {
     },
   );
 
-  router.get('/protocol', async ({ request, response }, next) => {
-    const period = request.query.period || TIME_PERIOD.MONTH;
+  router.get(
+    '/protocol',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const period = request.query.period || TIME_PERIOD.MONTH;
 
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const metricInterval = getMetricIntervalForTimePeriod(period);
-    const metrics = await getProtocolMetrics(dateFrom, dateTo, metricInterval);
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const metricInterval = getMetricIntervalForTimePeriod(period);
+      const metrics = await getProtocolMetrics(
+        dateFrom,
+        dateTo,
+        metricInterval,
+      );
 
-    response.body = metrics;
+      response.body = metrics;
 
-    await next();
-  });
+      await next();
+    },
+  );
 
   return router;
 };

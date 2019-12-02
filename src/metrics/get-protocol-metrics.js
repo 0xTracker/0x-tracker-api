@@ -2,7 +2,7 @@ const _ = require('lodash');
 const moment = require('moment');
 
 const { METRIC_INTERVAL } = require('../constants');
-const ProtocolVersionMetric = require('../model/protocol-version-metric');
+const ProtocolMetric = require('../model/protocol-metric');
 
 const getProtocolVersionMetrics = async (dateFrom, dateTo, metricInterval) => {
   const dayFrom = moment
@@ -66,7 +66,7 @@ const getProtocolVersionMetrics = async (dateFrom, dateTo, metricInterval) => {
     },
   ]);
 
-  const results = await ProtocolVersionMetric.aggregate(pipeline);
+  const results = await ProtocolMetric.aggregate(pipeline);
 
   const dataPoints = _(results).map(dataPoint => {
     return {

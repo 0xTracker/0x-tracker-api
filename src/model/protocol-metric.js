@@ -24,6 +24,6 @@ const schema = mongoose.Schema({
   ],
 });
 
-const Model = mongoose.model('ProtocolVersionMetric', schema);
+const Model = mongoose.model('ProtocolMetric', schema);
 
 module.exports = Model;
