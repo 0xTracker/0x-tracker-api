@@ -4,8 +4,8 @@ const createMiddleware = () => async ctx => {
       errors: [
         {
           code: 'INVALID_URL',
+          message: 'The requested URL is invalid.',
           status: 404,
-          title: 'The requested URL is invalid.',
         },
       ],
     };

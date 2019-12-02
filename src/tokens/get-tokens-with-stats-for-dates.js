@@ -84,7 +84,6 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
               $group: {
                 _id: null,
                 tokenCount: { $sum: 1 },
-                usdVolume: { $sum: '$usdVolume' },
               },
             },
           ],
@@ -93,11 +92,17 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
     ]),
   );
 
-  const totalVolume = _.get(result, '[0].totals[0].usdVolume', 0);
-
   return {
     tokens: _.get(result, '[0].tokens', []).map(token => ({
-      ...token,
+      ..._.pick(token, [
+        'address',
+        'imageUrl',
+        'lastTrade',
+        'name',
+        'price',
+        'symbol',
+        'type',
+      ]),
       stats: {
         ...token.stats,
         fillVolume: {
@@ -107,7 +112,6 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
             token.decimals,
           ),
         },
-        fillVolumeShare: (token.stats.fillVolume.USD / totalVolume) * 100,
       },
     })),
     resultCount: _.get(result, '[0].totals[0].tokenCount', 0),

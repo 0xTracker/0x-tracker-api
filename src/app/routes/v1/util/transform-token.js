@@ -1,24 +1,25 @@
 const _ = require('lodash');
 
+const formatTokenType = require('../../../../tokens/format-token-type');
 const getCdnTokenImageUrl = require('../../../../tokens/get-cdn-token-image-url');
 
 const transformToken = token => {
-  const transformed = _.pick(token, [
-    'address',
-    'imageUrl',
-    'name',
-    'symbol',
-    'price',
-  ]);
-
-  if (transformed.imageUrl) {
-    return {
-      ...transformed,
-      imageUrl: getCdnTokenImageUrl(transformed.imageUrl),
-    };
-  }
-
-  return transformed;
+  return {
+    address: token.address,
+    imageUrl: _.isString(token.imageUrl)
+      ? getCdnTokenImageUrl(token.imageUrl)
+      : undefined,
+    lastTrade: _.get(token, 'price.lastTrade'),
+    name: token.name,
+    price: _.isNumber(token, 'price.lastPrice')
+      ? {
+          ...token.price,
+          last: token.price.lastPrice,
+        }
+      : undefined,
+    symbol: token.symbol,
+    type: formatTokenType(token.type),
+  };
 };
 
 module.exports = transformToken;

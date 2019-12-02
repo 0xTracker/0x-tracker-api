@@ -41,8 +41,7 @@ module.exports = {
     YEAR: 'year',
     ALL: 'all',
   },
-  WETH_TOKEN_ADDRESS: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-  ZRX_TOKEN_ADDRESS: '0xe41d2489571d322189246dafa5ebde1f4699f498',
+  WETH_TOKEN_DECIMALS: 18,
   ZRX_TOKEN_DECIMALS: 18,
   ARTICLE_SOURCES: {
     '0xproject': {

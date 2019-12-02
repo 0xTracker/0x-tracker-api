@@ -1,8 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const { METRIC_INTERVAL, ZRX_TOKEN_ADDRESS } = require('../constants');
-const { getToken } = require('../tokens/token-cache');
+const { METRIC_INTERVAL, ZRX_TOKEN_DECIMALS } = require('../constants');
 const formatTokenAmount = require('../tokens/format-token-amount');
 const RelayerMetric = require('../model/relayer-metric');
 
@@ -93,18 +92,12 @@ const getNetworkMetrics = async (
   ]);
 
   const dataPoints = await RelayerMetric.aggregate(pipeline);
-  const zrxToken = getToken(ZRX_TOKEN_ADDRESS);
-
-  if (zrxToken === undefined) {
-    throw new Error('Cannot find ZRX token');
-  }
-
   const result = dataPoints.map(dataPoint => {
     return {
       date: dataPoint._id,
       fees: {
         USD: dataPoint.feesUSD,
-        ZRX: formatTokenAmount(dataPoint.feesZRX, zrxToken),
+        ZRX: formatTokenAmount(dataPoint.feesZRX, ZRX_TOKEN_DECIMALS),
       },
       fillCount: dataPoint.fillCount,
       fillVolume: dataPoint.fillVolume,

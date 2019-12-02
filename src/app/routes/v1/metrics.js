@@ -2,106 +2,161 @@ const _ = require('lodash');
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
-const getTraderMetrics = require('../../../metrics/get-trader-metrics');
+const checkTraderExists = require('../../../traders/check-trader-exists');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getMetricIntervalForTimePeriod = require('../../../metrics/get-metric-interval-for-time-period');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getTokenMetrics = require('../../../metrics/get-token-metrics');
+const getTraderMetrics = require('../../../metrics/get-trader-metrics');
+const InvalidParameterError = require('../../errors/invalid-parameter-error');
+const MissingParameterError = require('../../errors/missing-parameter-error');
+const Token = require('../../../model/token');
+const validatePeriod = require('../../middleware/validate-period');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/metrics' });
 
-  router.get('/network', async ({ request, response }, next) => {
-    const period = request.query.period || TIME_PERIOD.MONTH;
-    const relayerId = request.query.relayer;
-    const relayerLookupId = await getRelayerLookupId(relayerId);
+  router.get(
+    '/network',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const period = request.query.period || TIME_PERIOD.MONTH;
 
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const metricInterval = getMetricIntervalForTimePeriod(period);
-    const metrics = await getNetworkMetrics(dateFrom, dateTo, metricInterval, {
-      relayerId: relayerLookupId,
-    });
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const metricInterval = getMetricIntervalForTimePeriod(period);
+      const metrics = await getNetworkMetrics(dateFrom, dateTo, metricInterval);
 
-    response.body = metrics.map(metric => ({
-      date: metric.date,
-      fees: metric.fees,
-      fills: metric.fillCount,
-      volume: metric.fillVolume,
-    }));
+      response.body = metrics.map(metric => ({
+        date: metric.date,
+        fees: metric.fees,
+        fillCount: metric.fillCount,
+        fillVolume: metric.fillVolume,
+        tradeCount: metric.tradeCount,
+        tradeVolume: metric.tradeVolume,
+      }));
 
-    await next();
-  });
+      await next();
+    },
+  );
 
-  router.get('/token-volume', async ({ request, response }, next) => {
-    const { token } = request.query;
-    const period = request.query.period || TIME_PERIOD.MONTH;
+  router.get(
+    '/token',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const tokenAddress = request.query.token;
 
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      if (tokenAddress === undefined) {
+        throw new MissingParameterError('token');
+      }
 
-    const metricInterval = getMetricIntervalForTimePeriod(period);
-    const metrics = await getTokenMetrics(
-      token,
-      dateFrom,
-      dateTo,
-      metricInterval,
-    );
+      const period = request.query.period || TIME_PERIOD.MONTH;
 
-    response.body = metrics;
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
 
-    await next();
-  });
+      const metricInterval = getMetricIntervalForTimePeriod(period);
+      const token = await Token.findOne({ address: tokenAddress });
 
-  router.get('/address', async ({ request, response }, next) => {
-    const { address } = request.query;
+      if (token === null) {
+        throw new InvalidParameterError(
+          `No tokens have been traded with an address of "${tokenAddress}"`,
+          'Invalid query parameter: token',
+        );
+      }
 
-    if (_.isEmpty(address)) {
-      throw new Error('Address must be provided');
-    }
+      const metrics = await getTokenMetrics(
+        token,
+        dateFrom,
+        dateTo,
+        metricInterval,
+      );
 
-    const period = request.query.period || TIME_PERIOD.MONTH;
+      response.body = metrics;
 
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const metricInterval = getMetricIntervalForTimePeriod(period);
-    const metrics = await getTraderMetrics(
-      address,
-      dateFrom,
-      dateTo,
-      metricInterval,
-    );
+      await next();
+    },
+  );
 
-    response.body = metrics.map(metric => ({
-      date: metric.date,
-      fillCount: metric.fillCount.total,
-      fillVolume: { USD: metric.fillVolume.total },
-    }));
+  router.get(
+    '/trader',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const { address } = request.query;
 
-    await next();
-  });
+      if (_.isEmpty(address)) {
+        throw new MissingParameterError('address');
+      }
 
-  router.get('/trader', async ({ request, response }, next) => {
-    const { address } = request.query;
+      const traderExists = await checkTraderExists(address);
 
-    if (_.isEmpty(address)) {
-      throw new Error('Address must be provided');
-    }
+      if (!traderExists) {
+        throw new InvalidParameterError(
+          `No trader exists with an address of "${address}"`,
+          'Invalid query parameter: address',
+        );
+      }
 
-    const period = request.query.period || TIME_PERIOD.MONTH;
+      const period = request.query.period || TIME_PERIOD.MONTH;
 
-    const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-    const metricInterval = getMetricIntervalForTimePeriod(period);
-    const metrics = await getTraderMetrics(
-      address,
-      dateFrom,
-      dateTo,
-      metricInterval,
-    );
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const metricInterval = getMetricIntervalForTimePeriod(period);
+      const metrics = await getTraderMetrics(
+        address,
+        dateFrom,
+        dateTo,
+        metricInterval,
+      );
 
-    response.body = metrics;
+      response.body = metrics;
 
-    await next();
-  });
+      await next();
+    },
+  );
+
+  router.get(
+    '/relayer',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const period = request.query.period || TIME_PERIOD.MONTH;
+      const relayerId = request.query.relayer;
+
+      if (relayerId === undefined) {
+        throw new MissingParameterError('relayer');
+      }
+
+      const relayerLookupId = await getRelayerLookupId(relayerId);
+
+      if (relayerLookupId === undefined) {
+        throw new InvalidParameterError(
+          `No relayer exists with an ID of "${relayerId}"`,
+          `Invalid query parameter: relayer`,
+        );
+      }
+
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const metricInterval = getMetricIntervalForTimePeriod(period);
+      const metrics = await getNetworkMetrics(
+        dateFrom,
+        dateTo,
+        metricInterval,
+        {
+          relayerId: relayerLookupId,
+        },
+      );
+
+      response.body = metrics.map(metric => ({
+        date: metric.date,
+        fees: metric.fees,
+        fillCount: metric.fillCount,
+        fillVolume: metric.fillVolume,
+        tradeCount: metric.tradeCount,
+        tradeVolume: metric.tradeVolume,
+      }));
+
+      await next();
+    },
+  );
 
   router.get('/protocol', async ({ request, response }, next) => {
     const period = request.query.period || TIME_PERIOD.MONTH;

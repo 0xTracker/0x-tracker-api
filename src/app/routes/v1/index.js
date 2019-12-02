@@ -1,10 +1,10 @@
 const Router = require('koa-router');
 
-const createAddressesRouter = require('./addresses');
 const createArticlesRouter = require('./articles');
 const createArticleSourcesRouter = require('./article-sources');
 const createFillsRouter = require('./fills');
 const createMetricsRouter = require('./metrics');
+const createRelayerRouter = require('./relayer');
 const createRelayersRouter = require('./relayers');
 const createStatsRouter = require('./stats');
 const createTokenRouter = require('./token');
@@ -16,11 +16,11 @@ const createRouter = () => {
   const router = new Router();
 
   router.use(
-    createAddressesRouter().routes(),
     createArticlesRouter().routes(),
     createArticleSourcesRouter().routes(),
     createFillsRouter().routes(),
     createMetricsRouter().routes(),
+    createRelayerRouter().routes(),
     createRelayersRouter().routes(),
     createStatsRouter().routes(),
     createTokenRouter().routes(),

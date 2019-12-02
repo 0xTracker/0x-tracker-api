@@ -1,18 +1,11 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const { METRIC_INTERVAL, ZRX_TOKEN_ADDRESS } = require('../constants');
-const { getToken } = require('../tokens/token-cache');
+const { METRIC_INTERVAL } = require('../constants');
 const formatTokenAmount = require('../tokens/format-token-amount');
 const TokenMetric = require('../model/token-metric');
-const Token = require('../model/token');
 
-const getTokenMetrics = async (
-  tokenAddress,
-  dateFrom,
-  dateTo,
-  metricInterval,
-) => {
+const getTokenMetrics = async (token, dateFrom, dateTo, metricInterval) => {
   const dayFrom = moment
     .utc(dateFrom)
     .startOf('day')
@@ -34,13 +27,19 @@ const getTokenMetrics = async (
     metricInterval === METRIC_INTERVAL.DAY
       ? [
           {
-            $match: { date: { $gte: dayFrom, $lte: dayTo }, tokenAddress },
+            $match: {
+              date: { $gte: dayFrom, $lte: dayTo },
+              tokenAddress: token.address,
+            },
           },
           { $sort: { date: 1 } },
         ]
       : [
           {
-            $match: { date: { $gte: dayFrom, $lte: dayTo }, tokenAddress },
+            $match: {
+              date: { $gte: dayFrom, $lte: dayTo },
+              tokenAddress: token.address,
+            },
           },
           {
             $unwind: {
@@ -80,20 +79,14 @@ const getTokenMetrics = async (
         ];
 
   const dataPoints = await TokenMetric.aggregate(pipeline);
-  const zrxToken = getToken(ZRX_TOKEN_ADDRESS);
 
-  if (zrxToken === undefined) {
-    throw new Error('Cannot find ZRX token');
-  }
-
-  const token = await Token.findOne({ address: tokenAddress });
   const result = dataPoints.map(dataPoint => {
     return {
       date: _.get(dataPoint, 'date', dataPoint._id),
       fillCount: dataPoint.fillCount,
-      volume: {
+      fillVolume: {
+        token: formatTokenAmount(dataPoint.tokenVolume, token),
         USD: dataPoint.usdVolume,
-        [token.symbol]: formatTokenAmount(dataPoint.tokenVolume, token),
       },
     };
   });

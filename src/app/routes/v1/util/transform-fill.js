@@ -1,8 +1,8 @@
 const _ = require('lodash');
 
 const {
-  WETH_TOKEN_ADDRESS,
-  ZRX_TOKEN_ADDRESS,
+  WETH_TOKEN_DECIMALS,
+  ZRX_TOKEN_DECIMALS,
 } = require('../../../../constants');
 const formatFillStatus = require('../../../../fills/format-fill-status');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
@@ -17,27 +17,25 @@ const transformFill = (tokens, relayers, fill) => {
   const fees = getFeesForFill(tokens, fill);
   const conversions = _.get(fill, `conversions.USD`);
   const fillRelayer = _.find(relayers, { lookupId: fill.relayerId });
-  const wethToken = tokens[WETH_TOKEN_ADDRESS];
-  const zrxToken = tokens[ZRX_TOKEN_ADDRESS];
 
   const makerFee =
     fill.makerFee !== undefined
       ? {
           USD: _.get(conversions, 'makerFee'),
-          ZRX: formatTokenAmount(fill.makerFee, zrxToken),
+          ZRX: formatTokenAmount(fill.makerFee, ZRX_TOKEN_DECIMALS),
         }
-      : null;
+      : undefined;
 
   const takerFee =
     fill.takerFee !== undefined
       ? {
           USD: _.get(conversions, 'takerFee'),
-          ZRX: formatTokenAmount(fill.takerFee, zrxToken),
+          ZRX: formatTokenAmount(fill.takerFee, ZRX_TOKEN_DECIMALS),
         }
-      : null;
+      : undefined;
 
   const totalFees =
-    takerFee !== null || makerFee !== null
+    takerFee !== undefined || makerFee !== undefined
       ? {
           USD: makerFee.USD + takerFee.USD,
           ZRX:
@@ -48,9 +46,9 @@ const transformFill = (tokens, relayers, fill) => {
       : undefined;
 
   const protocolFee =
-    fill.protocolFee !== undefined && wethToken !== undefined
+    fill.protocolFee !== undefined
       ? {
-          ETH: formatTokenAmount(fill.protocolFee, wethToken),
+          ETH: formatTokenAmount(fill.protocolFee, WETH_TOKEN_DECIMALS),
           USD: _.get(conversions, 'protocolFee'),
         }
       : undefined;

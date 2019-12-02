@@ -14,9 +14,8 @@ const getArticleSources = async () => {
     return sourceRelayer
       ? {
           ..._.pick(sourceRelayer, 'name', 'imageUrl', 'url', 'slug'),
-          type: 'relayer',
         }
-      : { ...source, type: 'other' };
+      : source;
   });
 };
 
