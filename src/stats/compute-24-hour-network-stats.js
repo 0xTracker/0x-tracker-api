@@ -62,6 +62,12 @@ const compute24HourNetworkStats = async () => {
           fillVolume: {
             $sum: '$hours.minutes.fillVolume',
           },
+          protocolFeesUSD: {
+            $sum: '$hours.minutes.protocolFees.USD',
+          },
+          protocolFeesZRX: {
+            $sum: '$hours.minutes.protocolFees.ZRX',
+          },
         },
       },
     ]),
@@ -95,6 +101,10 @@ const compute24HourNetworkStats = async () => {
     },
     fillCount: _.get(fillResults, '0.fillCount', 0),
     fillVolume: _.get(fillResults, '0.fillVolume', 0),
+    protocolFees: {
+      USD: _.get(fillResults, '0.protocolFeesUSD', 0),
+      ZRX: _.get(fillResults, '0.protocolFeesZRX', 0),
+    },
     tradeCount: _.get(tradeResults, '0.tradeCount', 0),
     tradeVolume: _.get(tradeResults, '0.tradeVolume', 0),
   };

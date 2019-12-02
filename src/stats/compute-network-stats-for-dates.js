@@ -30,6 +30,12 @@ const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
           fillVolume: {
             $sum: '$fillVolume',
           },
+          protocolFeesUSD: {
+            $sum: '$protocolFees.USD',
+          },
+          protocolFeesZRX: {
+            $sum: '$protocolFees.ZRX',
+          },
         },
       },
     ]),
@@ -62,6 +68,10 @@ const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
     },
     fillCount: _.get(fillResults, '0.fillCount', 0),
     fillVolume: _.get(fillResults, '0.fillVolume', 0),
+    protocolFees: {
+      USD: _.get(fillResults, '0.protocolFeesUSD', 0),
+      ZRX: _.get(fillResults, '0.protocolFeesZRX', 0),
+    },
     tradeCount: _.get(tradeResults, '0.tradeCount', 0),
     tradeVolume: _.get(tradeResults, '0.tradeVolume', 0),
   };

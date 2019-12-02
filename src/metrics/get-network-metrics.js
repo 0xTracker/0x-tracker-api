@@ -52,6 +52,10 @@ const getNetworkMetrics = async (
         },
         fillCount: '$hours.fillCount',
         fillVolume: '$hours.fillVolume',
+        protocolFees: {
+          USD: '$hours.protocolFees.USD',
+          ZRX: '$hours.protocolFees.ZRX',
+        },
         tradeCount: '$hours.tradeCount',
         tradeVolume: '$hours.tradeVolume',
       },
@@ -75,6 +79,12 @@ const getNetworkMetrics = async (
         },
         fillVolume: {
           $sum: '$fillVolume',
+        },
+        protocolFeesUSD: {
+          $sum: '$protocolFees.USD',
+        },
+        protocolFeesZRX: {
+          $sum: '$protocolFees.ZRX',
         },
         tradeCount: {
           $sum: '$tradeCount',
@@ -101,6 +111,10 @@ const getNetworkMetrics = async (
       },
       fillCount: dataPoint.fillCount,
       fillVolume: dataPoint.fillVolume,
+      protocolFees: {
+        USD: dataPoint.protocolFeesUSD,
+        ZRX: formatTokenAmount(dataPoint.protocolFeesZRX, ZRX_TOKEN_DECIMALS),
+      },
       tradeCount: dataPoint.tradeCount,
       tradeVolume: dataPoint.tradeVolume,
     };
