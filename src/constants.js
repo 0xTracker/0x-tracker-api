@@ -41,7 +41,7 @@ module.exports = {
     YEAR: 'year',
     ALL: 'all',
   },
-  WETH_TOKEN_DECIMALS: 18,
+  ETH_TOKEN_DECIMALS: 18,
   ZRX_TOKEN_DECIMALS: 18,
   ARTICLE_SOURCES: {
     '0xproject': {

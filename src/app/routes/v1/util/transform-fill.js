@@ -1,7 +1,7 @@
 const _ = require('lodash');
 
 const {
-  WETH_TOKEN_DECIMALS,
+  ETH_TOKEN_DECIMALS,
   ZRX_TOKEN_DECIMALS,
 } = require('../../../../constants');
 const formatFillStatus = require('../../../../fills/format-fill-status');
@@ -48,7 +48,7 @@ const transformFill = (tokens, relayers, fill) => {
   const protocolFee =
     fill.protocolFee !== undefined
       ? {
-          ETH: formatTokenAmount(fill.protocolFee, WETH_TOKEN_DECIMALS),
+          ETH: formatTokenAmount(fill.protocolFee, ETH_TOKEN_DECIMALS),
           USD: _.get(conversions, 'protocolFee'),
         }
       : undefined;
