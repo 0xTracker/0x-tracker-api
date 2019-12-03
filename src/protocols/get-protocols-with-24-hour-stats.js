@@ -4,9 +4,10 @@ const moment = require('moment');
 const ProtocolMetric = require('../model/protocol-metric');
 
 const getProtocolsWith24HourStats = async options => {
-  const { page, limit } = _.defaults({}, options, {
+  const { page, limit, sortBy } = _.defaults({}, options, {
     page: 1,
     limit: 20,
+    sortBy: 'fillVolume',
   });
 
   const dateTo = moment.utc().toDate();
@@ -65,7 +66,7 @@ const getProtocolsWith24HourStats = async options => {
     {
       $facet: {
         protocols: [
-          { $sort: { fillVolume: -1 } },
+          { $sort: { [sortBy]: -1 } },
           { $skip: (page - 1) * limit },
           { $limit: limit },
           {
