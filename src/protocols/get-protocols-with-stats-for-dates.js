@@ -1,100 +1,48 @@
 const _ = require('lodash');
 
-const AddressMetric = require('../model/address-metric');
-const getRelayerTakerAddresses = require('../relayers/get-relayer-taker-addresses');
+const ProtocolMetric = require('../model/protocol-metric');
 
-const getTradersWithStatsForDates = async (dateFrom, dateTo, options) => {
-  const { excludeRelayers, page, limit, type } = _.defaults({}, options, {
-    excludeRelayers: true,
+const getProtocolsWithStatsForDates = async (dateFrom, dateTo, options) => {
+  const { page, limit } = _.defaults({}, options, {
     page: 1,
     limit: 20,
   });
 
-  const relayerTakerAddresses = await getRelayerTakerAddresses();
-  const result = await AddressMetric.aggregate(
+  const result = await ProtocolMetric.aggregate(
     _.compact([
       {
-        $match: _.pickBy(
-          {
-            address: excludeRelayers
-              ? { $nin: relayerTakerAddresses }
-              : undefined,
-            date: {
-              $gte: dateFrom,
-              $lte: dateTo,
-            },
-          },
-          value => value !== undefined,
-        ),
-      },
-      {
-        $project: {
-          address: 1,
-          fillCountMaker: '$fillCount.maker',
-          fillCountTaker: '$fillCount.taker',
-          fillCountTotal: {
-            $ifNull: ['$fillCount.total', '$fillCount'],
-          },
-          fillVolumeMaker: '$fillVolume.maker',
-          fillVolumeTaker: '$fillVolume.taker',
-          fillVolumeTotal: {
-            $ifNull: ['$fillVolume.total', '$fillVolume'],
+        $match: {
+          date: {
+            $gte: dateFrom,
+            $lte: dateTo,
           },
         },
       },
       {
         $group: {
-          _id: '$address',
-          fillCountMaker: {
-            $sum: '$fillCountMaker',
+          _id: '$protocolVersion',
+          fillCount: {
+            $sum: '$fillCount',
           },
-          fillCountTaker: {
-            $sum: '$fillCountTaker',
-          },
-          fillCountTotal: {
-            $sum: '$fillCountTotal',
-          },
-          fillVolumeMaker: {
-            $sum: '$fillVolumeMaker',
-          },
-          fillVolumeTaker: {
-            $sum: '$fillVolumeTaker',
-          },
-          fillVolumeTotal: {
-            $sum: '$fillVolumeTotal',
+          fillVolume: {
+            $sum: '$fillVolume',
           },
         },
       },
-      type !== undefined
-        ? {
-            $match:
-              type === 'maker'
-                ? { fillCountMaker: { $gte: 1 } }
-                : { fillCountTaker: { $gte: 1 } },
-          }
-        : null,
       {
         $facet: {
-          addresses: [
-            { $sort: { fillVolumeTotal: -1 } },
+          protocols: [
+            { $sort: { fillVolume: -1 } },
             { $skip: (page - 1) * limit },
             { $limit: limit },
             {
               $project: {
                 _id: 0,
-                address: '$_id',
                 stats: {
-                  fillCount: {
-                    maker: '$fillCountMaker',
-                    taker: '$fillCountTaker',
-                    total: '$fillCountTotal',
-                  },
-                  fillVolume: {
-                    maker: '$fillVolumeMaker',
-                    taker: '$fillVolumeTaker',
-                    total: '$fillVolumeTotal',
-                  },
+                  fillCount: '$fillCount',
+                  fillVolume: '$fillVolume',
                 },
+                version: '$_id',
               },
             },
           ],
@@ -105,9 +53,9 @@ const getTradersWithStatsForDates = async (dateFrom, dateTo, options) => {
   );
 
   return {
-    traders: _.get(result, '0.addresses', []),
+    protocols: _.get(result, '0.protocols', []),
     resultCount: _.get(result, '0.resultCount.0.value', 0),
   };
 };
 
-module.exports = getTradersWithStatsForDates;
+module.exports = getProtocolsWithStatsForDates;
