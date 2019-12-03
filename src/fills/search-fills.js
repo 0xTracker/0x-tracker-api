@@ -3,7 +3,7 @@ const _ = require('lodash');
 const Fill = require('../model/fill');
 
 const getFilterForParams = params => {
-  const { address, query, relayerId, token } = params;
+  const { address, protocolVersion, query, relayerId, token } = params;
 
   if (_.isString(query)) {
     return {
@@ -34,6 +34,10 @@ const getFilterForParams = params => {
     return {
       relayerId,
     };
+  }
+
+  if (_.isFinite(protocolVersion)) {
+    return { protocolVersion };
   }
 
   return {};
