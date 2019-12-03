@@ -27,7 +27,7 @@ const createRouter = () => {
       ) {
         throw new InvalidParameterError(
           'Must be one of: fillCount, fillVolume',
-          'Invalid query parameter: sortOrder',
+          'Invalid query parameter: sortBy',
         );
       }
 
