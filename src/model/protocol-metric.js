@@ -4,17 +4,11 @@ const metricShape = {
   date: Date,
   fillCount: Number,
   fillVolume: Number,
-  protocolFees: {
-    ETH: Number,
-    USD: Number,
-  },
-  tradeCount: Number,
-  tradeVolume: Number,
 };
 
 const schema = mongoose.Schema({
   ...metricShape,
-  relayerId: Number,
+  protocolVersion: Number,
   hours: [
     {
       ...metricShape,
@@ -27,6 +21,6 @@ const schema = mongoose.Schema({
   ],
 });
 
-const Model = mongoose.model('RelayerMetric', schema);
+const Model = mongoose.model('ProtocolMetric', schema);
 
 module.exports = Model;

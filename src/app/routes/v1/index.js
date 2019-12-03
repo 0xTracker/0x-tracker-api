@@ -4,6 +4,7 @@ const createArticlesRouter = require('./articles');
 const createArticleSourcesRouter = require('./article-sources');
 const createFillsRouter = require('./fills');
 const createMetricsRouter = require('./metrics');
+const createProtocolsRouter = require('./protocols');
 const createRelayerRouter = require('./relayer');
 const createRelayersRouter = require('./relayers');
 const createStatsRouter = require('./stats');
@@ -20,6 +21,7 @@ const createRouter = () => {
     createArticleSourcesRouter().routes(),
     createFillsRouter().routes(),
     createMetricsRouter().routes(),
+    createProtocolsRouter().routes(),
     createRelayerRouter().routes(),
     createRelayersRouter().routes(),
     createStatsRouter().routes(),

@@ -32,6 +32,7 @@ const createRouter = () => {
         fees: metric.fees,
         fillCount: metric.fillCount,
         fillVolume: metric.fillVolume,
+        protocolFees: metric.protocolFees,
         tradeCount: metric.tradeCount,
         tradeVolume: metric.tradeVolume,
       }));

@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const moment = require('moment');
 const mongoose = require('mongoose');
 const Router = require('koa-router');
@@ -23,6 +24,10 @@ const createRouter = () => {
       const relayerId = request.query.relayer;
       const query = request.query.q;
       const relayerLookupId = await getRelayerLookupId(relayerId);
+      const protocolVersion =
+        request.query.protocolVersion !== undefined
+          ? _.toNumber(request.query.protocolVersion)
+          : undefined;
 
       if (relayerId !== undefined && relayerLookupId === undefined) {
         throw new InvalidParameterError(
@@ -31,10 +36,25 @@ const createRouter = () => {
         );
       }
 
+      if (protocolVersion !== undefined && !_.isFinite(protocolVersion)) {
+        throw new InvalidParameterError(
+          'Must be a valid number',
+          'Invalid query parameter: protocolVersion',
+        );
+      }
+
+      if (protocolVersion !== undefined && protocolVersion < 1) {
+        throw new InvalidParameterError(
+          'Cannot be less than 1',
+          'Invalid query parameter: protocolVersion',
+        );
+      }
+
       const { docs, pages, total } = await searchFills(
         {
           address,
           dateFrom: moment().subtract(6, 'months'),
+          protocolVersion,
           query,
           relayerId: relayerLookupId,
           token,

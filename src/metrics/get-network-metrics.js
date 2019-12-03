@@ -1,7 +1,11 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const { METRIC_INTERVAL, ZRX_TOKEN_DECIMALS } = require('../constants');
+const {
+  ETH_TOKEN_DECIMALS,
+  METRIC_INTERVAL,
+  ZRX_TOKEN_DECIMALS,
+} = require('../constants');
 const formatTokenAmount = require('../tokens/format-token-amount');
 const RelayerMetric = require('../model/relayer-metric');
 
@@ -52,6 +56,10 @@ const getNetworkMetrics = async (
         },
         fillCount: '$hours.fillCount',
         fillVolume: '$hours.fillVolume',
+        protocolFees: {
+          ETH: '$hours.protocolFees.ETH',
+          USD: '$hours.protocolFees.USD',
+        },
         tradeCount: '$hours.tradeCount',
         tradeVolume: '$hours.tradeVolume',
       },
@@ -75,6 +83,12 @@ const getNetworkMetrics = async (
         },
         fillVolume: {
           $sum: '$fillVolume',
+        },
+        protocolFeesUSD: {
+          $sum: '$protocolFees.USD',
+        },
+        protocolFeesETH: {
+          $sum: '$protocolFees.ETH',
         },
         tradeCount: {
           $sum: '$tradeCount',
@@ -101,6 +115,10 @@ const getNetworkMetrics = async (
       },
       fillCount: dataPoint.fillCount,
       fillVolume: dataPoint.fillVolume,
+      protocolFees: {
+        ETH: formatTokenAmount(dataPoint.protocolFeesETH, ETH_TOKEN_DECIMALS),
+        USD: dataPoint.protocolFeesUSD,
+      },
       tradeCount: dataPoint.tradeCount,
       tradeVolume: dataPoint.tradeVolume,
     };
