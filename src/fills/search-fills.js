@@ -1,68 +1,89 @@
 const _ = require('lodash');
 
+const elasticsearch = require('../util/elasticsearch');
 const Fill = require('../model/fill');
 
-const getFilterForParams = params => {
-  const { address, protocolVersion, query, relayerId, token } = params;
+const buildQuery = ({
+  address,
+  dateFrom,
+  protocolVersion,
+  query,
+  relayerId,
+  token,
+}) => {
+  const filters = [];
 
-  if (_.isString(query)) {
-    return {
-      $or: [
-        { feeRecipient: query },
-        { maker: query },
-        { orderHash: query },
-        { taker: query },
-        { transactionHash: query },
-        { senderAddress: query },
-      ],
-    };
+  if (dateFrom !== undefined) {
+    filters.push({ range: { date: { gte: dateFrom.toISOString() } } });
   }
 
-  if (_.isString(token)) {
-    return {
-      'assets.tokenAddress': token,
-    };
-  }
-
-  if (_.isString(address)) {
-    return {
-      $or: [{ maker: address }, { taker: address }],
-    };
-  }
-
-  if (_.isNumber(relayerId)) {
-    return {
-      relayerId,
-    };
+  if (_.isFinite(relayerId)) {
+    filters.push({ term: { relayerId } });
   }
 
   if (_.isFinite(protocolVersion)) {
-    return { protocolVersion };
+    filters.push({ term: { protocolVersion } });
   }
 
-  return {};
+  if (_.isString(token)) {
+    filters.push({ match_phrase: { 'assets.tokenAddress': token } });
+  }
+
+  if (_.isString(address)) {
+    filters.push({
+      multi_match: {
+        fields: ['maker', 'taker'],
+        query: address,
+        type: 'phrase',
+      },
+    });
+  }
+
+  if (_.isString(query)) {
+    filters.push({
+      multi_match: {
+        fields: [
+          'feeRecipient',
+          'maker',
+          'orderHash',
+          'senderAddress',
+          'taker',
+          'transactionHash',
+        ],
+        query,
+        type: 'phrase',
+      },
+    });
+  }
+
+  return filters.length === 0
+    ? undefined
+    : {
+        bool: { filter: filters },
+      };
 };
 
-const buildFilter = params => {
-  return _.pickBy(
-    {
-      date:
-        params.dateFrom !== undefined ? { $gte: params.dateFrom } : undefined,
-      ...getFilterForParams(params),
+const searchFills = async (params, options) => {
+  const results = await elasticsearch.getClient().search({
+    index: 'fills',
+    body: {
+      _source: false,
+      query: buildQuery(params),
+      size: options.limit,
+      sort: [{ date: 'desc' }],
+      track_total_hits: true,
     },
-    value => value !== undefined,
-  );
-};
-
-const searchFills = (params, options) => {
-  const filter = buildFilter(params);
-
-  return Fill.paginate(filter, {
-    sort: { date: -1 },
-    lean: true,
-    limit: options.limit,
-    page: options.page,
   });
+
+  const resultCount = results.body.hits.total.value;
+  const fillIds = results.body.hits.hits.map(hit => hit._id);
+  const fills = await Fill.find({ _id: { $in: fillIds } }).sort({ date: -1 });
+
+  return {
+    docs: fills,
+    pages: Math.ceil(resultCount / options.limit),
+    total: resultCount,
+  };
 };
 
 module.exports = searchFills;
