@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate');
 
 const { FILL_STATUS } = require('../constants');
 
@@ -46,6 +47,8 @@ const schema = Schema({
   takerFee: Number,
   transactionHash: String,
 });
+
+schema.plugin(mongoosePaginate);
 
 const Model = mongoose.model('Fill', schema);
 
