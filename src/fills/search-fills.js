@@ -31,58 +31,27 @@ const buildQuery = ({
 
   if (_.isString(address)) {
     filters.push({
-      bool: {
-        should: [
-          {
-            match_phrase: {
-              maker: address,
-            },
-          },
-          {
-            match_phrase: {
-              taker: address,
-            },
-          },
-        ],
+      multi_match: {
+        fields: ['maker', 'taker'],
+        query: address,
+        type: 'phrase',
       },
     });
   }
 
   if (_.isString(query)) {
     filters.push({
-      bool: {
-        should: [
-          {
-            match_phrase: {
-              feeRecipient: query,
-            },
-          },
-          {
-            match_phrase: {
-              orderHash: query,
-            },
-          },
-          {
-            match_phrase: {
-              maker: query,
-            },
-          },
-          {
-            match_phrase: {
-              senderAddress: query,
-            },
-          },
-          {
-            match_phrase: {
-              taker: query,
-            },
-          },
-          {
-            match_phrase: {
-              transactionHash: query,
-            },
-          },
+      multi_match: {
+        fields: [
+          'feeRecipient',
+          'maker',
+          'orderHash',
+          'senderAddress',
+          'taker',
+          'transactionHash',
         ],
+        query,
+        type: 'phrase',
       },
     });
   }
