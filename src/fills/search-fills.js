@@ -68,6 +68,7 @@ const searchFills = async (params, options) => {
     index: 'fills',
     body: {
       _source: false,
+      from: (options.page - 1) * options.limit,
       query: buildQuery(params),
       size: options.limit,
       sort: [{ date: 'desc' }],
