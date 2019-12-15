@@ -41,7 +41,7 @@
     "moment": "2.24.0",
     "mongoose": "5.4.19",
     "mongoose-paginate": "5.0.3",
-    "ms": "2.1.1",
+    "ms": "2.1.2",
     "signale": "1.4.0"
   },
   "engines": {
