@@ -6,15 +6,24 @@ const Fill = require('../model/fill');
 const buildQuery = ({
   address,
   dateFrom,
+  dateTo,
   protocolVersion,
   query,
   relayerId,
+  status,
   token,
 }) => {
   const filters = [];
 
-  if (dateFrom !== undefined) {
-    filters.push({ range: { date: { gte: dateFrom.toISOString() } } });
+  if (dateFrom !== undefined || dateTo !== undefined) {
+    filters.push({
+      range: {
+        date: {
+          gte: dateFrom !== undefined ? dateFrom.toISOString() : undefined,
+          lte: dateTo !== undefined ? dateTo.toISOString() : undefined,
+        },
+      },
+    });
   }
 
   if (_.isFinite(relayerId)) {
@@ -54,6 +63,10 @@ const buildQuery = ({
         type: 'phrase',
       },
     });
+  }
+
+  if (_.isNumber(status)) {
+    filters.push({ term: { status } });
   }
 
   return filters.length === 0
