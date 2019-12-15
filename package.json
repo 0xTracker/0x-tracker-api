@@ -39,7 +39,7 @@
     "lodash": "4.17.15",
     "memory-cache": "0.2.0",
     "moment": "2.24.0",
-    "mongoose": "5.4.19",
+    "mongoose": "5.7.5",
     "mongoose-paginate": "5.0.3",
     "ms": "2.1.1",
     "signale": "1.4.0"
