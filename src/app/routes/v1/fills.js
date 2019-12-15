@@ -9,6 +9,7 @@ const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getRelayers = require('../../../relayers/get-relayers');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const pagination = require('../../middleware/pagination');
+const reverseMapStatus = require('../../../fills/reverse-map-status');
 const searchFills = require('../../../fills/search-fills');
 const transformFill = require('./util/transform-fill');
 const transformFills = require('./util/transform-fills');
@@ -20,7 +21,7 @@ const createRouter = () => {
     '/',
     pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
     async ({ pagination: { limit, page }, request, response }, next) => {
-      const { address, token } = request.query;
+      const { address, status, token } = request.query;
       const relayerId = request.query.relayer;
       const query = request.query.q;
       const relayerLookupId = await getRelayerLookupId(relayerId);
@@ -28,6 +29,16 @@ const createRouter = () => {
         request.query.protocolVersion !== undefined
           ? _.toNumber(request.query.protocolVersion)
           : undefined;
+
+      if (
+        status !== undefined &&
+        !['failed', 'pending', 'successful'].includes(status)
+      ) {
+        throw new InvalidParameterError(
+          'Must be one of: failed, pending, successful',
+          'Invalid query parameter: status',
+        );
+      }
 
       if (relayerId !== undefined && relayerLookupId === undefined) {
         throw new InvalidParameterError(
@@ -57,6 +68,7 @@ const createRouter = () => {
           protocolVersion,
           query,
           relayerId: relayerLookupId,
+          status: reverseMapStatus(status),
           token,
         },
         { limit, page },

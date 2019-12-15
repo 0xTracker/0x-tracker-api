@@ -9,6 +9,7 @@ const buildQuery = ({
   protocolVersion,
   query,
   relayerId,
+  status,
   token,
 }) => {
   const filters = [];
@@ -54,6 +55,10 @@ const buildQuery = ({
         type: 'phrase',
       },
     });
+  }
+
+  if (_.isNumber(status)) {
+    filters.push({ term: { status } });
   }
 
   return filters.length === 0
