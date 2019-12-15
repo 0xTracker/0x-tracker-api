@@ -6,6 +6,7 @@ const Fill = require('../model/fill');
 const buildQuery = ({
   address,
   dateFrom,
+  dateTo,
   protocolVersion,
   query,
   relayerId,
@@ -14,8 +15,15 @@ const buildQuery = ({
 }) => {
   const filters = [];
 
-  if (dateFrom !== undefined) {
-    filters.push({ range: { date: { gte: dateFrom.toISOString() } } });
+  if (dateFrom !== undefined || dateTo !== undefined) {
+    filters.push({
+      range: {
+        date: {
+          gte: dateFrom !== undefined ? dateFrom.toISOString() : undefined,
+          lte: dateTo !== undefined ? dateTo.toISOString() : undefined,
+        },
+      },
+    });
   }
 
   if (_.isFinite(relayerId)) {

@@ -14,6 +14,14 @@ const searchFills = require('../../../fills/search-fills');
 const transformFill = require('./util/transform-fill');
 const transformFills = require('./util/transform-fills');
 
+const parseDate = dateString => {
+  if (dateString === undefined) {
+    return undefined;
+  }
+
+  return moment(dateString);
+};
+
 const createRouter = () => {
   const router = new Router({ prefix: '/fills' });
 
@@ -25,10 +33,14 @@ const createRouter = () => {
       const relayerId = request.query.relayer;
       const query = request.query.q;
       const relayerLookupId = await getRelayerLookupId(relayerId);
+      const dateFrom = parseDate(request.query.dateFrom);
+      const dateTo = parseDate(request.query.dateTo);
       const protocolVersion =
         request.query.protocolVersion !== undefined
           ? _.toNumber(request.query.protocolVersion)
           : undefined;
+
+      const minDate = moment().subtract(6, 'months');
 
       if (
         status !== undefined &&
@@ -61,10 +73,44 @@ const createRouter = () => {
         );
       }
 
+      if (dateFrom !== undefined && !dateFrom.isValid()) {
+        throw new InvalidParameterError(
+          'Must be in ISO 8601 format',
+          'Invalid query parameter: dateFrom',
+        );
+      } else if (dateFrom !== undefined && dateFrom < minDate) {
+        throw new InvalidParameterError(
+          'Cannot be more than six months ago',
+          'Invalid query parameter: dateFrom',
+        );
+      } else if (
+        dateFrom !== undefined &&
+        dateTo !== undefined &&
+        dateFrom > dateTo
+      ) {
+        throw new InvalidParameterError(
+          'Cannot be greater than dateTo',
+          'Invalid query parameter: dateTo',
+        );
+      }
+
+      if (dateTo !== undefined && !dateTo.isValid()) {
+        throw new InvalidParameterError(
+          'Must be in ISO 8601 format',
+          'Invalid query parameter: dateTo',
+        );
+      } else if (dateTo !== undefined && dateTo < minDate) {
+        throw new InvalidParameterError(
+          'Cannot be more than six months ago',
+          'Invalid query parameter: dateTo',
+        );
+      }
+
       const { docs, pages, total } = await searchFills(
         {
           address,
-          dateFrom: moment().subtract(6, 'months'),
+          dateFrom: dateFrom !== undefined ? dateFrom : minDate,
+          dateTo,
           protocolVersion,
           query,
           relayerId: relayerLookupId,
