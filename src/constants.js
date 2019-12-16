@@ -1,4 +1,4 @@
-const { AssetProxyId } = require('@0x/contract-wrappers');
+const { AssetProxyId } = require('@0x/types');
 
 const ASSET_TYPE = {
   ERC20: 'erc-20',
