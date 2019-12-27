@@ -22,6 +22,14 @@ const parseDate = dateString => {
   return moment(dateString);
 };
 
+const parseNumber = numberString => {
+  if (numberString === undefined) {
+    return undefined;
+  }
+
+  return _.toNumber(numberString);
+};
+
 const createRouter = () => {
   const router = new Router({ prefix: '/fills' });
 
@@ -35,6 +43,8 @@ const createRouter = () => {
       const relayerLookupId = await getRelayerLookupId(relayerId);
       const dateFrom = parseDate(request.query.dateFrom);
       const dateTo = parseDate(request.query.dateTo);
+      const valueFrom = parseNumber(request.query.valueFrom);
+      const valueTo = parseNumber(request.query.valueTo);
       const protocolVersion =
         request.query.protocolVersion !== undefined
           ? _.toNumber(request.query.protocolVersion)
@@ -116,6 +126,8 @@ const createRouter = () => {
           relayerId: relayerLookupId,
           status: reverseMapStatus(status),
           token,
+          valueFrom,
+          valueTo,
         },
         { limit, page },
       );
