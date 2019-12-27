@@ -100,7 +100,7 @@ const createRouter = () => {
       ) {
         throw new InvalidParameterError(
           'Cannot be greater than dateTo',
-          'Invalid query parameter: dateTo',
+          'Invalid query parameter: dateFrom',
         );
       }
 
@@ -113,6 +113,29 @@ const createRouter = () => {
         throw new InvalidParameterError(
           'Cannot be more than six months ago',
           'Invalid query parameter: dateTo',
+        );
+      }
+
+      if (valueFrom !== undefined && valueFrom < 0) {
+        throw new InvalidParameterError(
+          'Cannot be less than zero',
+          'Invalid query parameter: valueFrom',
+        );
+      } else if (
+        valueFrom !== undefined &&
+        valueTo !== undefined &&
+        valueFrom > valueTo
+      ) {
+        throw new InvalidParameterError(
+          'Cannot be greater than valueTo',
+          'Invalid query parameter: valueFrom',
+        );
+      }
+
+      if (valueTo !== undefined && valueTo < 0) {
+        throw new InvalidParameterError(
+          'Cannot be less than zero',
+          'Invalid query parameter: valueTo',
         );
       }
 
