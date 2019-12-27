@@ -12,6 +12,8 @@ const buildQuery = ({
   relayerId,
   status,
   token,
+  valueFrom,
+  valueTo,
 }) => {
   const filters = [];
 
@@ -21,6 +23,17 @@ const buildQuery = ({
         date: {
           gte: dateFrom !== undefined ? dateFrom.toISOString() : undefined,
           lte: dateTo !== undefined ? dateTo.toISOString() : undefined,
+        },
+      },
+    });
+  }
+
+  if (valueFrom !== undefined || valueTo !== undefined) {
+    filters.push({
+      range: {
+        value: {
+          gte: valueFrom !== undefined ? valueFrom : undefined,
+          lte: valueTo !== undefined ? valueFrom : undefined,
         },
       },
     });

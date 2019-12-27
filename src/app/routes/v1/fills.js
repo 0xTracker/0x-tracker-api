@@ -22,6 +22,14 @@ const parseDate = dateString => {
   return moment(dateString);
 };
 
+const parseNumber = numberString => {
+  if (numberString === undefined) {
+    return undefined;
+  }
+
+  return _.toNumber(numberString);
+};
+
 const createRouter = () => {
   const router = new Router({ prefix: '/fills' });
 
@@ -35,6 +43,8 @@ const createRouter = () => {
       const relayerLookupId = await getRelayerLookupId(relayerId);
       const dateFrom = parseDate(request.query.dateFrom);
       const dateTo = parseDate(request.query.dateTo);
+      const valueFrom = parseNumber(request.query.valueFrom);
+      const valueTo = parseNumber(request.query.valueTo);
       const protocolVersion =
         request.query.protocolVersion !== undefined
           ? _.toNumber(request.query.protocolVersion)
@@ -90,7 +100,7 @@ const createRouter = () => {
       ) {
         throw new InvalidParameterError(
           'Cannot be greater than dateTo',
-          'Invalid query parameter: dateTo',
+          'Invalid query parameter: dateFrom',
         );
       }
 
@@ -106,6 +116,29 @@ const createRouter = () => {
         );
       }
 
+      if (valueFrom !== undefined && valueFrom < 0) {
+        throw new InvalidParameterError(
+          'Cannot be less than zero',
+          'Invalid query parameter: valueFrom',
+        );
+      } else if (
+        valueFrom !== undefined &&
+        valueTo !== undefined &&
+        valueFrom > valueTo
+      ) {
+        throw new InvalidParameterError(
+          'Cannot be greater than valueTo',
+          'Invalid query parameter: valueFrom',
+        );
+      }
+
+      if (valueTo !== undefined && valueTo < 0) {
+        throw new InvalidParameterError(
+          'Cannot be less than zero',
+          'Invalid query parameter: valueTo',
+        );
+      }
+
       const { docs, pages, total } = await searchFills(
         {
           address,
@@ -116,6 +149,8 @@ const createRouter = () => {
           relayerId: relayerLookupId,
           status: reverseMapStatus(status),
           token,
+          valueFrom,
+          valueTo,
         },
         { limit, page },
       );
