@@ -33,7 +33,7 @@ const buildQuery = ({
       range: {
         value: {
           gte: valueFrom !== undefined ? valueFrom : undefined,
-          lte: valueTo !== undefined ? valueFrom : undefined,
+          lte: valueTo !== undefined ? valueTo : undefined,
         },
       },
     });
