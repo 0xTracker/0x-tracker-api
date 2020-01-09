@@ -6,40 +6,14 @@ const {
 } = require('../../../../constants');
 const formatFillStatus = require('../../../../fills/format-fill-status');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
-const formatTokenType = require('../../../../tokens/format-token-type');
-const formatTraderType = require('../../../../traders/format-trader-type');
-const getAssetBridgeName = require('../../../../fills/get-asset-bridge-name');
+const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
 const getFeesForFill = require('../../../../fills/get-fees-for-fill');
-
-const transformAsset = (tokens, asset) => {
-  const token = tokens[asset.tokenAddress];
-  const price = _.get(asset.price, 'USD');
-
-  return {
-    amount: formatTokenAmount(asset.amount, token),
-    bridgeAddress: asset.bridgeAddress,
-    bridgeName: getAssetBridgeName(asset.bridgeAddress),
-    price: _.isNumber(price) ? { USD: price } : undefined,
-    tokenAddress: asset.tokenAddress,
-    tokenId: asset.tokenId,
-    tokenSymbol: _.get(token, 'symbol'),
-    tokenType: _.get(token, 'name'),
-    traderType: formatTraderType(asset.actor),
-    type: formatTokenType(_.get(token, 'type')),
-  };
-};
-
-const transformAssets = (tokens, fill) => {
-  const mapAsset = _.partial(transformAsset, tokens);
-
-  return _.map(fill.assets, mapAsset);
-};
 
 const formatRelayer = relayer =>
   relayer === undefined ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
 
 const transformFill = (tokens, relayers, fill) => {
-  const assets = transformAssets(tokens, fill);
+  const assets = getAssetsForFill(tokens, fill);
   const fees = getFeesForFill(tokens, fill);
   const conversions = _.get(fill, `conversions.USD`);
   const fillRelayer = _.find(relayers, { lookupId: fill.relayerId });
