@@ -5,6 +5,8 @@ const Fill = require('../model/fill');
 
 const buildQuery = ({
   address,
+  bridgeAddress,
+  bridged,
   dateFrom,
   dateTo,
   protocolVersion,
@@ -16,6 +18,7 @@ const buildQuery = ({
   valueTo,
 }) => {
   const filters = [];
+  const exclusions = [];
 
   if (dateFrom !== undefined || dateTo !== undefined) {
     filters.push({
@@ -82,10 +85,30 @@ const buildQuery = ({
     filters.push({ term: { status } });
   }
 
+  if (_.isString(bridgeAddress)) {
+    filters.push({ match_phrase: { 'assets.bridgeAddress': bridgeAddress } });
+  }
+
+  if (_.isBoolean(bridged)) {
+    if (bridged) {
+      filters.push({
+        exists: {
+          field: 'assets.bridgeAddress',
+        },
+      });
+    } else {
+      exclusions.push({
+        exists: {
+          field: 'assets.bridgeAddress',
+        },
+      });
+    }
+  }
+
   return filters.length === 0
     ? undefined
     : {
-        bool: { filter: filters },
+        bool: { filter: filters, must_not: exclusions },
       };
 };
 

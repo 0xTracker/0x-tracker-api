@@ -30,6 +30,14 @@ const parseNumber = numberString => {
   return _.toNumber(numberString);
 };
 
+const parseBoolean = booleanString => {
+  if (booleanString === undefined) {
+    return undefined;
+  }
+
+  return booleanString === 'true';
+};
+
 const createRouter = () => {
   const router = new Router({ prefix: '/fills' });
 
@@ -37,7 +45,7 @@ const createRouter = () => {
     '/',
     pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
     async ({ pagination: { limit, page }, request, response }, next) => {
-      const { address, status, token } = request.query;
+      const { address, bridgeAddress, status, token } = request.query;
       const relayerId = request.query.relayer;
       const query = request.query.q;
       const relayerLookupId = await getRelayerLookupId(relayerId);
@@ -49,6 +57,7 @@ const createRouter = () => {
         request.query.protocolVersion !== undefined
           ? _.toNumber(request.query.protocolVersion)
           : undefined;
+      const bridged = parseBoolean(request.query.bridged);
 
       const minDate = moment().subtract(6, 'months');
 
@@ -142,6 +151,8 @@ const createRouter = () => {
       const { docs, pages, total } = await searchFills(
         {
           address,
+          bridgeAddress,
+          bridged,
           dateFrom: dateFrom !== undefined ? dateFrom : minDate,
           dateTo,
           protocolVersion,
