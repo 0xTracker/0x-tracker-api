@@ -3,6 +3,7 @@ const _ = require('lodash');
 const formatTokenAmount = require('../tokens/format-token-amount');
 const formatTokenType = require('../tokens/format-token-type');
 const formatTraderType = require('../traders/format-trader-type');
+const getAssetBridgeName = require('./get-asset-bridge-name');
 
 const transformAsset = (tokens, asset) => {
   const token = tokens[asset.tokenAddress];
@@ -10,6 +11,8 @@ const transformAsset = (tokens, asset) => {
 
   return {
     amount: formatTokenAmount(asset.amount, token),
+    bridgeAddress: asset.bridgeAddress,
+    bridgeName: getAssetBridgeName(asset.bridgeAddress),
     price: _.isNumber(price) ? { USD: price } : undefined,
     tokenAddress: asset.tokenAddress,
     tokenId: asset.tokenId,

@@ -3,6 +3,8 @@
 exports[`transformFill should transform ERC20 asset 1`] = `
 Object {
   "amount": "0.275",
+  "bridgeAddress": undefined,
+  "bridgeName": undefined,
   "price": Object {
     "USD": 137.36999999999998,
   },
@@ -18,6 +20,8 @@ Object {
 exports[`transformFill should transform ERC721 asset 1`] = `
 Object {
   "amount": "1",
+  "bridgeAddress": undefined,
+  "bridgeName": undefined,
   "price": Object {
     "USD": 37.77675,
   },
@@ -35,6 +39,8 @@ Object {
   "assets": Array [
     Object {
       "amount": "7.1373405",
+      "bridgeAddress": undefined,
+      "bridgeName": undefined,
       "price": Object {
         "USD": 224.42000000000002,
       },
@@ -47,6 +53,8 @@ Object {
     },
     Object {
       "amount": "300000",
+      "bridgeAddress": undefined,
+      "bridgeName": undefined,
       "price": Object {
         "USD": 0.0053392065167000005,
       },
@@ -96,6 +104,8 @@ Object {
 exports[`transformFill should transform V1 fill with unrecognised maker asset 1`] = `
 Object {
   "amount": undefined,
+  "bridgeAddress": undefined,
+  "bridgeName": undefined,
   "price": Object {
     "USD": 224.42000000000002,
   },
@@ -111,6 +121,8 @@ Object {
 exports[`transformFill should transform V1 fill with unrecognised taker asset 1`] = `
 Object {
   "amount": undefined,
+  "bridgeAddress": undefined,
+  "bridgeName": undefined,
   "price": Object {
     "USD": 0.0053392065167000005,
   },
@@ -128,6 +140,8 @@ Object {
   "assets": Array [
     Object {
       "amount": "1",
+      "bridgeAddress": undefined,
+      "bridgeName": undefined,
       "price": Object {
         "USD": 37.77675,
       },
@@ -140,6 +154,8 @@ Object {
     },
     Object {
       "amount": "0.275",
+      "bridgeAddress": undefined,
+      "bridgeName": undefined,
       "price": Object {
         "USD": 137.36999999999998,
       },

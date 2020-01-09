@@ -9,6 +9,7 @@ const schema = Schema({
     {
       actor: Number,
       amount: Number,
+      bridgeAddress: String,
       price: {
         USD: Number,
       },
