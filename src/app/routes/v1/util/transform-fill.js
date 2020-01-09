@@ -8,6 +8,7 @@ const formatFillStatus = require('../../../../fills/format-fill-status');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
 const formatTokenType = require('../../../../tokens/format-token-type');
 const formatTraderType = require('../../../../traders/format-trader-type');
+const getAssetBridgeName = require('../../../../fills/get-asset-bridge-name');
 const getFeesForFill = require('../../../../fills/get-fees-for-fill');
 
 const transformAsset = (tokens, asset) => {
@@ -17,6 +18,7 @@ const transformAsset = (tokens, asset) => {
   return {
     amount: formatTokenAmount(asset.amount, token),
     bridgeAddress: asset.bridgeAddress,
+    bridgeName: getAssetBridgeName(asset.bridgeAddress),
     price: _.isNumber(price) ? { USD: price } : undefined,
     tokenAddress: asset.tokenAddress,
     tokenId: asset.tokenId,
