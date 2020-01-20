@@ -15,7 +15,6 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
           $gte: dateFrom,
           $lte: dateTo,
         },
-        relayerId: { $ne: null },
       },
     },
     {
@@ -79,7 +78,11 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
   ]);
 
   return {
-    relayers: _.get(result, '[0].relayers', []),
+    relayers: _.get(result, '[0].relayers', []).map(relayer =>
+      relayer.id === undefined
+        ? { ...relayer, id: 'unknown', name: 'Unknown', slug: 'unknown' }
+        : relayer,
+    ),
     resultCount: _.get(result, '[0].totals[0].relayerCount', 0),
   };
 };
