@@ -25,7 +25,6 @@ const getRelayersWith24HourStats = async options => {
             .toDate(),
           $lte: dateTo,
         },
-        relayerId: { $ne: null },
       },
     },
     {
@@ -108,7 +107,11 @@ const getRelayersWith24HourStats = async options => {
   ]);
 
   return {
-    relayers: _.get(result, '[0].relayers', []),
+    relayers: _.get(result, '[0].relayers', []).map(relayer =>
+      relayer.id === undefined
+        ? { ...relayer, id: 'unknown', name: 'Unknown', slug: 'unknown' }
+        : relayer,
+    ),
     resultCount: _.get(result, '[0].totals[0].relayerCount', 0),
   };
 };

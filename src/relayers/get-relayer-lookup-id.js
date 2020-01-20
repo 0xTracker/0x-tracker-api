@@ -7,6 +7,10 @@ const getRelayerLookupId = async relayerId => {
     return undefined;
   }
 
+  if (relayerId === 'unknown') {
+    return null;
+  }
+
   const relayers = await getRelayers();
   const relayer = relayers[relayerId];
 

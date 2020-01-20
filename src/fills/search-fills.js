@@ -46,6 +46,14 @@ const buildQuery = ({
     filters.push({ term: { relayerId } });
   }
 
+  if (_.isNull(relayerId)) {
+    exclusions.push({
+      exists: {
+        field: 'relayerId',
+      },
+    });
+  }
+
   if (_.isFinite(protocolVersion)) {
     filters.push({ term: { protocolVersion } });
   }

@@ -37,7 +37,8 @@ const getNetworkMetrics = async (
       $match: _.merge(
         { date: { $gte: dayFrom, $lte: dayTo } },
         ..._.compact([
-          _.isNumber(filter.relayerId) && { relayerId: filter.relayerId },
+          _.isNumber(filter.relayerId) ||
+            (_.isNull(filter.relayerId) && { relayerId: filter.relayerId }),
         ]),
       ),
     },
