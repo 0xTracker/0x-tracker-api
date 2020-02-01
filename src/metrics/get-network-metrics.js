@@ -34,12 +34,12 @@ const getNetworkMetrics = async (
 
   const pipeline = _.compact([
     {
-      $match: _.merge(
-        { date: { $gte: dayFrom, $lte: dayTo } },
-        ..._.compact([
-          _.isNumber(filter.relayerId) ||
-            (_.isNull(filter.relayerId) && { relayerId: filter.relayerId }),
-        ]),
+      $match: _.pickBy(
+        {
+          date: { $gte: dayFrom, $lte: dayTo },
+          relayerId: filter.relayerId,
+        },
+        value => !_.isUndefined(value),
       ),
     },
     {
