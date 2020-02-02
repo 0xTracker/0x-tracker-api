@@ -1,17 +1,17 @@
-const { METRIC_INTERVAL, TIME_PERIOD } = require('../constants');
+const { GRANULARITY, TIME_PERIOD } = require('../constants');
 
-const getIntervalForTimePeriod = timePeriod => {
+const determineGranularityForTimePeriod = timePeriod => {
   switch (timePeriod) {
     case TIME_PERIOD.DAY:
     case TIME_PERIOD.WEEK:
-      return METRIC_INTERVAL.HOUR;
+      return GRANULARITY.HOUR;
     case TIME_PERIOD.MONTH:
     case TIME_PERIOD.YEAR:
     case TIME_PERIOD.ALL:
-      return METRIC_INTERVAL.DAY;
+      return GRANULARITY.DAY;
     default:
       throw new Error(`Invalid time period: ${timePeriod}`);
   }
 };
 
-module.exports = getIntervalForTimePeriod;
+module.exports = determineGranularityForTimePeriod;

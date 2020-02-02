@@ -1,9 +1,9 @@
 const moment = require('moment');
 
-const { METRIC_INTERVAL } = require('../constants');
+const { GRANULARITY } = require('../constants');
 const AddressMetric = require('../model/address-metric');
 
-const getTraderMetrics = async (address, dateFrom, dateTo, metricInterval) => {
+const getTraderMetrics = async (address, dateFrom, dateTo, granularity) => {
   const dayFrom = moment
     .utc(dateFrom)
     .startOf('day')
@@ -22,7 +22,7 @@ const getTraderMetrics = async (address, dateFrom, dateTo, metricInterval) => {
     .toDate();
 
   const pipeline =
-    metricInterval === METRIC_INTERVAL.DAY
+    granularity === GRANULARITY.DAY
       ? [
           {
             $match: { date: { $gte: dayFrom, $lte: dayTo }, address },
