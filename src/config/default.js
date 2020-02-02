@@ -11,9 +11,9 @@ module.exports = {
     poolSize: process.env.POOL_SIZE || 30,
   },
   elasticsearch: {
-    password: process.env.ELASTIC_SEARCH_PASSWORD,
-    url: process.env.ELASTIC_SEARCH_URL,
-    username: process.env.ELASTIC_SEARCH_USERNAME,
+    password: _.get(process.env, 'ELASTIC_SEARCH_PASSWORD', null),
+    url: _.get(process.env, 'ELASTIC_SEARCH_URL', null),
+    username: _.get(process.env, 'ELASTIC_SEARCH_USERNAME', null),
   },
   port: process.env.PORT || 3001,
   tokenCache: {
