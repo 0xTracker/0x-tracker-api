@@ -3,7 +3,7 @@ const moment = require('moment');
 
 const {
   ETH_TOKEN_DECIMALS,
-  METRIC_INTERVAL,
+  GRANULARITY,
   ZRX_TOKEN_DECIMALS,
 } = require('../constants');
 const formatTokenAmount = require('../tokens/format-token-amount');
@@ -12,7 +12,7 @@ const RelayerMetric = require('../model/relayer-metric');
 const getNetworkMetrics = async (
   dateFrom,
   dateTo,
-  metricInterval,
+  granularity,
   filter = {},
 ) => {
   const dayFrom = moment
@@ -65,14 +65,14 @@ const getNetworkMetrics = async (
         tradeVolume: '$hours.tradeVolume',
       },
     },
-    metricInterval === METRIC_INTERVAL.HOUR
+    granularity === GRANULARITY.HOUR
       ? {
           $match: { hour: { $gte: hourFrom, $lte: hourTo } },
         }
       : { $match: { hour: { $gte: dayFrom, $lte: dayTo } } },
     {
       $group: {
-        _id: metricInterval === METRIC_INTERVAL.HOUR ? '$hour' : '$day',
+        _id: granularity === GRANULARITY.HOUR ? '$hour' : '$day',
         feesUSD: {
           $sum: '$fees.USD',
         },

@@ -29,10 +29,11 @@ module.exports = {
     SUCCESSFUL: 1,
   },
   GENESIS_DATE: new Date('2017-08-15T00:00:00.000Z'),
-  METRIC_INTERVAL: {
+  GRANULARITY: {
     DAY: 'day',
-    HALF_HOUR: 'halfHour',
     HOUR: 'hour',
+    MONTH: 'month',
+    WEEK: 'week',
   },
   TIME_PERIOD: {
     DAY: 'day',

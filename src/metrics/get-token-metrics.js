@@ -1,11 +1,11 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const { METRIC_INTERVAL } = require('../constants');
+const { GRANULARITY } = require('../constants');
 const formatTokenAmount = require('../tokens/format-token-amount');
 const TokenMetric = require('../model/token-metric');
 
-const getTokenMetrics = async (token, dateFrom, dateTo, metricInterval) => {
+const getTokenMetrics = async (token, dateFrom, dateTo, granularity) => {
   const dayFrom = moment
     .utc(dateFrom)
     .startOf('day')
@@ -24,7 +24,7 @@ const getTokenMetrics = async (token, dateFrom, dateTo, metricInterval) => {
     .toDate();
 
   const pipeline =
-    metricInterval === METRIC_INTERVAL.DAY
+    granularity === GRANULARITY.DAY
       ? [
           {
             $match: {

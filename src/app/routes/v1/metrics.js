@@ -3,9 +3,10 @@ const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
 const checkTraderExists = require('../../../traders/check-trader-exists');
+const determineGranularityForTimePeriod = require('../../../metrics/determine-granularity-for-time-period');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getMetricIntervalForTimePeriod = require('../../../metrics/get-metric-interval-for-time-period');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
+const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const getTokenMetrics = require('../../../metrics/get-token-metrics');
 const getTraderMetrics = require('../../../metrics/get-trader-metrics');
@@ -24,8 +25,8 @@ const createRouter = () => {
       const period = request.query.period || TIME_PERIOD.MONTH;
 
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const metricInterval = getMetricIntervalForTimePeriod(period);
-      const metrics = await getNetworkMetrics(dateFrom, dateTo, metricInterval);
+      const granularity = determineGranularityForTimePeriod(period);
+      const metrics = await getNetworkMetrics(dateFrom, dateTo, granularity);
 
       response.body = metrics.map(metric => ({
         date: metric.date,
@@ -55,7 +56,7 @@ const createRouter = () => {
 
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
 
-      const metricInterval = getMetricIntervalForTimePeriod(period);
+      const granularity = determineGranularityForTimePeriod(period);
       const token = await Token.findOne({ address: tokenAddress });
 
       if (token === null) {
@@ -69,7 +70,7 @@ const createRouter = () => {
         token,
         dateFrom,
         dateTo,
-        metricInterval,
+        granularity,
       );
 
       response.body = metrics;
@@ -100,12 +101,12 @@ const createRouter = () => {
       const period = request.query.period || TIME_PERIOD.MONTH;
 
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const metricInterval = getMetricIntervalForTimePeriod(period);
+      const granularity = determineGranularityForTimePeriod(period);
       const metrics = await getTraderMetrics(
         address,
         dateFrom,
         dateTo,
-        metricInterval,
+        granularity,
       );
 
       response.body = metrics;
@@ -135,15 +136,10 @@ const createRouter = () => {
       }
 
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const metricInterval = getMetricIntervalForTimePeriod(period);
-      const metrics = await getNetworkMetrics(
-        dateFrom,
-        dateTo,
-        metricInterval,
-        {
-          relayerId: relayerLookupId,
-        },
-      );
+      const granularity = determineGranularityForTimePeriod(period);
+      const metrics = await getNetworkMetrics(dateFrom, dateTo, granularity, {
+        relayerId: relayerLookupId,
+      });
 
       response.body = metrics.map(metric => ({
         date: metric.date,
@@ -153,6 +149,28 @@ const createRouter = () => {
         tradeCount: metric.tradeCount,
         tradeVolume: metric.tradeVolume,
       }));
+
+      await next();
+    },
+  );
+
+  router.get(
+    '/protocol',
+    validatePeriod('period'),
+    async ({ request, response }, next) => {
+      const { granularity } = request.query;
+      const period = request.query.period || TIME_PERIOD.MONTH;
+
+      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const metrics = await getProtocolMetrics(
+        dateFrom,
+        dateTo,
+        granularity === undefined
+          ? determineGranularityForTimePeriod(period)
+          : granularity,
+      );
+
+      response.body = metrics;
 
       await next();
     },
