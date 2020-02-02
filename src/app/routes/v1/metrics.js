@@ -14,6 +14,7 @@ const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const MissingParameterError = require('../../errors/missing-parameter-error');
 const Token = require('../../../model/token');
 const validatePeriod = require('../../middleware/validate-period');
+const validateGranularity = require('../../middleware/validate-granularity');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/metrics' });
@@ -157,6 +158,7 @@ const createRouter = () => {
   router.get(
     '/protocol',
     validatePeriod('period'),
+    validateGranularity({ period: 'period', granularity: 'granularity' }),
     async ({ request, response }, next) => {
       const { granularity } = request.query;
       const period = request.query.period || TIME_PERIOD.MONTH;
