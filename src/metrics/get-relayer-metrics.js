@@ -39,7 +39,7 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
         relayerId === null
           ? 'unknown_relayer_metrics_hourly'
           : 'relayer_metrics_hourly',
-      size: 168,
+      size: 200,
     });
 
     return results.body.hits.hits.map(x => ({
