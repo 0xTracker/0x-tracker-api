@@ -24,7 +24,7 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
         },
       },
       index: 'network_metrics_hourly',
-      size: moment.utc(dateTo).diff(moment.utc(dateFrom), 'hours'),
+      size: 200,
     });
 
     return results.body.hits.hits.map(x => ({
