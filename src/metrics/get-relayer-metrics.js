@@ -1,29 +1,39 @@
 const moment = require('moment');
 
-const { ETH_TOKEN_DECIMALS, GRANULARITY } = require('../constants');
+const { GRANULARITY } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
-const formatTokenAmount = require('../tokens/format-token-amount');
 
-const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
+const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
   if (granularity === GRANULARITY.HOUR) {
     const results = await elasticsearch.getClient().search({
       body: {
         query: {
-          range: {
-            date: {
-              gte: moment
-                .utc(dateFrom)
-                .startOf('hour')
-                .toDate(),
-              lte: moment
-                .utc(dateTo)
-                .endOf('hour')
-                .toDate(),
-            },
+          bool: {
+            filter: [
+              {
+                range: {
+                  date: {
+                    gte: moment
+                      .utc(dateFrom)
+                      .startOf('hour')
+                      .toDate(),
+                    lte: moment
+                      .utc(dateTo)
+                      .endOf('hour')
+                      .toDate(),
+                  },
+                },
+              },
+              {
+                term: {
+                  relayerId,
+                },
+              },
+            ],
           },
         },
       },
-      index: 'network_metrics_hourly',
+      index: 'relayer_metrics_hourly',
       size: moment.utc(dateTo).diff(moment.utc(dateFrom), 'hours'),
     });
 
@@ -31,11 +41,7 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
       date: new Date(x._source.date),
       fillCount: x._source.fillCount,
       fillVolume: x._source.fillVolume,
-      makerCount: x._sourcemakerCount,
-      protocolFees: {
-        ETH: formatTokenAmount(x._source.protocolFeesETH, ETH_TOKEN_DECIMALS),
-        USD: x._source.protocolFeesUSD,
-      },
+      makerCount: x._source.makerCount,
       takerCount: x._source.takerCount,
       traderCount: x._source.traderCount,
       tradeCount: x._source.tradeCount,
@@ -44,13 +50,13 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
   }
 
   const results = await elasticsearch.getClient().search({
-    index: 'network_metrics_hourly',
+    index: 'relayer_metrics_hourly',
     body: {
       aggs: {
-        network_metrics_by_day: {
+        relayer_metrics_by_day: {
           date_histogram: {
             field: 'date',
-            calendar_interval: granularity,
+            calendar_interval: '1d',
           },
           aggs: {
             fillCount: {
@@ -61,12 +67,6 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
             },
             makerCount: {
               sum: { field: 'makerCount' },
-            },
-            protocolFeesETH: {
-              sum: { field: 'protocolFeesETH' },
-            },
-            protocolFeesUSD: {
-              sum: { field: 'protocolFeesUSD' },
             },
             takerCount: {
               sum: { field: 'takerCount' },
@@ -85,31 +85,38 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
       },
       size: 0,
       query: {
-        range: {
-          date: {
-            gte: moment
-              .utc(dateFrom)
-              .startOf('day')
-              .toDate(),
-            lte: moment
-              .utc(dateTo)
-              .endOf('day')
-              .toDate(),
-          },
+        bool: {
+          filter: [
+            {
+              range: {
+                date: {
+                  gte: moment
+                    .utc(dateFrom)
+                    .startOf('day')
+                    .toDate(),
+                  lte: moment
+                    .utc(dateTo)
+                    .endOf('day')
+                    .toDate(),
+                },
+              },
+            },
+            {
+              term: {
+                relayerId,
+              },
+            },
+          ],
         },
       },
     },
   });
 
-  return results.body.aggregations.network_metrics_by_day.buckets.map(x => ({
+  return results.body.aggregations.relayer_metrics_by_day.buckets.map(x => ({
     date: new Date(x.key_as_string),
     fillCount: x.fillCount.value,
     fillVolume: x.fillVolume.value,
     makerCount: x.makerCount.value,
-    protocolFees: {
-      ETH: formatTokenAmount(x.protocolFeesETH.value, ETH_TOKEN_DECIMALS),
-      USD: x.protocolFeesUSD.value,
-    },
     takerCount: x.takerCount.value,
     traderCount: x.traderCount.value,
     tradeCount: x.tradeCount.value,
@@ -117,4 +124,4 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
   }));
 };
 
-module.exports = getNetworkMetrics;
+module.exports = getRelayerMetrics;

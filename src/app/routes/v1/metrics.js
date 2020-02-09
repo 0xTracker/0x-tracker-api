@@ -8,6 +8,7 @@ const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period')
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
+const getRelayerMetrics = require('../../../metrics/get-relayer-metrics');
 const getTokenMetrics = require('../../../metrics/get-token-metrics');
 const getTraderMetrics = require('../../../metrics/get-trader-metrics');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
@@ -29,15 +30,7 @@ const createRouter = () => {
       const granularity = determineGranularityForTimePeriod(period);
       const metrics = await getNetworkMetrics(dateFrom, dateTo, granularity);
 
-      response.body = metrics.map(metric => ({
-        date: metric.date,
-        fees: metric.fees,
-        fillCount: metric.fillCount,
-        fillVolume: metric.fillVolume,
-        protocolFees: metric.protocolFees,
-        tradeCount: metric.tradeCount,
-        tradeVolume: metric.tradeVolume,
-      }));
+      response.body = metrics;
 
       await next();
     },
@@ -138,18 +131,14 @@ const createRouter = () => {
 
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
       const granularity = determineGranularityForTimePeriod(period);
-      const metrics = await getNetworkMetrics(dateFrom, dateTo, granularity, {
-        relayerId: relayerLookupId,
-      });
+      const metrics = await getRelayerMetrics(
+        relayerLookupId,
+        dateFrom,
+        dateTo,
+        granularity,
+      );
 
-      response.body = metrics.map(metric => ({
-        date: metric.date,
-        fees: metric.fees,
-        fillCount: metric.fillCount,
-        fillVolume: metric.fillVolume,
-        tradeCount: metric.tradeCount,
-        tradeVolume: metric.tradeVolume,
-      }));
+      response.body = metrics;
 
       await next();
     },
