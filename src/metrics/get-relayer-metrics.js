@@ -38,12 +38,12 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
     });
 
     return results.body.hits.hits.map(x => ({
+      activeMakers: x._source.makerCount,
+      activeTakers: x._source.takerCount,
+      activeTraders: x._source.traderCount,
       date: new Date(x._source.date),
       fillCount: x._source.fillCount,
       fillVolume: x._source.fillVolume,
-      makerCount: x._source.makerCount,
-      takerCount: x._source.takerCount,
-      traderCount: x._source.traderCount,
       tradeCount: x._source.tradeCount,
       tradeVolume: x._source.tradeVolume,
     }));
@@ -113,12 +113,12 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
   });
 
   return results.body.aggregations.relayer_metrics_by_day.buckets.map(x => ({
+    activeMakers: x.makerCount.value,
+    activeTakers: x.takerCount.value,
+    activeTraders: x.traderCount.value,
     date: new Date(x.key_as_string),
     fillCount: x.fillCount.value,
     fillVolume: x.fillVolume.value,
-    makerCount: x.makerCount.value,
-    takerCount: x.takerCount.value,
-    traderCount: x.traderCount.value,
     tradeCount: x.tradeCount.value,
     tradeVolume: x.tradeVolume.value,
   }));

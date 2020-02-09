@@ -28,16 +28,16 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
     });
 
     return results.body.hits.hits.map(x => ({
+      activeMakers: x._sourcemakerCount,
+      activeTakers: x._source.takerCount,
+      activeTraders: x._source.traderCount,
       date: new Date(x._source.date),
       fillCount: x._source.fillCount,
       fillVolume: x._source.fillVolume,
-      makerCount: x._sourcemakerCount,
       protocolFees: {
         ETH: formatTokenAmount(x._source.protocolFeesETH, ETH_TOKEN_DECIMALS),
         USD: x._source.protocolFeesUSD,
       },
-      takerCount: x._source.takerCount,
-      traderCount: x._source.traderCount,
       tradeCount: x._source.tradeCount,
       tradeVolume: x._source.tradeVolume,
     }));
@@ -102,16 +102,16 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
   });
 
   return results.body.aggregations.network_metrics_by_day.buckets.map(x => ({
+    activeMakers: x.makerCount.value,
+    activeTraders: x.traderCount.value,
+    activeTakers: x.takerCount.value,
     date: new Date(x.key_as_string),
     fillCount: x.fillCount.value,
     fillVolume: x.fillVolume.value,
-    makerCount: x.makerCount.value,
     protocolFees: {
       ETH: formatTokenAmount(x.protocolFeesETH.value, ETH_TOKEN_DECIMALS),
       USD: x.protocolFeesUSD.value,
     },
-    takerCount: x.takerCount.value,
-    traderCount: x.traderCount.value,
     tradeCount: x.tradeCount.value,
     tradeVolume: x.tradeVolume.value,
   }));
