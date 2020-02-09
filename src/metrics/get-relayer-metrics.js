@@ -24,17 +24,22 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
                   },
                 },
               },
-              {
-                term: {
-                  relayerId,
-                },
-              },
-            ],
+              relayerId !== null
+                ? {
+                    term: {
+                      relayerId,
+                    },
+                  }
+                : undefined,
+            ].filter(x => x !== undefined),
           },
         },
       },
-      index: 'relayer_metrics_hourly',
-      size: moment.utc(dateTo).diff(moment.utc(dateFrom), 'hours'),
+      index:
+        relayerId === null
+          ? 'unknown_relayer_metrics_hourly'
+          : 'relayer_metrics_hourly',
+      size: 168,
     });
 
     return results.body.hits.hits.map(x => ({
@@ -50,7 +55,10 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
   }
 
   const results = await elasticsearch.getClient().search({
-    index: 'relayer_metrics_hourly',
+    index:
+      relayerId === null
+        ? 'unknown_relayer_metrics_hourly'
+        : 'relayer_metrics_hourly',
     body: {
       aggs: {
         relayer_metrics_by_day: {
@@ -101,12 +109,14 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
                 },
               },
             },
-            {
-              term: {
-                relayerId,
-              },
-            },
-          ],
+            relayerId !== null
+              ? {
+                  term: {
+                    relayerId,
+                  },
+                }
+              : undefined,
+          ].filter(x => x !== undefined),
         },
       },
     },
