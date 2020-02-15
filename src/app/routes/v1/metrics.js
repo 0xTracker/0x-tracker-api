@@ -177,16 +177,17 @@ const createRouter = () => {
     validatePeriod('period'),
     validateGranularity({ period: 'period', granularity: 'granularity' }),
     async ({ request, response }, next) => {
-      const { granularity } = request.query;
       const period = request.query.period || TIME_PERIOD.MONTH;
+      const granularity =
+        request.query.granularity === undefined
+          ? determineGranularityForTimePeriod(period)
+          : request.query.granularity;
 
-      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
       const metrics = await getActiveTraderMetrics(
         dateFrom,
         dateTo,
-        granularity === undefined
-          ? determineGranularityForTimePeriod(period)
-          : granularity,
+        granularity,
       );
 
       response.body = metrics;
