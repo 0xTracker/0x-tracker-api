@@ -22,14 +22,7 @@ const createRouter = () => {
           ? await compute24HourNetworkStats()
           : await computeNetworkStatsForDates(dateFrom, dateTo);
 
-      response.body = {
-        fees: stats.fees,
-        fillCount: stats.fillCount,
-        fillVolume: stats.fillVolume,
-        protocolFees: stats.protocolFees,
-        tradeCount: stats.tradeCount,
-        tradeVolume: stats.tradeVolume,
-      };
+      response.body = stats;
 
       await next();
     },

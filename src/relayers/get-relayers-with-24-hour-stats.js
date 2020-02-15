@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const RelayerMetric = require('../model/relayer-metric');
+const elasticsearch = require('../util/elasticsearch');
+const Relayer = require('../model/relayer');
 
 const getRelayersWith24HourStats = async options => {
   const { page, limit } = _.defaults({}, options, {
@@ -15,104 +16,132 @@ const getRelayersWith24HourStats = async options => {
     .subtract(24, 'hours')
     .toDate();
 
-  const result = await RelayerMetric.aggregate([
-    {
-      $match: {
-        date: {
-          $gte: moment
-            .utc(dateFrom)
-            .startOf('day')
-            .toDate(),
-          $lte: dateTo,
-        },
-      },
-    },
-    {
-      $unwind: {
-        path: '$hours',
-      },
-    },
-    {
-      $unwind: {
-        path: '$hours.minutes',
-      },
-    },
-    {
-      $match: {
-        'hours.minutes.date': {
-          $gte: dateFrom,
-          $lte: dateTo,
-        },
-      },
-    },
-    {
-      $group: {
-        _id: '$relayerId',
-        fillCount: {
-          $sum: '$hours.minutes.fillCount',
-        },
-        fillVolume: {
-          $sum: '$hours.minutes.fillVolume',
-        },
-        tradeCount: {
-          $sum: '$hours.minutes.tradeCount',
-        },
-        tradeVolume: {
-          $sum: '$hours.minutes.tradeVolume',
-        },
-      },
-    },
-    {
-      $facet: {
-        relayers: [
-          { $sort: { tradeVolume: -1 } },
-          { $skip: (page - 1) * limit },
-          { $limit: limit },
-          {
-            $lookup: {
-              from: 'relayers',
-              localField: '_id',
-              foreignField: 'lookupId',
-              as: 'relayer',
-            },
+  const [unknownResponse, knownResponse] = await Promise.all([
+    elasticsearch.getClient().search({
+      index: 'fills',
+      body: {
+        aggs: {
+          fillCount: {
+            value_count: { field: '_id' },
           },
-          {
-            $project: {
-              _id: 0,
-              id: { $arrayElemAt: ['$relayer.id', 0] },
-              imageUrl: { $arrayElemAt: ['$relayer.imageUrl', 0] },
-              name: { $arrayElemAt: ['$relayer.name', 0] },
-              slug: { $arrayElemAt: ['$relayer.slug', 0] },
-              stats: {
-                fillCount: '$fillCount',
-                fillVolume: '$fillVolume',
-                tradeCount: '$tradeCount',
-                tradeVolume: '$tradeVolume',
+          fillVolume: {
+            sum: { field: 'value' },
+          },
+        },
+        size: 0,
+        query: {
+          bool: {
+            filter: [
+              {
+                range: {
+                  date: {
+                    gte: dateFrom,
+                    lte: dateTo,
+                  },
+                },
               },
-              url: { $arrayElemAt: ['$relayer.url', 0] },
-            },
+            ],
+            must_not: [{ exists: { field: 'relayerId' } }],
           },
-        ],
-        resultCount: [{ $count: 'value' }],
-        totals: [
-          {
-            $group: {
-              _id: null,
-              relayerCount: { $sum: 1 },
-            },
-          },
-        ],
+        },
       },
-    },
+    }),
+    elasticsearch.getClient().search({
+      index: 'fills',
+      body: {
+        aggs: {
+          stats_by_relayer: {
+            terms: {
+              field: 'relayerId',
+              order: { tradeVolume: 'desc' },
+              size: 500,
+            },
+            aggs: {
+              fillCount: {
+                value_count: { field: '_id' },
+              },
+              fillVolume: {
+                sum: { field: 'value' },
+              },
+              tradeCount: {
+                sum: { field: 'tradeCountContribution' },
+              },
+              tradeVolume: {
+                sum: { field: 'tradeVolume' },
+              },
+            },
+          },
+        },
+        size: 0,
+        query: {
+          bool: {
+            filter: [
+              {
+                range: {
+                  date: {
+                    gte: dateFrom,
+                    lte: dateTo,
+                  },
+                },
+              },
+              { exists: { field: 'relayerId' } },
+            ],
+          },
+        },
+      },
+    }),
   ]);
 
+  const unknownResult = unknownResponse.body.aggregations;
+  const knownResults = knownResponse.body.aggregations.stats_by_relayer.buckets;
+  const results = knownResults.concat({
+    fillCount: unknownResult.fillCount,
+    fillVolume: unknownResult.fillVolume,
+    tradeCount: unknownResult.fillCount,
+    tradeVolume: unknownResult.fillVolume,
+  });
+
+  const stats = _(results)
+    .orderBy('tradeVolume.value', 'desc')
+    .drop((page - 1) * limit)
+    .take(limit)
+    .map(x => ({
+      relayerId: x.key,
+      fillCount: x.fillCount.value,
+      fillVolume: x.fillVolume.value,
+      tradeCount: x.tradeCount.value,
+      tradeVolume: x.tradeVolume.value,
+    }))
+    .value();
+
+  const relayerIds = stats.map(x => x.relayerId);
+  const relayers = await Relayer.find({ lookupId: { $in: relayerIds } }).lean();
+
+  const relayersWithStats = stats.map(x => {
+    if (x.relayerId === undefined) {
+      return {
+        id: 'unknown',
+        name: 'Unknown',
+        slug: 'unknown',
+        stats: _.omit(x, 'relayerId'),
+      };
+    }
+
+    const relayer = relayers.find(r => r.lookupId === x.relayerId);
+
+    return {
+      id: relayer.id,
+      imageUrl: relayer.imageUrl,
+      name: relayer.name,
+      slug: relayer.slug,
+      stats: _.omit(x, 'relayerId'),
+      url: relayer.url,
+    };
+  });
+
   return {
-    relayers: _.get(result, '[0].relayers', []).map(relayer =>
-      relayer.id === undefined
-        ? { ...relayer, id: 'unknown', name: 'Unknown', slug: 'unknown' }
-        : relayer,
-    ),
-    resultCount: _.get(result, '[0].totals[0].relayerCount', 0),
+    relayers: relayersWithStats,
+    resultCount: results.length,
   };
 };
 

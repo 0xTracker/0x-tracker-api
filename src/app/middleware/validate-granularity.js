@@ -1,14 +1,14 @@
 const _ = require('lodash');
 
-const { TIME_PERIOD } = require('../../constants');
+const { GRANULARITY, TIME_PERIOD } = require('../../constants');
 const InvalidParameterError = require('../errors/invalid-parameter-error');
 
 const VALID_VALUES_BY_PERIOD = {
-  [TIME_PERIOD.DAY]: ['hour'],
-  [TIME_PERIOD.WEEK]: ['hour', 'day'],
-  [TIME_PERIOD.MONTH]: ['hour', 'day', 'week'],
-  [TIME_PERIOD.YEAR]: ['day', 'week', 'month'],
-  [TIME_PERIOD.ALL]: ['week', 'month', 'year'],
+  [TIME_PERIOD.DAY]: [GRANULARITY.HOUR],
+  [TIME_PERIOD.WEEK]: [GRANULARITY.HOUR, GRANULARITY.DAY],
+  [TIME_PERIOD.MONTH]: [GRANULARITY.DAY],
+  [TIME_PERIOD.YEAR]: [GRANULARITY.DAY, GRANULARITY.WEEK, GRANULARITY.MONTH],
+  [TIME_PERIOD.ALL]: [GRANULARITY.WEEK, GRANULARITY.MONTH],
 };
 
 const createMiddleware = paramNames => async (context, next) => {

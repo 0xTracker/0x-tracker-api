@@ -1,9 +1,9 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const { ETH_TOKEN_DECIMALS, ZRX_TOKEN_DECIMALS } = require('../constants');
+const { ETH_TOKEN_DECIMALS } = require('../constants');
+const elasticsearch = require('../util/elasticsearch');
 const formatTokenAmount = require('../tokens/format-token-amount');
-const RelayerMetric = require('../model/relayer-metric');
 
 const compute24HourNetworkStats = async () => {
   const dateTo = moment.utc().toDate();
@@ -12,109 +12,52 @@ const compute24HourNetworkStats = async () => {
     .subtract(24, 'hours')
     .toDate();
 
-  const baseQuery = {
-    date: {
-      $gte: moment
-        .utc(dateFrom)
-        .startOf('day')
-        .toDate(),
-      $lte: dateTo,
+  const results = await elasticsearch.getClient().search({
+    index: 'fills',
+    body: {
+      aggs: {
+        fillCount: {
+          value_count: { field: '_id' },
+        },
+        fillVolume: {
+          sum: { field: 'value' },
+        },
+        protocolFeesETH: {
+          sum: { field: 'protocolFeeETH' },
+        },
+        protocolFeesUSD: {
+          sum: { field: 'protocolFeeUSD' },
+        },
+        tradeCount: {
+          sum: { field: 'tradeCountContribution' },
+        },
+        tradeVolume: {
+          sum: { field: 'tradeVolume' },
+        },
+      },
+      size: 0,
+      query: {
+        range: {
+          date: {
+            gte: dateFrom,
+            lte: dateTo,
+          },
+        },
+      },
     },
-  };
+  });
 
-  const basePipeline = [
-    {
-      $unwind: {
-        path: '$hours',
-      },
-    },
-    {
-      $unwind: {
-        path: '$hours.minutes',
-      },
-    },
-    {
-      $match: {
-        'hours.minutes.date': {
-          $gte: dateFrom,
-          $lte: dateTo,
-        },
-      },
-    },
-  ];
-
-  const [fillResults, tradeResults] = await Promise.all([
-    RelayerMetric.aggregate([
-      {
-        $match: baseQuery,
-      },
-      ...basePipeline,
-      {
-        $group: {
-          _id: null,
-          feesUSD: {
-            $sum: '$hours.minutes.fees.USD',
-          },
-          feesZRX: {
-            $sum: '$hours.minutes.fees.ZRX',
-          },
-          fillCount: {
-            $sum: '$hours.minutes.fillCount',
-          },
-          fillVolume: {
-            $sum: '$hours.minutes.fillVolume',
-          },
-          protocolFeesUSD: {
-            $sum: '$hours.minutes.protocolFees.USD',
-          },
-          protocolFeesETH: {
-            $sum: '$hours.minutes.protocolFees.ETH',
-          },
-        },
-      },
-    ]),
-
-    RelayerMetric.aggregate([
-      {
-        $match: {
-          ...baseQuery,
-          relayerId: { $ne: null },
-        },
-      },
-      ...basePipeline,
-      {
-        $group: {
-          _id: null,
-          tradeCount: {
-            $sum: '$hours.minutes.tradeCount',
-          },
-          tradeVolume: {
-            $sum: '$hours.minutes.tradeVolume',
-          },
-        },
-      },
-    ]),
-  ]);
+  const getValue = key => _.get(results.body.aggregations, `${key}.value`);
 
   return {
-    fees: {
-      USD: _.get(fillResults, '0.feesUSD', 0),
-      ZRX: formatTokenAmount(
-        _.get(fillResults, '0.feesZRX', 0),
-        ZRX_TOKEN_DECIMALS,
-      ),
-    },
-    fillCount: _.get(fillResults, '0.fillCount', 0),
-    fillVolume: _.get(fillResults, '0.fillVolume', 0),
+    fillCount: getValue('fillCount'),
+    fillVolume: getValue('fillVolume'),
     protocolFees: {
-      USD: _.get(fillResults, '0.protocolFeesUSD', 0),
-      ETH: formatTokenAmount(
-        _.get(fillResults, '0.protocolFeesETH', 0),
-        ETH_TOKEN_DECIMALS,
-      ),
+      ETH: formatTokenAmount(getValue('protocolFeesETH'), ETH_TOKEN_DECIMALS),
+      USD: getValue('protocolFeesUSD'),
     },
-    tradeCount: _.get(tradeResults, '0.tradeCount', 0),
-    tradeVolume: _.get(tradeResults, '0.tradeVolume', 0),
+    tradeCount: getValue('tradeCount'),
+    tradeVolume: getValue('tradeVolume'),
   };
 };
 
