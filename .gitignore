@@ -10,3 +10,6 @@ node_modules/
 # Local config
 .env
 src/config/local.js
+
+# VS Code
+.vscode
