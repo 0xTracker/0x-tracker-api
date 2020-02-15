@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const ProtocolMetric = require('../model/protocol-metric');
+const elasticsearch = require('../util/elasticsearch');
 
 const getProtocolsWith24HourStats = async options => {
   const { page, limit, sortBy } = _.defaults({}, options, {
@@ -16,78 +16,62 @@ const getProtocolsWith24HourStats = async options => {
     .subtract(24, 'hours')
     .toDate();
 
-  const baseQuery = {
-    date: {
-      $gte: moment
-        .utc(dateFrom)
-        .startOf('day')
-        .toDate(),
-      $lte: dateTo,
-    },
-  };
-
-  const basePipeline = [
-    {
-      $unwind: {
-        path: '$hours',
-      },
-    },
-    {
-      $unwind: {
-        path: '$hours.minutes',
-      },
-    },
-    {
-      $match: {
-        'hours.minutes.date': {
-          $gte: dateFrom,
-          $lte: dateTo,
-        },
-      },
-    },
-  ];
-
-  const result = await ProtocolMetric.aggregate([
-    {
-      $match: baseQuery,
-    },
-    ...basePipeline,
-    {
-      $group: {
-        _id: '$protocolVersion',
-        fillCount: {
-          $sum: '$hours.minutes.fillCount',
-        },
-        fillVolume: {
-          $sum: '$hours.minutes.fillVolume',
-        },
-      },
-    },
-    {
-      $facet: {
-        protocols: [
-          { $sort: { [sortBy]: -1 } },
-          { $skip: (page - 1) * limit },
-          { $limit: limit },
-          {
-            $project: {
-              _id: 0,
-              stats: {
-                fillCount: '$fillCount',
-                fillVolume: '$fillVolume',
-              },
-              version: '$_id',
+  const response = await elasticsearch.getClient().search({
+    index: 'fills',
+    body: {
+      aggs: {
+        stats_by_protocol: {
+          terms: {
+            field: 'protocolVersion',
+            order: { [sortBy]: 'desc' },
+            size: 10,
+          },
+          aggs: {
+            fillCount: {
+              value_count: { field: '_id' },
+            },
+            fillVolume: {
+              sum: { field: 'value' },
+            },
+            tradeCount: {
+              sum: { field: 'tradeCountContribution' },
+            },
+            tradeVolume: {
+              sum: { field: 'tradeVolume' },
             },
           },
-        ],
-        resultCount: [{ $count: 'value' }],
+        },
+      },
+      size: 0,
+      query: {
+        range: {
+          date: {
+            gte: dateFrom,
+            lte: dateTo,
+          },
+        },
       },
     },
-  ]);
+  });
+
+  const results = response.body.aggregations.stats_by_protocol.buckets;
+  const protocols = _(results)
+    .drop((page - 1) * limit)
+    .take(limit)
+    .map(x => ({
+      stats: {
+        fillCount: x.fillCount.value,
+        fillVolume: x.fillVolume.value,
+        tradeCount: x.tradeCount.value,
+        tradeVolume: x.tradeVolume.value,
+      },
+      version: x.key,
+    }))
+    .value();
 
   return {
-    protocols: _.get(result, '[0].protocols', []),
-    resultCount: _.get(result, '[0].resultCount[0].value', 0),
+    protocols,
+    resultCount: results.length,
   };
 };
 
