@@ -1,5 +1,3 @@
-const moment = require('moment');
-
 const { ETH_TOKEN_DECIMALS, GRANULARITY } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 const formatTokenAmount = require('../tokens/format-token-amount');
@@ -11,26 +9,17 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
         query: {
           range: {
             date: {
-              gte: moment
-                .utc(dateFrom)
-                .startOf('hour')
-                .toDate(),
-              lte: moment
-                .utc(dateTo)
-                .endOf('hour')
-                .toDate(),
+              gte: dateFrom,
+              lte: dateTo,
             },
           },
         },
       },
       index: 'network_metrics_hourly',
-      size: 200,
+      size: 200, // TODO: Determine this dynamically
     });
 
     return results.body.hits.hits.map(x => ({
-      activeMakers: x._sourcemakerCount,
-      activeTakers: x._source.takerCount,
-      activeTraders: x._source.traderCount,
       date: new Date(x._source.date),
       fillCount: x._source.fillCount,
       fillVolume: x._source.fillVolume,
@@ -59,20 +48,11 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
             fillVolume: {
               sum: { field: 'fillVolume' },
             },
-            makerCount: {
-              sum: { field: 'makerCount' },
-            },
             protocolFeesETH: {
               sum: { field: 'protocolFeesETH' },
             },
             protocolFeesUSD: {
               sum: { field: 'protocolFeesUSD' },
-            },
-            takerCount: {
-              sum: { field: 'takerCount' },
-            },
-            traderCount: {
-              sum: { field: 'traderCount' },
             },
             tradeCount: {
               sum: { field: 'tradeCount' },
@@ -87,14 +67,8 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
       query: {
         range: {
           date: {
-            gte: moment
-              .utc(dateFrom)
-              .startOf('day')
-              .toDate(),
-            lte: moment
-              .utc(dateTo)
-              .endOf('day')
-              .toDate(),
+            gte: dateFrom,
+            lte: dateTo,
           },
         },
       },
@@ -102,9 +76,6 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
   });
 
   return results.body.aggregations.network_metrics_by_day.buckets.map(x => ({
-    activeMakers: x.makerCount.value,
-    activeTraders: x.traderCount.value,
-    activeTakers: x.takerCount.value,
     date: new Date(x.key_as_string),
     fillCount: x.fillCount.value,
     fillVolume: x.fillVolume.value,
