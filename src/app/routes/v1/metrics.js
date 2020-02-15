@@ -5,6 +5,7 @@ const { TIME_PERIOD } = require('../../../constants');
 const checkTraderExists = require('../../../traders/check-trader-exists');
 const determineGranularityForTimePeriod = require('../../../metrics/determine-granularity-for-time-period');
 const getActiveTraderMetrics = require('../../../metrics/get-active-trader-metrics');
+const getDatesForMetrics = require('../../../util/get-dates-for-metrics');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
@@ -24,11 +25,14 @@ const createRouter = () => {
   router.get(
     '/network',
     validatePeriod('period'),
+    validateGranularity({ period: 'period', granularity: 'granularity' }),
     async ({ request, response }, next) => {
       const period = request.query.period || TIME_PERIOD.MONTH;
-
-      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const granularity = determineGranularityForTimePeriod(period);
+      const granularity =
+        request.query.granularity === undefined
+          ? determineGranularityForTimePeriod(period)
+          : request.query.granularity;
+      const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
       const metrics = await getNetworkMetrics(dateFrom, dateTo, granularity);
 
       response.body = metrics;

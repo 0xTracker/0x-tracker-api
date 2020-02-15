@@ -6,7 +6,7 @@ const InvalidParameterError = require('../errors/invalid-parameter-error');
 const VALID_VALUES_BY_PERIOD = {
   [TIME_PERIOD.DAY]: ['hour'],
   [TIME_PERIOD.WEEK]: ['hour', 'day'],
-  [TIME_PERIOD.MONTH]: ['hour', 'day', 'week'],
+  [TIME_PERIOD.MONTH]: ['day'],
   [TIME_PERIOD.YEAR]: ['day', 'week', 'month'],
   [TIME_PERIOD.ALL]: ['week', 'month', 'year'],
 };
