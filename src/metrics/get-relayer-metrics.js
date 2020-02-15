@@ -43,9 +43,6 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
     });
 
     return results.body.hits.hits.map(x => ({
-      activeMakers: x._source.makerCount,
-      activeTakers: x._source.takerCount,
-      activeTraders: x._source.traderCount,
       date: new Date(x._source.date),
       fillCount: x._source.fillCount,
       fillVolume: x._source.fillVolume,
@@ -72,15 +69,6 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
             },
             fillVolume: {
               sum: { field: 'fillVolume' },
-            },
-            makerCount: {
-              sum: { field: 'makerCount' },
-            },
-            takerCount: {
-              sum: { field: 'takerCount' },
-            },
-            traderCount: {
-              sum: { field: 'traderCount' },
             },
             tradeCount: {
               sum: { field: 'tradeCount' },
@@ -123,9 +111,6 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
   });
 
   return results.body.aggregations.relayer_metrics_by_day.buckets.map(x => ({
-    activeMakers: x.makerCount.value,
-    activeTakers: x.takerCount.value,
-    activeTraders: x.traderCount.value,
     date: new Date(x.key_as_string),
     fillCount: x.fillCount.value,
     fillVolume: x.fillVolume.value,
