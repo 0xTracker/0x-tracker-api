@@ -134,8 +134,8 @@ const createRouter = () => {
         );
       }
 
-      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
       const granularity = determineGranularityForTimePeriod(period);
+      const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
       const metrics = await getRelayerMetrics(
         relayerLookupId,
         dateFrom,

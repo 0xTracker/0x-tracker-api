@@ -1,5 +1,3 @@
-const moment = require('moment');
-
 const { GRANULARITY } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 
@@ -13,14 +11,8 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
               {
                 range: {
                   date: {
-                    gte: moment
-                      .utc(dateFrom)
-                      .startOf('hour')
-                      .toDate(),
-                    lte: moment
-                      .utc(dateTo)
-                      .endOf('hour')
-                      .toDate(),
+                    gte: dateFrom,
+                    lte: dateTo,
                   },
                 },
               },
@@ -88,14 +80,8 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
             {
               range: {
                 date: {
-                  gte: moment
-                    .utc(dateFrom)
-                    .startOf('day')
-                    .toDate(),
-                  lte: moment
-                    .utc(dateTo)
-                    .endOf('day')
-                    .toDate(),
+                  gte: dateFrom,
+                  lte: dateTo,
                 },
               },
             },
