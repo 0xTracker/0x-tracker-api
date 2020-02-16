@@ -46,8 +46,10 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
       date: new Date(x._source.date),
       fillCount: x._source.fillCount,
       fillVolume: x._source.fillVolume,
-      tradeCount: x._source.tradeCount,
-      tradeVolume: x._source.tradeVolume,
+      tradeCount:
+        relayerId === null ? x._source.fillCount : x._source.tradeCount,
+      tradeVolume:
+        relayerId === null ? x._source.fillVolume : x._source.tradeVolume,
     }));
   }
 
@@ -114,8 +116,8 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
     date: new Date(x.key_as_string),
     fillCount: x.fillCount.value,
     fillVolume: x.fillVolume.value,
-    tradeCount: x.tradeCount.value,
-    tradeVolume: x.tradeVolume.value,
+    tradeCount: relayerId === null ? x.fillCount.value : x.tradeCount.value,
+    tradeVolume: relayerId === null ? x.fillVolume.value : x.tradeVolume.value,
   }));
 };
 
