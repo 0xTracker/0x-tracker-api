@@ -1,87 +1,46 @@
-const _ = require('lodash');
+const moment = require('moment');
 
-const AddressMetric = require('../model/address-metric');
-const getRelayerTakerAddresses = require('../relayers/get-relayer-taker-addresses');
+const elasticsearch = require('../util/elasticsearch');
 
 const computeTraderStatsForDates = async (dateFrom, dateTo) => {
-  const relayerTakerAddresses = await getRelayerTakerAddresses();
-  const results = await AddressMetric.aggregate([
-    {
-      $match: {
-        address: { $nin: relayerTakerAddresses },
-        date: {
-          $gte: dateFrom,
-          $lte: dateTo,
-        },
-      },
-    },
-    {
-      $facet: {
-        maker: [
-          {
-            $match: {
-              'fillCount.maker': {
-                $gt: 0,
-              },
-            },
-          },
-          {
-            $group: {
-              _id: '$address',
-            },
-          },
-          {
-            $count: 'count',
-          },
-        ],
-        taker: [
-          {
-            $match: {
-              'fillCount.taker': {
-                $gt: 0,
-              },
-            },
-          },
-          {
-            $group: {
-              _id: '$address',
-            },
-          },
-          {
-            $count: 'count',
-          },
-        ],
-        trader: [
-          {
-            $group: {
-              _id: '$address',
-            },
-          },
-          {
-            $count: 'count',
-          },
-        ],
-      },
-    },
-    {
-      $project: {
+  const response = await elasticsearch.getClient().search({
+    index: 'fills',
+    body: {
+      aggs: {
         makerCount: {
-          $arrayElemAt: ['$maker.count', 0],
+          cardinality: { field: 'maker.keyword', precision_threshold: 10000 },
         },
         takerCount: {
-          $arrayElemAt: ['$taker.count', 0],
+          cardinality: { field: 'taker.keyword', precision_threshold: 10000 },
         },
         traderCount: {
-          $arrayElemAt: ['$trader.count', 0],
+          cardinality: { field: 'traders.keyword', precision_threshold: 10000 },
+        },
+      },
+      size: 0,
+      query: {
+        range: {
+          date: {
+            gte: moment
+              .utc(dateFrom)
+              .startOf('day')
+              .toDate(),
+            lte: moment
+              .utc(dateTo)
+              .endOf('day')
+              .toDate(),
+          },
         },
       },
     },
-  ]);
+  });
+
+  const { aggregations } = response.body;
 
   return {
-    makerCount: _.get(results, '0.makerCount', 0),
-    takerCount: _.get(results, '0.takerCount', 0),
-    traderCount: _.get(results, '0.traderCount', 0),
+    makerCount: aggregations.makerCount.value,
+    takerCount: aggregations.takerCount.value,
+    traderCount: aggregations.traderCount.value,
   };
 };
 
