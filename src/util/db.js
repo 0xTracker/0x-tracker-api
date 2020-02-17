@@ -6,6 +6,7 @@ const { logError } = require('./error-logger');
 const logger = signale.scope('mongodb');
 
 mongoose.Promise = global.Promise;
+mongoose.set('debug', process.env.MONGOOSE_DEBUG === 'true');
 
 module.exports = {
   connect: (connectionString, options = {}) => {
