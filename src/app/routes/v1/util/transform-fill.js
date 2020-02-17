@@ -12,11 +12,10 @@ const getFeesForFill = require('../../../../fills/get-fees-for-fill');
 const formatRelayer = relayer =>
   relayer === undefined ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
 
-const transformFill = (tokens, relayers, fill) => {
+const transformFill = (tokens, fill) => {
   const assets = getAssetsForFill(tokens, fill);
   const fees = getFeesForFill(tokens, fill);
   const conversions = _.get(fill, `conversions.USD`);
-  const fillRelayer = _.find(relayers, { lookupId: fill.relayerId });
 
   const makerFee =
     fill.makerFee !== undefined
@@ -64,7 +63,7 @@ const transformFill = (tokens, relayers, fill) => {
     orderHash: fill.orderHash,
     protocolFee,
     protocolVersion: fill.protocolVersion,
-    relayer: formatRelayer(fillRelayer),
+    relayer: formatRelayer(fill.relayer),
     senderAddress: fill.senderAddress,
     status: formatFillStatus(fill.status),
     takerAddress: fill.taker,

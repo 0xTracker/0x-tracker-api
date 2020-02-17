@@ -6,7 +6,6 @@ const Router = require('koa-router');
 const { getTokens } = require('../../../tokens/token-cache');
 const Fill = require('../../../model/fill');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
-const getRelayers = require('../../../relayers/get-relayers');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const pagination = require('../../middleware/pagination');
 const reverseMapStatus = require('../../../fills/reverse-map-status');
@@ -167,10 +166,9 @@ const createRouter = () => {
       );
 
       const tokens = getTokens();
-      const relayers = await getRelayers();
 
       response.body = {
-        fills: transformFills(tokens, relayers, docs),
+        fills: transformFills(tokens, docs),
         limit,
         page,
         pageCount: pages,
@@ -184,7 +182,9 @@ const createRouter = () => {
   router.get('/:id', async ({ params, response }, next) => {
     const fillId = params.id;
     const fill = mongoose.Types.ObjectId.isValid(fillId)
-      ? await Fill.findById(fillId)
+      ? await Fill.findById(fillId, undefined, {
+          populate: { path: 'relayer', select: 'imageUrl name slug' },
+        })
       : null;
 
     if (fill === null) {
@@ -194,9 +194,8 @@ const createRouter = () => {
     }
 
     const tokens = getTokens();
-    const relayers = await getRelayers();
 
-    response.body = transformFill(tokens, relayers, fill);
+    response.body = transformFill(tokens, fill);
 
     await next();
   });
