@@ -12,9 +12,9 @@ const getFeesForFill = require('../../../../fills/get-fees-for-fill');
 const formatRelayer = relayer =>
   relayer === undefined ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
 
-const transformFill = (tokens, fill) => {
-  const assets = getAssetsForFill(tokens, fill);
-  const fees = getFeesForFill(tokens, fill);
+const transformFill = fill => {
+  const assets = getAssetsForFill(fill);
+  const fees = getFeesForFill(fill);
   const conversions = _.get(fill, `conversions.USD`);
 
   const makerFee =

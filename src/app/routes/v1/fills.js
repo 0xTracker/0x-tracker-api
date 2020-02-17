@@ -3,7 +3,6 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const Router = require('koa-router');
 
-const { getTokens } = require('../../../tokens/token-cache');
 const Fill = require('../../../model/fill');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
@@ -165,10 +164,8 @@ const createRouter = () => {
         { limit, page },
       );
 
-      const tokens = getTokens();
-
       response.body = {
-        fills: transformFills(tokens, docs),
+        fills: transformFills(docs),
         limit,
         page,
         pageCount: pages,
@@ -183,7 +180,11 @@ const createRouter = () => {
     const fillId = params.id;
     const fill = mongoose.Types.ObjectId.isValid(fillId)
       ? await Fill.findById(fillId, undefined, {
-          populate: { path: 'relayer', select: 'imageUrl name slug' },
+          populate: [
+            { path: 'relayer', select: 'imageUrl name slug' },
+            { path: 'assets.token', select: 'decimals name symbol type' },
+            { path: 'fees.token', select: 'decimals name symbol type' },
+          ],
         })
       : null;
 
@@ -193,9 +194,7 @@ const createRouter = () => {
       return;
     }
 
-    const tokens = getTokens();
-
-    response.body = transformFill(tokens, fill);
+    response.body = transformFill(fill);
 
     await next();
   });

@@ -6,8 +6,8 @@ const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
 const transformRelayer = relayer =>
   relayer === undefined ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
 
-const transformFill = (tokens, fill) => {
-  const assets = getAssetsForFill(tokens, fill);
+const transformFill = fill => {
+  const assets = getAssetsForFill(fill);
   const conversions = _.get(fill, `conversions.USD`);
 
   return {
@@ -27,7 +27,6 @@ const transformFill = (tokens, fill) => {
   };
 };
 
-const transformFills = (tokens, relayers, fills) =>
-  fills.map(fill => transformFill(tokens, relayers, fill));
+const transformFills = fills => fills.map(fill => transformFill(fill));
 
 module.exports = transformFills;
