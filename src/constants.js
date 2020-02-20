@@ -124,6 +124,7 @@ module.exports = {
         '0x0ac2d6f5f5afc669d3ca38f830dad2b4f238ad3f', // V1
         '0x1c36b06fc0d9354a96cf155b861b141ed10c3312', // V2
         '0xe97ea901d034ba2e018155264f77c417ce7717f9', // V3
+        '0xe3379a1956f4a79f39eb2e87bb441419e167538e', // V4
       ],
       name: 'Eth2Dai',
     },
@@ -142,6 +143,12 @@ module.exports = {
         '0x533344cfdf2a3e911e2cf4c6f5ed08e791f5355f', // V3
       ],
       name: 'Uniswap',
+    },
+    {
+      addresses: [
+        '0xe335bdd1fb0ee30f9a9a434f18f8b118dec32df7', // V1
+      ],
+      name: 'Curve',
     },
   ],
 };
