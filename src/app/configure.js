@@ -1,11 +1,8 @@
 const config = require('config');
-const signale = require('signale');
 
 const db = require('../util/db');
 const elasticsearch = require('../util/elasticsearch');
 const errorLogger = require('../util/error-logger');
-
-const logger = signale.scope('application');
 
 const configure = () => {
   errorLogger.configure({
@@ -22,8 +19,6 @@ const configure = () => {
       password: config.get('elasticsearch.password'),
     },
   });
-
-  logger.success('application configured');
 };
 
 module.exports = configure;

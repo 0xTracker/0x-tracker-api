@@ -3,7 +3,7 @@ const signale = require('signale');
 
 const { logError } = require('./error-logger');
 
-const logger = signale.scope('mongodb');
+const logger = signale.scope('application');
 
 mongoose.Promise = global.Promise;
 mongoose.set('debug', process.env.MONGOOSE_DEBUG === 'true');
@@ -13,6 +13,7 @@ module.exports = {
     mongoose.connect(connectionString, {
       poolSize: options.poolSize,
       useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
 
     // Queries should time out if they take longer than 10 seconds

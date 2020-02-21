@@ -32,9 +32,9 @@ const start = port => {
   app.listen(port);
 
   if (process.env.NODE_ENV === 'development') {
-    logger.start(`serving application at http://localhost:${port}`);
+    logger.info(`serving application at http://localhost:${port}`);
   } else {
-    logger.start(`serving application on port ${port}`);
+    logger.info(`serving application on port ${port}`);
   }
 };
 
