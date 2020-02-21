@@ -109,7 +109,7 @@ Object {
   "price": Object {
     "USD": 224.42000000000002,
   },
-  "tokenAddress": "0x1234",
+  "tokenAddress": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
   "tokenId": undefined,
   "tokenSymbol": undefined,
   "tokenType": undefined,
@@ -126,7 +126,7 @@ Object {
   "price": Object {
     "USD": 0.0053392065167000005,
   },
-  "tokenAddress": "0x9999",
+  "tokenAddress": "0xd7732e3783b0047aa251928960063f863ad022d8",
   "tokenId": undefined,
   "tokenSymbol": undefined,
   "tokenType": undefined,
