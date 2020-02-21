@@ -5,9 +5,7 @@ const { FILL_ACTOR } = require('../../../../constants');
 const AXIE_FIXTURE = require('../../../../fixtures/tokens/axie');
 const BRAHMA_FIXTURE = require('../../../../fixtures/tokens/brahma');
 const ETHFINEX_FIXTURE = require('../../../../fixtures/relayers/ethfinex');
-const Fill = require('../../../../model/fill');
 const WETH_FIXTURE = require('../../../../fixtures/tokens/weth');
-const ZRX_FIXTURE = require('../../../../fixtures/tokens/zrx');
 
 const transformFill = require('./transform-fill');
 
@@ -19,6 +17,7 @@ const axieMaker = {
   },
   tokenAddress: '0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d',
   tokenId: 43381,
+  token: AXIE_FIXTURE,
 };
 
 const wethTaker = {
@@ -28,6 +27,7 @@ const wethTaker = {
     USD: 137.36999999999998,
   },
   tokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+  token: WETH_FIXTURE,
 };
 
 const brahmaTaker = {
@@ -35,6 +35,7 @@ const brahmaTaker = {
   amount: 3e23,
   price: { USD: 0.0053392065167000005 },
   tokenAddress: '0xd7732e3783b0047aa251928960063f863ad022d8',
+  token: BRAHMA_FIXTURE,
 };
 
 const wethMaker = {
@@ -44,6 +45,7 @@ const wethMaker = {
     USD: 224.42000000000002,
   },
   tokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+  token: WETH_FIXTURE,
 };
 
 const simpleFill = {
@@ -65,6 +67,7 @@ const simpleFill = {
     '0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5',
   protocolVersion: 2,
   relayerId: 21,
+  relayer: ETHFINEX_FIXTURE,
   status: 1,
   taker: '0xe269e891a2ec8585a378882ffa531141205e92e9',
   takerFee: 5000000000000000000,
@@ -86,25 +89,16 @@ const simpleV1Fill = {
   protocolVersion: 1,
 };
 
-const simpleTokens = {
-  [AXIE_FIXTURE.address]: AXIE_FIXTURE,
-  [BRAHMA_FIXTURE.address]: BRAHMA_FIXTURE,
-  [WETH_FIXTURE.address]: WETH_FIXTURE,
-  [ZRX_FIXTURE.address]: ZRX_FIXTURE,
-};
-
-const relayers = [ETHFINEX_FIXTURE];
-
 describe('transformFill', () => {
   it('should transform V1 fill', () => {
-    const viewModel = transformFill(simpleTokens, relayers, simpleV1Fill);
+    const viewModel = transformFill(simpleV1Fill);
 
     expect(viewModel).toMatchSnapshot();
   });
 
   it('should transform fill without relayer', () => {
-    const fill = { ...simpleFill, relayerId: undefined };
-    const viewModel = transformFill(simpleTokens, relayers, fill);
+    const fill = { ...simpleFill, relayerId: undefined, relayer: undefined };
+    const viewModel = transformFill(fill);
 
     expect(viewModel.relayer).toBeNull();
   });
@@ -112,9 +106,9 @@ describe('transformFill', () => {
   it('should transform V1 fill with unrecognised maker asset', () => {
     const fill = {
       ...simpleV1Fill,
-      assets: [{ ...wethMaker, tokenAddress: '0x1234' }, brahmaTaker],
+      assets: [{ ...wethMaker, token: undefined }, brahmaTaker],
     };
-    const viewModel = transformFill(simpleTokens, relayers, fill);
+    const viewModel = transformFill(fill);
 
     expect(
       viewModel.assets.find(asset => asset.traderType === 'maker'),
@@ -124,9 +118,9 @@ describe('transformFill', () => {
   it('should transform V1 fill with unrecognised taker asset', () => {
     const fill = {
       ...simpleV1Fill,
-      assets: [wethMaker, { ...brahmaTaker, tokenAddress: '0x9999' }],
+      assets: [wethMaker, { ...brahmaTaker, token: undefined }],
     };
-    const viewModel = transformFill(simpleTokens, relayers, fill);
+    const viewModel = transformFill(fill);
 
     expect(
       viewModel.assets.find(asset => asset.traderType === 'taker'),
@@ -134,54 +128,54 @@ describe('transformFill', () => {
   });
 
   it('should transform fill with unrecognised relayer', () => {
-    const fill = { ...simpleFill, relayerId: 999 };
-    const viewModel = transformFill(simpleTokens, relayers, fill);
+    const fill = { ...simpleFill, relayer: undefined };
+    const viewModel = transformFill(fill);
 
     expect(viewModel.relayer).toBeNull();
   });
 
   it('should transform pending fill', () => {
     const fill = { ...simpleFill, status: 0 };
-    const viewModel = transformFill(simpleTokens, relayers, fill);
+    const viewModel = transformFill(fill);
 
     expect(viewModel.status).toBe('pending');
   });
 
   it('should transform successful fill', () => {
-    const viewModel = transformFill(simpleTokens, relayers, simpleFill);
+    const viewModel = transformFill(simpleFill);
 
     expect(viewModel.status).toBe('successful');
   });
 
   it('should transform failed fill', () => {
     const fill = { ...simpleV1Fill, status: 2 };
-    const viewModel = transformFill(simpleTokens, relayers, fill);
+    const viewModel = transformFill(fill);
 
     expect(viewModel.status).toBe('failed');
   });
 
   it('should transform V2 fill', () => {
-    const viewModel = transformFill(simpleTokens, relayers, simpleFill);
+    const viewModel = transformFill(simpleFill);
 
     expect(viewModel).toMatchSnapshot();
   });
 
   it('should transform ERC721 asset', () => {
-    const viewModel = transformFill(simpleTokens, relayers, simpleFill);
+    const viewModel = transformFill(simpleFill);
     const asset = _.find(viewModel.assets, { traderType: 'maker' });
 
     expect(asset).toMatchSnapshot();
   });
 
   it('should transform ERC20 asset', () => {
-    const viewModel = transformFill(simpleTokens, relayers, simpleFill);
+    const viewModel = transformFill(simpleFill);
     const asset = _.find(viewModel.assets, { traderType: 'taker' });
 
     expect(asset).toMatchSnapshot();
   });
 
   it('should transform V3 fill', () => {
-    const fill = new Fill({
+    const fill = {
       ...simpleFill,
       conversions: {
         USD: {
@@ -192,11 +186,13 @@ describe('transformFill', () => {
         {
           amount: { token: 5000000000000000, USD: 0.3 },
           tokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+          token: WETH_FIXTURE,
           traderType: 0,
         },
         {
           amount: { token: 1 },
           tokenAddress: '0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d',
+          token: AXIE_FIXTURE,
           tokenId: 58,
           traderType: 1,
         },
@@ -205,8 +201,8 @@ describe('transformFill', () => {
       protocolVersion: 3,
       makerFee: undefined,
       takerFee: undefined,
-    });
-    const viewModel = transformFill(simpleTokens, relayers, fill);
+    };
+    const viewModel = transformFill(fill);
 
     expect(viewModel.makerFee).toBeUndefined();
     expect(viewModel.takerFee).toBeUndefined();

@@ -3,10 +3,8 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const Router = require('koa-router');
 
-const { getTokens } = require('../../../tokens/token-cache');
 const Fill = require('../../../model/fill');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
-const getRelayers = require('../../../relayers/get-relayers');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const pagination = require('../../middleware/pagination');
 const reverseMapStatus = require('../../../fills/reverse-map-status');
@@ -166,11 +164,8 @@ const createRouter = () => {
         { limit, page },
       );
 
-      const tokens = getTokens();
-      const relayers = await getRelayers();
-
       response.body = {
-        fills: transformFills(tokens, relayers, docs),
+        fills: transformFills(docs),
         limit,
         page,
         pageCount: pages,
@@ -184,7 +179,13 @@ const createRouter = () => {
   router.get('/:id', async ({ params, response }, next) => {
     const fillId = params.id;
     const fill = mongoose.Types.ObjectId.isValid(fillId)
-      ? await Fill.findById(fillId)
+      ? await Fill.findById(fillId, undefined, {
+          populate: [
+            { path: 'relayer', select: 'imageUrl name slug' },
+            { path: 'assets.token', select: 'decimals name symbol type' },
+            { path: 'fees.token', select: 'decimals name symbol type' },
+          ],
+        })
       : null;
 
     if (fill === null) {
@@ -193,10 +194,7 @@ const createRouter = () => {
       return;
     }
 
-    const tokens = getTokens();
-    const relayers = await getRelayers();
-
-    response.body = transformFill(tokens, relayers, fill);
+    response.body = transformFill(fill);
 
     await next();
   });

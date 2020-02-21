@@ -135,7 +135,13 @@ const searchFills = async (params, options) => {
 
   const resultCount = results.body.hits.total.value;
   const fillIds = results.body.hits.hits.map(hit => hit._id);
-  const fills = await Fill.find({ _id: { $in: fillIds } }).sort({ date: -1 });
+  const fills = await Fill.find({ _id: { $in: fillIds } })
+    .populate([
+      { path: 'relayer', select: 'imageUrl name slug' },
+      { path: 'assets.token', select: 'decimals name symbol type' },
+      { path: 'fees.token', select: 'decimals name symbol type' },
+    ])
+    .sort({ date: -1 });
 
   return {
     docs: fills,

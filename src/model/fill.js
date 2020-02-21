@@ -48,6 +48,27 @@ const schema = Schema({
   transactionHash: String,
 });
 
+schema.virtual('relayer', {
+  ref: 'Relayer',
+  localField: 'relayerId',
+  foreignField: 'lookupId',
+  justOne: true,
+});
+
+schema.virtual('assets.token', {
+  ref: 'Token',
+  localField: 'assets.tokenAddress',
+  foreignField: 'address',
+  justOne: true,
+});
+
+schema.virtual('fees.token', {
+  ref: 'Token',
+  localField: 'fees.tokenAddress',
+  foreignField: 'address',
+  justOne: true,
+});
+
 const Model = mongoose.model('Fill', schema);
 
 module.exports = Model;
