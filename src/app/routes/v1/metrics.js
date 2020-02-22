@@ -81,6 +81,7 @@ const createRouter = () => {
   router.get(
     '/trader',
     validatePeriod('period'),
+    validateGranularity({ period: 'period', granularity: 'granularity' }),
     async ({ request, response }, next) => {
       const { address } = request.query;
 
@@ -99,8 +100,11 @@ const createRouter = () => {
 
       const period = request.query.period || TIME_PERIOD.MONTH;
 
-      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const granularity = determineGranularityForTimePeriod(period);
+      const granularity =
+        request.query.granularity === undefined
+          ? determineGranularityForTimePeriod(period)
+          : request.query.granularity;
+      const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
       const metrics = await getTraderMetrics(
         address,
         dateFrom,

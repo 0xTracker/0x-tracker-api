@@ -1,125 +1,115 @@
-const moment = require('moment');
+const _ = require('lodash');
 
-const { GRANULARITY } = require('../constants');
-const AddressMetric = require('../model/address-metric');
+const elasticsearch = require('../util/elasticsearch');
+
+const aggregateMetrics = async (
+  type,
+  address,
+  dateFrom,
+  dateTo,
+  granularity,
+) => {
+  const results = await elasticsearch.getClient().search({
+    index: `${type}_metrics_hourly`,
+    body: {
+      aggs: {
+        metrics: {
+          date_histogram: {
+            field: 'date',
+            calendar_interval: granularity,
+          },
+          aggs: {
+            fillCount: {
+              sum: { field: 'fillCount' },
+            },
+            fillVolume: {
+              sum: { field: 'fillVolume' },
+            },
+            tradeCount: {
+              sum: { field: 'tradeCount' },
+            },
+            tradeVolume: {
+              sum: { field: 'tradeVolume' },
+            },
+          },
+        },
+      },
+      size: 0,
+      query: {
+        bool: {
+          filter: [
+            {
+              range: {
+                date: {
+                  gte: dateFrom,
+                  lte: dateTo,
+                },
+              },
+            },
+            {
+              term: {
+                [type]: address,
+              },
+            },
+          ],
+        },
+      },
+    },
+  });
+
+  return results.body.aggregations.metrics.buckets.map(x => ({
+    date: new Date(x.key_as_string),
+    fillCount: x.fillCount.value,
+    fillVolume: x.fillVolume.value,
+    tradeCount: x.tradeCount.value,
+    tradeVolume: x.tradeVolume.value,
+  }));
+};
+
+const reduceMetrics = (makerMetrics, takerMetrics) => {
+  const dates = _(makerMetrics)
+    .concat(takerMetrics)
+    .map(metric => metric.date.toString())
+    .uniq()
+    .value();
+
+  return dates.map(date => {
+    const takerMetric = takerMetrics.find(
+      metric => metric.date.toString() === date,
+    );
+
+    const makerMetric = makerMetrics.find(
+      metric => metric.date.toString() === date,
+    );
+
+    const getMetricValue = key => {
+      const makerValue = _.get(makerMetric, key, 0);
+      const takerValue = _.get(takerMetric, key, 0);
+
+      return {
+        maker: makerValue,
+        taker: takerValue,
+        total: makerValue + takerValue,
+      };
+    };
+
+    return {
+      date: new Date(date),
+      fillCount: getMetricValue('fillCount'),
+      fillVolume: getMetricValue('fillVolume'),
+      tradeCount: getMetricValue('tradeCount'),
+      tradeVolume: getMetricValue('tradeVolume'),
+    };
+  });
+};
 
 const getTraderMetrics = async (address, dateFrom, dateTo, granularity) => {
-  const dayFrom = moment
-    .utc(dateFrom)
-    .startOf('day')
-    .toDate();
-  const dayTo = moment
-    .utc(dateTo)
-    .endOf('day')
-    .toDate();
-  const hourFrom = moment
-    .utc(dateFrom)
-    .startOf('hour')
-    .toDate();
-  const hourTo = moment
-    .utc(dateTo)
-    .endOf('hour')
-    .toDate();
+  const [makerMetrics, takerMetrics] = await Promise.all([
+    aggregateMetrics('maker', address, dateFrom, dateTo, granularity),
+    aggregateMetrics('taker', address, dateFrom, dateTo, granularity),
+  ]);
 
-  const pipeline =
-    granularity === GRANULARITY.DAY
-      ? [
-          {
-            $match: { date: { $gte: dayFrom, $lte: dayTo }, address },
-          },
-          {
-            $project: {
-              _id: 0,
-              date: 1,
-              fillCount: {
-                maker: '$fillCount.maker',
-                taker: '$fillCount.taker',
-                total: { $ifNull: ['$fillCount.total', '$fillCount'] },
-              },
-              fillVolume: {
-                maker: '$fillVolume.maker',
-                taker: '$fillVolume.taker',
-                total: { $ifNull: ['$fillVolume.total', '$fillVolume'] },
-              },
-            },
-          },
-          { $sort: { date: 1 } },
-        ]
-      : [
-          {
-            $match: { date: { $gte: dayFrom, $lte: dayTo }, address },
-          },
-          {
-            $unwind: {
-              path: '$hours',
-            },
-          },
-          {
-            $project: {
-              hour: '$hours.date',
-              fillCountMaker: '$hours.fillCount.maker',
-              fillCountTaker: '$hours.fillCount.taker',
-              fillCountTotal: {
-                $ifNull: ['$hours.fillCount.total', '$hours.fillCount'],
-              },
-              fillVolumeMaker: '$hours.fillVolume.maker',
-              fillVolumeTaker: '$hours.fillVolume.taker',
-              fillVolumeTotal: {
-                $ifNull: ['$hours.fillVolume.total', '$hours.fillVolume'],
-              },
-            },
-          },
-          {
-            $match: { hour: { $gte: hourFrom, $lte: hourTo } },
-          },
-          {
-            $group: {
-              _id: '$hour',
-              fillCountMaker: {
-                $sum: '$fillCountMaker',
-              },
-              fillCountTaker: {
-                $sum: '$fillCountTaker',
-              },
-              fillCountTotal: {
-                $sum: '$fillCountTotal',
-              },
-              fillVolumeMaker: {
-                $sum: '$fillVolumeMaker',
-              },
-              fillVolumeTaker: {
-                $sum: '$fillVolumeTaker',
-              },
-              fillVolumeTotal: {
-                $sum: '$fillVolumeTotal',
-              },
-            },
-          },
-          {
-            $project: {
-              date: '$_id',
-              fillCount: {
-                maker: '$fillCountMaker',
-                taker: '$fillCountTaker',
-                total: '$fillCountTotal',
-              },
-              fillVolume: {
-                maker: '$fillVolumeMaker',
-                taker: '$fillVolumeTaker',
-                total: '$fillVolumeTotal',
-              },
-            },
-          },
-          {
-            $sort: {
-              _id: 1,
-            },
-          },
-        ];
-
-  const dataPoints = await AddressMetric.aggregate(pipeline);
-
-  return dataPoints;
+  return reduceMetrics(makerMetrics, takerMetrics);
 };
 
 module.exports = getTraderMetrics;
