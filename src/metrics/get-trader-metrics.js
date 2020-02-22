@@ -1,6 +1,5 @@
 const _ = require('lodash');
 
-const { GRANULARITY } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 
 const aggregateMetrics = async (
@@ -10,48 +9,8 @@ const aggregateMetrics = async (
   dateTo,
   granularity,
 ) => {
-  const query = {
-    bool: {
-      filter: [
-        {
-          range: {
-            date: {
-              gte: dateFrom,
-              lte: dateTo,
-            },
-          },
-        },
-        {
-          term: {
-            [type]: address,
-          },
-        },
-      ],
-    },
-  };
-
-  const index = `${type}_metrics_hourly`;
-
-  if (granularity === GRANULARITY.HOUR) {
-    const results = await elasticsearch.getClient().search({
-      body: {
-        query,
-      },
-      index,
-      size: 200, // TODO: Determine this dynamically
-    });
-
-    return results.body.hits.hits.map(x => ({
-      date: new Date(x._source.date),
-      fillCount: x._source.fillCount,
-      fillVolume: x._source.fillVolume,
-      tradeCount: x._source.tradeCount,
-      tradeVolume: x._source.tradeVolume,
-    }));
-  }
-
   const results = await elasticsearch.getClient().search({
-    index,
+    index: `${type}_metrics_hourly`,
     body: {
       aggs: {
         metrics: {
@@ -76,7 +35,25 @@ const aggregateMetrics = async (
         },
       },
       size: 0,
-      query,
+      query: {
+        bool: {
+          filter: [
+            {
+              range: {
+                date: {
+                  gte: dateFrom,
+                  lte: dateTo,
+                },
+              },
+            },
+            {
+              term: {
+                [type]: address,
+              },
+            },
+          ],
+        },
+      },
     },
   });
 
@@ -98,43 +75,30 @@ const reduceMetrics = (makerMetrics, takerMetrics) => {
 
   return dates.map(date => {
     const takerMetric = takerMetrics.find(
-      metric => metric.date.toString() === date.toString(),
+      metric => metric.date.toString() === date,
     );
 
     const makerMetric = makerMetrics.find(
-      metric => metric.date.toString() === date.toString(),
+      metric => metric.date.toString() === date,
     );
+
+    const getMetricValue = key => {
+      const makerValue = _.get(makerMetric, key, 0);
+      const takerValue = _.get(takerMetric, key, 0);
+
+      return {
+        maker: makerValue,
+        taker: takerValue,
+        total: makerValue + takerValue,
+      };
+    };
 
     return {
       date: new Date(date),
-      fillCount: {
-        maker: _.get(makerMetric, 'fillCount', 0),
-        taker: _.get(takerMetric, 'fillCount', 0),
-        total:
-          _.get(makerMetric, 'fillCount', 0) +
-          _.get(takerMetric, 'fillCount', 0),
-      },
-      fillVolume: {
-        maker: _.get(makerMetric, 'fillVolume', 0),
-        taker: _.get(takerMetric, 'fillVolume', 0),
-        total:
-          _.get(makerMetric, 'fillVolume', 0) +
-          _.get(takerMetric, 'fillVolume', 0),
-      },
-      tradeCount: {
-        maker: _.get(makerMetric, 'tradeCount', 0),
-        taker: _.get(takerMetric, 'tradeCount', 0),
-        total:
-          _.get(makerMetric, 'tradeCount', 0) +
-          _.get(takerMetric, 'tradeCount', 0),
-      },
-      tradeVolume: {
-        maker: _.get(makerMetric, 'tradeVolume', 0),
-        taker: _.get(takerMetric, 'tradeVolume', 0),
-        total:
-          _.get(makerMetric, 'tradeVolume', 0) +
-          _.get(takerMetric, 'tradeVolume', 0),
-      },
+      fillCount: getMetricValue('fillCount'),
+      fillVolume: getMetricValue('fillVolume'),
+      tradeCount: getMetricValue('tradeCount'),
+      tradeVolume: getMetricValue('tradeVolume'),
     };
   });
 };
@@ -145,9 +109,7 @@ const getTraderMetrics = async (address, dateFrom, dateTo, granularity) => {
     aggregateMetrics('taker', address, dateFrom, dateTo, granularity),
   ]);
 
-  const mets = reduceMetrics(makerMetrics, takerMetrics);
-
-  return mets;
+  return reduceMetrics(makerMetrics, takerMetrics);
 };
 
 module.exports = getTraderMetrics;
