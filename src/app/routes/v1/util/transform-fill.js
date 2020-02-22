@@ -10,7 +10,7 @@ const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
 const getFeesForFill = require('../../../../fills/get-fees-for-fill');
 
 const formatRelayer = relayer =>
-  relayer === undefined ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
+  relayer === null ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
 
 const transformFill = fill => {
   const assets = getAssetsForFill(fill);

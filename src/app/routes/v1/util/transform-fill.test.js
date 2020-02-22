@@ -97,7 +97,7 @@ describe('transformFill', () => {
   });
 
   it('should transform fill without relayer', () => {
-    const fill = { ...simpleFill, relayerId: undefined, relayer: undefined };
+    const fill = { ...simpleFill, relayerId: undefined, relayer: null };
     const viewModel = transformFill(fill);
 
     expect(viewModel.relayer).toBeNull();
@@ -128,7 +128,7 @@ describe('transformFill', () => {
   });
 
   it('should transform fill with unrecognised relayer', () => {
-    const fill = { ...simpleFill, relayer: undefined };
+    const fill = { ...simpleFill, relayer: null };
     const viewModel = transformFill(fill);
 
     expect(viewModel.relayer).toBeNull();

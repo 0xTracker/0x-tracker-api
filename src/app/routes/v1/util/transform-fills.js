@@ -4,7 +4,7 @@ const formatFillStatus = require('../../../../fills/format-fill-status');
 const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
 
 const transformRelayer = relayer =>
-  relayer === undefined ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
+  relayer === null ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
 
 const transformFill = fill => {
   const assets = getAssetsForFill(fill);
