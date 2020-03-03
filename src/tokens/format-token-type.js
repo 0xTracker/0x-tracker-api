@@ -10,6 +10,8 @@ const formatTokenType = tokenType => {
       return 'erc-20';
     case TOKEN_TYPE.ERC721:
       return 'erc-721';
+    case TOKEN_TYPE.ERC1155:
+      return 'erc-1155';
     default:
       throw new Error(`Unrecognised token type: ${tokenType}`);
   }

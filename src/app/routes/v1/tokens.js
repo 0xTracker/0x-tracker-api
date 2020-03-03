@@ -13,11 +13,13 @@ const validatePeriod = require('../../middleware/validate-period');
 const TOKEN_TYPE_MAP = {
   [TOKEN_TYPE.ERC20]: 'erc-20',
   [TOKEN_TYPE.ERC721]: 'erc-721',
+  [TOKEN_TYPE.ERC1155]: 'erc-1155',
 };
 
 const TOKEN_TYPE_REVERSE_MAP = {
   'erc-20': TOKEN_TYPE.ERC20,
   'erc-721': TOKEN_TYPE.ERC721,
+  'erc-1155': TOKEN_TYPE.ERC1155,
 };
 
 const validTokenTypes = _.values(TOKEN_TYPE_MAP);

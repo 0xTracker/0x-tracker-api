@@ -20,6 +20,12 @@ describe('formatTokenType', () => {
     expect(formatted).toBe('erc-721');
   });
 
+  it('should format ERC-1155 token type', () => {
+    const formatted = formatTokenType(TOKEN_TYPE.ERC1155);
+
+    expect(formatted).toBe('erc-1155');
+  });
+
   it('should throw an error when formatting unknown token type', () => {
     expect(() => {
       formatTokenType(999);
