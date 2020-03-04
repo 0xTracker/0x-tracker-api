@@ -5,8 +5,6 @@ const { TIME_PERIOD } = require('../../../constants');
 const checkTraderExists = require('../../../traders/check-trader-exists');
 const determineGranularityForTimePeriod = require('../../../metrics/determine-granularity-for-time-period');
 const getActiveTraderMetrics = require('../../../metrics/get-active-trader-metrics');
-const getDatesForMetrics = require('../../../util/get-dates-for-metrics');
-const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
@@ -32,8 +30,8 @@ const createRouter = () => {
         request.query.granularity === undefined
           ? determineGranularityForTimePeriod(period)
           : request.query.granularity;
-      const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
-      const metrics = await getNetworkMetrics(dateFrom, dateTo, granularity);
+
+      const metrics = await getNetworkMetrics(period, granularity);
 
       response.body = metrics;
 
@@ -51,11 +49,6 @@ const createRouter = () => {
         throw new MissingParameterError('token');
       }
 
-      const period = request.query.period || TIME_PERIOD.MONTH;
-
-      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-
-      const granularity = determineGranularityForTimePeriod(period);
       const token = await Token.findOne({ address: tokenAddress });
 
       if (token === null) {
@@ -65,12 +58,10 @@ const createRouter = () => {
         );
       }
 
-      const metrics = await getTokenMetrics(
-        token,
-        dateFrom,
-        dateTo,
-        granularity,
-      );
+      const period = request.query.period || TIME_PERIOD.MONTH;
+      const granularity = determineGranularityForTimePeriod(period);
+
+      const metrics = await getTokenMetrics(token, period, granularity);
 
       response.body = metrics;
 
@@ -104,13 +95,8 @@ const createRouter = () => {
         request.query.granularity === undefined
           ? determineGranularityForTimePeriod(period)
           : request.query.granularity;
-      const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
-      const metrics = await getTraderMetrics(
-        address,
-        dateFrom,
-        dateTo,
-        granularity,
-      );
+
+      const metrics = await getTraderMetrics(address, period, granularity);
 
       response.body = metrics;
 
@@ -143,11 +129,10 @@ const createRouter = () => {
         request.query.granularity === undefined
           ? determineGranularityForTimePeriod(period)
           : request.query.granularity;
-      const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
+
       const metrics = await getRelayerMetrics(
         relayerLookupId,
-        dateFrom,
-        dateTo,
+        period,
         granularity,
       );
 
@@ -168,8 +153,7 @@ const createRouter = () => {
           ? determineGranularityForTimePeriod(period)
           : request.query.granularity;
 
-      const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
-      const metrics = await getProtocolMetrics(dateFrom, dateTo, granularity);
+      const metrics = await getProtocolMetrics(period, granularity);
 
       response.body = metrics;
 
@@ -188,12 +172,7 @@ const createRouter = () => {
           ? determineGranularityForTimePeriod(period)
           : request.query.granularity;
 
-      const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
-      const metrics = await getActiveTraderMetrics(
-        dateFrom,
-        dateTo,
-        granularity,
-      );
+      const metrics = await getActiveTraderMetrics(period, granularity);
 
       response.body = metrics;
 

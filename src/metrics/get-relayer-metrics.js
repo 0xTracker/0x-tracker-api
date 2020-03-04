@@ -1,49 +1,9 @@
-const { GRANULARITY } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
+const getDatesForMetrics = require('../util/get-dates-for-metrics');
+const padMetrics = require('./pad-metrics');
 
-const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
-  if (granularity === GRANULARITY.HOUR) {
-    const results = await elasticsearch.getClient().search({
-      body: {
-        query: {
-          bool: {
-            filter: [
-              {
-                range: {
-                  date: {
-                    gte: dateFrom,
-                    lte: dateTo,
-                  },
-                },
-              },
-              relayerId !== null
-                ? {
-                    term: {
-                      relayerId,
-                    },
-                  }
-                : undefined,
-            ].filter(x => x !== undefined),
-          },
-        },
-      },
-      index:
-        relayerId === null
-          ? 'unknown_relayer_metrics_hourly'
-          : 'relayer_metrics_hourly',
-      size: 200,
-    });
-
-    return results.body.hits.hits.map(x => ({
-      date: new Date(x._source.date),
-      fillCount: x._source.fillCount,
-      fillVolume: x._source.fillVolume,
-      tradeCount:
-        relayerId === null ? x._source.fillCount : x._source.tradeCount,
-      tradeVolume:
-        relayerId === null ? x._source.fillVolume : x._source.tradeVolume,
-    }));
-  }
+const getRelayerMetrics = async (relayerId, period, granularity) => {
+  const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const results = await elasticsearch.getClient().search({
     index:
@@ -98,13 +58,19 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
     },
   });
 
-  return results.body.aggregations.relayer_metrics_by_day.buckets.map(x => ({
-    date: new Date(x.key_as_string),
-    fillCount: x.fillCount.value,
-    fillVolume: x.fillVolume.value,
-    tradeCount: relayerId === null ? x.fillCount.value : x.tradeCount.value,
-    tradeVolume: relayerId === null ? x.fillVolume.value : x.tradeVolume.value,
-  }));
+  return padMetrics(
+    results.body.aggregations.relayer_metrics_by_day.buckets.map(x => ({
+      date: new Date(x.key_as_string),
+      fillCount: x.fillCount.value,
+      fillVolume: x.fillVolume.value,
+      tradeCount: relayerId === null ? x.fillCount.value : x.tradeCount.value,
+      tradeVolume:
+        relayerId === null ? x.fillVolume.value : x.tradeVolume.value,
+    })),
+    period,
+    granularity,
+    { fillCount: 0, fillVolume: 0, tradeCount: 0, tradeVolume: 0 },
+  );
 };
 
 module.exports = getRelayerMetrics;

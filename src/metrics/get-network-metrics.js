@@ -1,36 +1,11 @@
-const { ETH_TOKEN_DECIMALS, GRANULARITY } = require('../constants');
+const { ETH_TOKEN_DECIMALS } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 const formatTokenAmount = require('../tokens/format-token-amount');
+const getDatesForMetrics = require('../util/get-dates-for-metrics');
+const padMetrics = require('./pad-metrics');
 
-const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
-  if (granularity === GRANULARITY.HOUR) {
-    const results = await elasticsearch.getClient().search({
-      body: {
-        query: {
-          range: {
-            date: {
-              gte: dateFrom,
-              lte: dateTo,
-            },
-          },
-        },
-      },
-      index: 'network_metrics_hourly',
-      size: 200, // TODO: Determine this dynamically
-    });
-
-    return results.body.hits.hits.map(x => ({
-      date: new Date(x._source.date),
-      fillCount: x._source.fillCount,
-      fillVolume: x._source.fillVolume,
-      protocolFees: {
-        ETH: formatTokenAmount(x._source.protocolFeesETH, ETH_TOKEN_DECIMALS),
-        USD: x._source.protocolFeesUSD,
-      },
-      tradeCount: x._source.tradeCount,
-      tradeVolume: x._source.tradeVolume,
-    }));
-  }
+const getNetworkMetrics = async (period, granularity) => {
+  const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const results = await elasticsearch.getClient().search({
     index: 'network_metrics_hourly',
@@ -75,17 +50,31 @@ const getNetworkMetrics = async (dateFrom, dateTo, granularity) => {
     },
   });
 
-  return results.body.aggregations.network_metrics_by_day.buckets.map(x => ({
-    date: new Date(x.key_as_string),
-    fillCount: x.fillCount.value,
-    fillVolume: x.fillVolume.value,
-    protocolFees: {
-      ETH: formatTokenAmount(x.protocolFeesETH.value, ETH_TOKEN_DECIMALS),
-      USD: x.protocolFeesUSD.value,
+  return padMetrics(
+    results.body.aggregations.network_metrics_by_day.buckets.map(x => ({
+      date: new Date(x.key_as_string),
+      fillCount: x.fillCount.value,
+      fillVolume: x.fillVolume.value,
+      protocolFees: {
+        ETH: formatTokenAmount(x.protocolFeesETH.value, ETH_TOKEN_DECIMALS),
+        USD: x.protocolFeesUSD.value,
+      },
+      tradeCount: x.tradeCount.value,
+      tradeVolume: x.tradeVolume.value,
+    })),
+    period,
+    granularity,
+    {
+      fillCount: 0,
+      fillVolume: 0,
+      protocolFees: {
+        ETH: '0',
+        USD: 0,
+      },
+      tradeCount: 0,
+      tradeVolume: 0,
     },
-    tradeCount: x.tradeCount.value,
-    tradeVolume: x.tradeVolume.value,
-  }));
+  );
 };
 
 module.exports = getNetworkMetrics;
