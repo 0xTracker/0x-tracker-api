@@ -121,6 +121,7 @@ const createRouter = () => {
   router.get(
     '/relayer',
     validatePeriod('period'),
+    validateGranularity({ period: 'period', granularity: 'granularity' }),
     async ({ request, response }, next) => {
       const period = request.query.period || TIME_PERIOD.MONTH;
       const relayerId = request.query.relayer;
@@ -138,7 +139,10 @@ const createRouter = () => {
         );
       }
 
-      const granularity = determineGranularityForTimePeriod(period);
+      const granularity =
+        request.query.granularity === undefined
+          ? determineGranularityForTimePeriod(period)
+          : request.query.granularity;
       const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
       const metrics = await getRelayerMetrics(
         relayerLookupId,

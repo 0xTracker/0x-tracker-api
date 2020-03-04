@@ -55,7 +55,7 @@ const getRelayerMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
         relayer_metrics_by_day: {
           date_histogram: {
             field: 'date',
-            calendar_interval: '1d',
+            calendar_interval: granularity,
           },
           aggs: {
             fillCount: {
