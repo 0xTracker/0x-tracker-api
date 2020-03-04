@@ -1,6 +1,8 @@
 const _ = require('lodash');
 
 const elasticsearch = require('../util/elasticsearch');
+const getDatesForMetrics = require('../util/get-dates-for-metrics');
+const padMetrics = require('./pad-metrics');
 
 const aggregateMetrics = async (
   type,
@@ -103,13 +105,25 @@ const reduceMetrics = (makerMetrics, takerMetrics) => {
   });
 };
 
-const getTraderMetrics = async (address, dateFrom, dateTo, granularity) => {
+const getTraderMetrics = async (address, period, granularity) => {
+  const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
+
   const [makerMetrics, takerMetrics] = await Promise.all([
     aggregateMetrics('maker', address, dateFrom, dateTo, granularity),
     aggregateMetrics('taker', address, dateFrom, dateTo, granularity),
   ]);
 
-  return reduceMetrics(makerMetrics, takerMetrics);
+  return padMetrics(
+    reduceMetrics(makerMetrics, takerMetrics),
+    period,
+    granularity,
+    {
+      fillCount: { maker: 0, taker: 0, total: 0 },
+      fillVolume: { maker: 0, taker: 0, total: 0 },
+      tradeCount: { maker: 0, taker: 0, total: 0 },
+      tradeVolume: { maker: 0, taker: 0, total: 0 },
+    },
+  );
 };
 
 module.exports = getTraderMetrics;

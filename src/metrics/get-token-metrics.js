@@ -1,34 +1,20 @@
 const _ = require('lodash');
-const moment = require('moment');
 
 const { GRANULARITY } = require('../constants');
 const formatTokenAmount = require('../tokens/format-token-amount');
+const getDatesForMetrics = require('../util/get-dates-for-metrics');
+const padMetrics = require('./pad-metrics');
 const TokenMetric = require('../model/token-metric');
 
-const getTokenMetrics = async (token, dateFrom, dateTo, granularity) => {
-  const dayFrom = moment
-    .utc(dateFrom)
-    .startOf('day')
-    .toDate();
-  const dayTo = moment
-    .utc(dateTo)
-    .endOf('day')
-    .toDate();
-  const hourFrom = moment
-    .utc(dateFrom)
-    .startOf('hour')
-    .toDate();
-  const hourTo = moment
-    .utc(dateTo)
-    .endOf('hour')
-    .toDate();
+const getTokenMetrics = async (token, period, granularity) => {
+  const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const pipeline =
-    granularity === GRANULARITY.DAY
+    granularity === GRANULARITY.DAY || granularity === GRANULARITY.WEEK
       ? [
           {
             $match: {
-              date: { $gte: dayFrom, $lte: dayTo },
+              date: { $gte: dateFrom, $lte: dateTo },
               tokenAddress: token.address,
             },
           },
@@ -37,7 +23,7 @@ const getTokenMetrics = async (token, dateFrom, dateTo, granularity) => {
       : [
           {
             $match: {
-              date: { $gte: dayFrom, $lte: dayTo },
+              date: { $gte: dateFrom, $lte: dateTo },
               tokenAddress: token.address,
             },
           },
@@ -55,7 +41,7 @@ const getTokenMetrics = async (token, dateFrom, dateTo, granularity) => {
             },
           },
           {
-            $match: { hour: { $gte: hourFrom, $lte: hourTo } },
+            $match: { hour: { $gte: dateFrom, $lte: dateTo } },
           },
           {
             $group: {
@@ -80,16 +66,21 @@ const getTokenMetrics = async (token, dateFrom, dateTo, granularity) => {
 
   const dataPoints = await TokenMetric.aggregate(pipeline);
 
-  const result = dataPoints.map(dataPoint => {
-    return {
-      date: _.get(dataPoint, 'date', dataPoint._id),
-      fillCount: dataPoint.fillCount,
-      fillVolume: {
-        token: formatTokenAmount(dataPoint.tokenVolume, token),
-        USD: dataPoint.usdVolume,
-      },
-    };
-  });
+  const result = padMetrics(
+    dataPoints.map(dataPoint => {
+      return {
+        date: _.get(dataPoint, 'date', dataPoint._id),
+        fillCount: dataPoint.fillCount,
+        fillVolume: {
+          token: formatTokenAmount(dataPoint.tokenVolume, token),
+          USD: dataPoint.usdVolume,
+        },
+      };
+    }),
+    period,
+    granularity,
+    { fillCount: 0, fillVolume: { token: '0', USD: 0 } },
+  );
 
   return result;
 };

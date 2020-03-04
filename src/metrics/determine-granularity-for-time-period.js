@@ -7,8 +7,9 @@ const determineGranularityForTimePeriod = timePeriod => {
       return GRANULARITY.HOUR;
     case TIME_PERIOD.MONTH:
     case TIME_PERIOD.YEAR:
-    case TIME_PERIOD.ALL:
       return GRANULARITY.DAY;
+    case TIME_PERIOD.ALL:
+      return GRANULARITY.WEEK;
     default:
       throw new Error(`Invalid time period: ${timePeriod}`);
   }
