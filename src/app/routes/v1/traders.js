@@ -5,8 +5,7 @@ const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period')
 const getTradersWith24HourStats = require('../../../traders/get-traders-with-24-hour-stats');
 const getTradersWithStatsForDates = require('../../../traders/get-traders-with-stats-for-dates');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
-const pagination = require('../../middleware/pagination');
-const validatePeriod = require('../../middleware/validate-period');
+const middleware = require('../../middleware');
 
 const parseBooleanString = value => {
   if (value === 'true') {
@@ -25,9 +24,13 @@ const createRouter = () => {
 
   router.get(
     '/traders',
-    pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
-    validatePeriod('statsPeriod'),
-    async ({ pagination: { limit, page }, request, response }, next) => {
+    middleware.pagination({
+      defaultLimit: 20,
+      maxLimit: 50,
+      maxPage: Infinity,
+    }),
+    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    async ({ pagination, params, request, response }, next) => {
       const { excludeRelayers, type } = request.query;
 
       if (type !== undefined && type !== 'maker' && type !== 'taker') {
@@ -48,9 +51,9 @@ const createRouter = () => {
         );
       }
 
-      const statsPeriod = request.query.statsPeriod || TIME_PERIOD.DAY;
+      const { limit, page } = pagination;
+      const { statsPeriod } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
-
       const { traders, resultCount } =
         statsPeriod === TIME_PERIOD.DAY
           ? await getTradersWith24HourStats({

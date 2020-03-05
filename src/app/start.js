@@ -5,11 +5,8 @@ const helmet = require('koa-helmet');
 const Koa = require('koa');
 const signale = require('signale');
 
-const cacheControl = require('./middleware/cache-control');
-const cors = require('./middleware/cors');
-const error = require('./middleware/error');
 const errorLogger = require('../util/error-logger');
-const invalidUrl = require('./middleware/invalid-url');
+const middleware = require('./middleware');
 const routes = require('./routes');
 
 const logger = signale.scope('application');
@@ -19,15 +16,15 @@ const start = port => {
 
   errorLogger.attachToApp(app);
 
-  app.use(error());
+  app.use(middleware.error());
   app.use(helmet());
-  app.use(cors());
+  app.use(middleware.cors());
   app.use(consoleLogger());
   app.use(compress());
   app.use(etag());
-  app.use(cacheControl());
+  app.use(middleware.cacheControl());
   app.use(routes);
-  app.use(invalidUrl());
+  app.use(middleware.invalidUrl());
 
   app.listen(port);
 

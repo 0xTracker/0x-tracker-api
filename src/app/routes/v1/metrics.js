@@ -12,25 +12,22 @@ const getRelayerMetrics = require('../../../metrics/get-relayer-metrics');
 const getTokenMetrics = require('../../../metrics/get-token-metrics');
 const getTraderMetrics = require('../../../metrics/get-trader-metrics');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
+const middleware = require('../../middleware');
 const MissingParameterError = require('../../errors/missing-parameter-error');
 const Token = require('../../../model/token');
-const validatePeriod = require('../../middleware/validate-period');
-const validateGranularity = require('../../middleware/validate-granularity');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/metrics' });
 
   router.get(
     '/network',
-    validatePeriod('period'),
-    validateGranularity({ period: 'period', granularity: 'granularity' }),
-    async ({ request, response }, next) => {
-      const period = request.query.period || TIME_PERIOD.MONTH;
-      const granularity =
-        request.query.granularity === undefined
-          ? determineGranularityForTimePeriod(period)
-          : request.query.granularity;
-
+    middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    middleware.metricGranularity({
+      period: 'period',
+      granularity: 'granularity',
+    }),
+    async ({ params, response }, next) => {
+      const { granularity, period } = params;
       const metrics = await getNetworkMetrics(period, granularity);
 
       response.body = metrics;
@@ -41,8 +38,8 @@ const createRouter = () => {
 
   router.get(
     '/token',
-    validatePeriod('period'),
-    async ({ request, response }, next) => {
+    middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    async ({ params, request, response }, next) => {
       const tokenAddress = request.query.token;
 
       if (tokenAddress === undefined) {
@@ -58,9 +55,8 @@ const createRouter = () => {
         );
       }
 
-      const period = request.query.period || TIME_PERIOD.MONTH;
+      const { period } = params;
       const granularity = determineGranularityForTimePeriod(period);
-
       const metrics = await getTokenMetrics(token, period, granularity);
 
       response.body = metrics;
@@ -71,9 +67,12 @@ const createRouter = () => {
 
   router.get(
     '/trader',
-    validatePeriod('period'),
-    validateGranularity({ period: 'period', granularity: 'granularity' }),
-    async ({ request, response }, next) => {
+    middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    middleware.metricGranularity({
+      period: 'period',
+      granularity: 'granularity',
+    }),
+    async ({ params, request, response }, next) => {
       const { address } = request.query;
 
       if (_.isEmpty(address)) {
@@ -89,13 +88,7 @@ const createRouter = () => {
         );
       }
 
-      const period = request.query.period || TIME_PERIOD.MONTH;
-
-      const granularity =
-        request.query.granularity === undefined
-          ? determineGranularityForTimePeriod(period)
-          : request.query.granularity;
-
+      const { granularity, period } = params;
       const metrics = await getTraderMetrics(address, period, granularity);
 
       response.body = metrics;
@@ -106,10 +99,12 @@ const createRouter = () => {
 
   router.get(
     '/relayer',
-    validatePeriod('period'),
-    validateGranularity({ period: 'period', granularity: 'granularity' }),
-    async ({ request, response }, next) => {
-      const period = request.query.period || TIME_PERIOD.MONTH;
+    middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    middleware.metricGranularity({
+      period: 'period',
+      granularity: 'granularity',
+    }),
+    async ({ params, request, response }, next) => {
       const relayerId = request.query.relayer;
 
       if (relayerId === undefined) {
@@ -125,11 +120,7 @@ const createRouter = () => {
         );
       }
 
-      const granularity =
-        request.query.granularity === undefined
-          ? determineGranularityForTimePeriod(period)
-          : request.query.granularity;
-
+      const { granularity, period } = params;
       const metrics = await getRelayerMetrics(
         relayerLookupId,
         period,
@@ -144,15 +135,13 @@ const createRouter = () => {
 
   router.get(
     '/protocol',
-    validatePeriod('period'),
-    validateGranularity({ period: 'period', granularity: 'granularity' }),
-    async ({ request, response }, next) => {
-      const period = request.query.period || TIME_PERIOD.MONTH;
-      const granularity =
-        request.query.granularity === undefined
-          ? determineGranularityForTimePeriod(period)
-          : request.query.granularity;
-
+    middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    middleware.metricGranularity({
+      period: 'period',
+      granularity: 'granularity',
+    }),
+    async ({ params, response }, next) => {
+      const { granularity, period } = params;
       const metrics = await getProtocolMetrics(period, granularity);
 
       response.body = metrics;
@@ -163,15 +152,13 @@ const createRouter = () => {
 
   router.get(
     '/active-trader',
-    validatePeriod('period'),
-    validateGranularity({ period: 'period', granularity: 'granularity' }),
-    async ({ request, response }, next) => {
-      const period = request.query.period || TIME_PERIOD.MONTH;
-      const granularity =
-        request.query.granularity === undefined
-          ? determineGranularityForTimePeriod(period)
-          : request.query.granularity;
-
+    middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    middleware.metricGranularity({
+      period: 'period',
+      granularity: 'granularity',
+    }),
+    async ({ params, response }, next) => {
+      const { granularity, period } = params;
       const metrics = await getActiveTraderMetrics(period, granularity);
 
       response.body = metrics;
