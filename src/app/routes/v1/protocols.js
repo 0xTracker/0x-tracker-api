@@ -5,19 +5,23 @@ const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period')
 const getProtocolsWith24HourStats = require('../../../protocols/get-protocols-with-24-hour-stats');
 const getProtocolsWithStatsForDates = require('../../../protocols/get-protocols-with-stats-for-dates');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
-const pagination = require('../../middleware/pagination');
-const validatePeriod = require('../../middleware/validate-period');
+const middleware = require('../../middleware');
 
 const createRouter = () => {
   const router = new Router();
 
   router.get(
     '/protocols',
-    pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
-    validatePeriod('statsPeriod'),
-    async ({ pagination: { limit, page }, request, response }, next) => {
+    middleware.pagination({
+      defaultLimit: 20,
+      maxLimit: 50,
+      maxPage: Infinity,
+    }),
+    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    async ({ pagination, params, request, response }, next) => {
+      const { limit, page } = pagination;
       const { sortBy } = request.query;
-      const statsPeriod = request.query.statsPeriod || TIME_PERIOD.DAY;
+      const { statsPeriod } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
 
       if (

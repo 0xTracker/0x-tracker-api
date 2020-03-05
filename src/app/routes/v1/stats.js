@@ -6,16 +6,16 @@ const compute24HourNetworkStats = require('../../../stats/compute-24-hour-networ
 const computeNetworkStatsForDates = require('../../../stats/compute-network-stats-for-dates');
 const compute24HourTraderStats = require('../../../stats/compute-24-hour-trader-stats');
 const computeTraderStatsForDates = require('../../../stats/compute-trader-stats-for-dates');
-const validatePeriod = require('../../middleware/validate-period');
+const middleware = require('../../middleware');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/stats' });
 
   router.get(
     '/network',
-    validatePeriod('period'),
-    async ({ request, response }, next) => {
-      const period = request.query.period || TIME_PERIOD.DAY;
+    middleware.timePeriod('period', TIME_PERIOD.DAY),
+    async ({ params, response }, next) => {
+      const { period } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
       const stats =
         period === TIME_PERIOD.DAY
@@ -30,9 +30,9 @@ const createRouter = () => {
 
   router.get(
     '/relayer',
-    validatePeriod('period'),
-    async ({ request, response }, next) => {
-      const period = request.query.period || TIME_PERIOD.DAY;
+    middleware.timePeriod('period', TIME_PERIOD.DAY),
+    async ({ params, response }, next) => {
+      const { period } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
       const stats =
         period === TIME_PERIOD.DAY
@@ -50,9 +50,9 @@ const createRouter = () => {
 
   router.get(
     '/trader',
-    validatePeriod('period'),
-    async ({ request, response }, next) => {
-      const period = request.query.period || TIME_PERIOD.DAY;
+    middleware.timePeriod('period', TIME_PERIOD.DAY),
+    async ({ params, response }, next) => {
+      const { period } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
       const stats =
         period === TIME_PERIOD.DAY

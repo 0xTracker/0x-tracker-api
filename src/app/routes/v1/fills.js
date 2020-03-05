@@ -6,7 +6,7 @@ const Router = require('koa-router');
 const Fill = require('../../../model/fill');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
-const pagination = require('../../middleware/pagination');
+const middleware = require('../../middleware');
 const reverseMapStatus = require('../../../fills/reverse-map-status');
 const searchFills = require('../../../fills/search-fills');
 const transformFill = require('./util/transform-fill');
@@ -41,7 +41,11 @@ const createRouter = () => {
 
   router.get(
     '/',
-    pagination({ defaultLimit: 20, maxLimit: 50, maxPage: Infinity }),
+    middleware.pagination({
+      defaultLimit: 20,
+      maxLimit: 50,
+      maxPage: Infinity,
+    }),
     async ({ pagination: { limit, page }, request, response }, next) => {
       const { address, bridgeAddress, status, token } = request.query;
       const relayerId = request.query.relayer;

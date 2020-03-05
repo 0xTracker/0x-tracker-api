@@ -1,6 +1,7 @@
 const _ = require('lodash');
 
 const { GRANULARITY, TIME_PERIOD } = require('../../constants');
+const determineGranularityForTimePeriod = require('../../metrics/determine-granularity-for-time-period');
 const InvalidParameterError = require('../errors/invalid-parameter-error');
 
 const VALID_VALUES_BY_PERIOD = {
@@ -12,12 +13,17 @@ const VALID_VALUES_BY_PERIOD = {
 };
 
 const createMiddleware = paramNames => async (context, next) => {
-  const { request } = context;
+  const { params, request } = context;
 
-  const period = _.get(request, `query.${paramNames.period}`);
+  const period = _.get(params, paramNames.period);
   const granularity = _.get(request, `query.${paramNames.granularity}`);
 
   if (granularity === undefined) {
+    _.set(
+      context,
+      ['params', paramNames.granularity],
+      determineGranularityForTimePeriod(period),
+    );
     await next();
     return;
   }
@@ -30,6 +36,8 @@ const createMiddleware = paramNames => async (context, next) => {
       `Invalid ${paramNames.granularity} parameter: ${granularity}`,
     );
   }
+
+  _.set(context, ['params', paramNames.granularity], granularity);
 
   await next();
 };
