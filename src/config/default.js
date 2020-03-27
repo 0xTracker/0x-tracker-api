@@ -15,6 +15,13 @@ module.exports = {
     url: _.get(process.env, 'ELASTIC_SEARCH_URL', null),
     username: _.get(process.env, 'ELASTIC_SEARCH_USERNAME', null),
   },
+  pino: {
+    elasticsearch: {
+      batchSize: 200,
+      index: 'logs_api',
+      url: _.get(process.env, 'PINO_ELASTIC_SEARCH_URL', null),
+    },
+  },
   port: process.env.PORT || 3001,
   tokenCache: {
     pollingInterval: ms('1 minute'),

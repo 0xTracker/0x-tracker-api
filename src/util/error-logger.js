@@ -1,13 +1,13 @@
 const _ = require('lodash');
 const bugsnag = require('@bugsnag/js');
 const bugsnagKoa = require('@bugsnag/plugin-koa');
-const signale = require('signale');
+
+const { getLogger } = require('./logging');
 
 let bugsnagClient;
 
-const logger = signale.scope('application');
-
 const logError = (error, opts) => {
+  const logger = getLogger('application');
   const report = _.get(opts, 'report', false);
 
   if (bugsnagClient && report) {
@@ -18,6 +18,8 @@ const logError = (error, opts) => {
 };
 
 const configure = ({ appVersion, bugsnagToken }) => {
+  const logger = getLogger('application');
+
   if (_.isString(bugsnagToken)) {
     bugsnagClient = bugsnag({ apiKey: bugsnagToken, appVersion });
   }
@@ -27,6 +29,8 @@ const configure = ({ appVersion, bugsnagToken }) => {
 };
 
 const attachToApp = app => {
+  const logger = getLogger('application');
+
   if (bugsnagClient) {
     bugsnagClient.use(bugsnagKoa);
 
