@@ -3,8 +3,10 @@ const config = require('config');
 const db = require('../util/db');
 const elasticsearch = require('../util/elasticsearch');
 const errorLogger = require('../util/error-logger');
+const logging = require('../util/logging');
 
 const configure = () => {
+  logging.init(config.get('pino'));
   errorLogger.configure({
     appVersion: config.get('appVersion'),
     bugsnagToken: config.get('bugsnag.token'),

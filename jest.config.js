@@ -8,7 +8,6 @@ module.exports = {
     '!*.config.js',
     '!config/**',
   ],
-  setupFiles: ['<rootDir>/config/jest/setup'],
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.js', '**/*.test.js'],
 };

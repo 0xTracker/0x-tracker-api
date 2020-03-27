@@ -1,25 +1,23 @@
 const compress = require('koa-compress');
-const consoleLogger = require('koa-logger');
 const etag = require('koa-etag');
 const helmet = require('koa-helmet');
 const Koa = require('koa');
-const signale = require('signale');
 
 const errorLogger = require('../util/error-logger');
+const logging = require('../util/logging');
 const middleware = require('./middleware');
 const routes = require('./routes');
 
-const logger = signale.scope('application');
-
 const start = port => {
+  const logger = logging.getLogger('application');
   const app = new Koa();
 
   errorLogger.attachToApp(app);
 
+  app.use(logging.getMiddleware());
   app.use(middleware.error());
   app.use(helmet());
   app.use(middleware.cors());
-  app.use(consoleLogger());
   app.use(compress());
   app.use(etag());
   app.use(middleware.cacheControl());

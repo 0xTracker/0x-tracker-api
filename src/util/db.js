@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
-const signale = require('signale');
 
 const { logError } = require('./error-logger');
-
-const logger = signale.scope('application');
+const { getLogger } = require('./logging');
 
 mongoose.Promise = global.Promise;
 mongoose.set('debug', process.env.MONGOOSE_DEBUG === 'true');
 
 module.exports = {
   connect: (connectionString, options = {}) => {
+    const logger = getLogger('database');
+
     mongoose.connect(connectionString, {
       poolSize: options.poolSize,
       useNewUrlParser: true,
@@ -20,7 +20,7 @@ module.exports = {
     mongoose.set('maxTimeMS', 10000);
 
     mongoose.connection.on('connected', () => {
-      logger.success('database connection established');
+      logger.info('database connection established');
     });
 
     mongoose.connection.on('error', err => {
