@@ -19,7 +19,7 @@ const createIndexFormatter = prefix => logTime => {
 
 const init = config => {
   const streamToElasticsearch =
-    config.elasticsearch.url === null
+    config.elasticsearch.url === null || config.elasticsearch.url.length === 0
       ? undefined
       : pinoElastic({
           'bulk-size': config.elasticsearch.batchSize,
