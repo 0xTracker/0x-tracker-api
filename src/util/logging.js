@@ -2,7 +2,6 @@ const _ = require('lodash');
 const os = require('os');
 const pino = require('pino');
 const pinoElastic = require('pino-elasticsearch');
-const pinoKoa = require('koa-pino-logger');
 
 let logger;
 let middleware;
@@ -30,13 +29,13 @@ const init = config => {
           type: 'log',
         });
 
-  const pinoOptions = {
-    base: { group: 'application', pid: process.pid, hostname: os.hostname() },
-    level: 'info',
-  };
-
-  logger = pino(pinoOptions, streamToElasticsearch);
-  middleware = pinoKoa(pinoOptions, streamToElasticsearch);
+  logger = pino(
+    {
+      base: { group: 'application', pid: process.pid, hostname: os.hostname() },
+      level: 'info',
+    },
+    streamToElasticsearch,
+  );
 };
 
 const getLogger = logGroup => {
