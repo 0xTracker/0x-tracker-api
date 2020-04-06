@@ -57,7 +57,7 @@ const createRouter = () => {
 
       const { period } = params;
       const granularity = determineGranularityForTimePeriod(period);
-      const metrics = await getTokenMetrics(token, period, granularity);
+      const metrics = await getTokenMetrics(token.address, period, granularity);
 
       response.body = metrics;
 

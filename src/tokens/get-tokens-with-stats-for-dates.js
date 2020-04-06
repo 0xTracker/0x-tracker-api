@@ -1,120 +1,114 @@
 const _ = require('lodash');
 
-const formatTokenAmount = require('./format-token-amount');
-const TokenMetric = require('../model/token-metric');
+const elasticsearch = require('../util/elasticsearch');
+const Token = require('../model/token');
+
+const nullifyValueIfZero = value => (value === 0 ? null : value);
 
 const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
+  console.log(dateFrom, dateTo);
   const { page, limit, type } = _.defaults({}, options, {
     page: 1,
     limit: 20,
   });
 
-  const result = await TokenMetric.aggregate(
-    _.compact([
-      {
-        $match: {
-          date: {
-            $gte: dateFrom,
-            $lte: dateTo,
+  const startIndex = (page - 1) * limit;
+
+  const res = await elasticsearch.getClient().search({
+    index: 'traded_tokens',
+    body: {
+      aggs: {
+        tokenStats: {
+          terms: {
+            field: 'tokenAddress',
+            order: { tradeVolumeUSD: 'desc' },
+            size: page * limit,
           },
-        },
-      },
-      {
-        $group: {
-          _id: '$tokenAddress',
-          fillCount: {
-            $sum: '$fillCount',
-          },
-          tokenVolume: {
-            $sum: '$tokenVolume',
-          },
-          usdVolume: {
-            $sum: '$usdVolume',
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'tokens',
-          localField: '_id',
-          foreignField: 'address',
-          as: 'token',
-        },
-      },
-      type === undefined
-        ? null
-        : {
-            $match: {
-              'token.0.type': type,
+          aggs: {
+            fillCount: {
+              value_count: { field: 'fillId' },
             },
-          },
-      {
-        $facet: {
-          tokens: [
-            { $sort: { usdVolume: -1 } },
-            { $skip: (page - 1) * limit },
-            { $limit: limit },
-            {
-              $project: {
-                _id: 0,
-                address: { $arrayElemAt: ['$token.address', 0] },
-                decimals: { $arrayElemAt: ['$token.decimals', 0] },
-                imageUrl: { $arrayElemAt: ['$token.imageUrl', 0] },
-                lastTrade: { $arrayElemAt: ['$token.price.lastTrade', 0] },
-                name: { $arrayElemAt: ['$token.name', 0] },
-                price: {
-                  last: { $arrayElemAt: ['$token.price.lastPrice', 0] },
-                },
-                symbol: { $arrayElemAt: ['$token.symbol', 0] },
-                stats: {
-                  fillCount: '$fillCount',
-                  fillVolume: {
-                    token: '$tokenVolume',
-                    USD: '$usdVolume',
-                  },
-                },
-                type: { $arrayElemAt: ['$token.type', 0] },
-                url: { $arrayElemAt: ['$token.url', 0] },
+            fillVolume: {
+              sum: { field: 'filledAmount' },
+            },
+            fillVolumeUSD: {
+              sum: { field: 'filledAmountUSD' },
+            },
+            tradeCount: {
+              sum: { field: 'tradeCountContribution' },
+            },
+            tradeVolume: {
+              sum: { field: 'tradedAmount' },
+            },
+            tradeVolumeUSD: {
+              sum: { field: 'tradedAmountUSD' },
+            },
+            bucket_truncate: {
+              bucket_sort: {
+                size: limit,
+                from: startIndex,
               },
             },
-          ],
-          resultCount: [{ $count: 'value' }],
-          totals: [
-            {
-              $group: {
-                _id: null,
-                tokenCount: { $sum: 1 },
-              },
-            },
-          ],
+          },
+        },
+        tokenCount: {
+          cardinality: {
+            field: 'tokenAddress',
+          },
         },
       },
-    ]),
-  );
+      size: 0,
+      query: {
+        bool: {
+          filter: [
+            type === undefined ? undefined : { term: { tokenType: type } },
+            {
+              range: {
+                date: {
+                  gte: dateFrom,
+                  lte: dateTo,
+                },
+              },
+            },
+          ].filter(f => f !== undefined),
+        },
+      },
+    },
+  });
+
+  const tokenStats = res.body.aggregations.tokenStats.buckets;
+  const tokenAddresses = tokenStats.map(x => x.key);
+  const tokenCount = res.body.aggregations.tokenCount.value;
+
+  const tokens = await Token.find({
+    address: { $in: tokenAddresses },
+  }).lean();
 
   return {
-    tokens: _.get(result, '[0].tokens', []).map(token => ({
-      ..._.pick(token, [
-        'address',
-        'imageUrl',
-        'lastTrade',
-        'name',
-        'price',
-        'symbol',
-        'type',
-      ]),
-      stats: {
-        ...token.stats,
-        fillVolume: {
-          ...token.stats.fillVolume,
-          token: formatTokenAmount(
-            token.stats.fillVolume.token,
-            token.decimals,
-          ),
+    tokens: tokenStats.map(stats => {
+      const token = tokens.find(t => t.address === stats.key);
+
+      return {
+        ..._.pick(token, ['address', 'imageUrl', 'name', 'symbol', 'type']),
+        lastTrade: _.get(token, 'price.lastTrade', null),
+        price: {
+          last: _.get(token, 'price.lastPrice', null),
         },
-      },
-    })),
-    resultCount: _.get(result, '[0].totals[0].tokenCount', 0),
+        stats: {
+          fillCount: stats.fillCount.value,
+          fillVolume: {
+            token: nullifyValueIfZero(stats.fillVolume.value),
+            USD: nullifyValueIfZero(stats.fillVolumeUSD.value),
+          },
+          tradeCount: stats.tradeCount.value,
+          tradeVolume: {
+            token: nullifyValueIfZero(stats.tradeVolume.value),
+            USD: nullifyValueIfZero(stats.tradeVolumeUSD.value),
+          },
+        },
+      };
+    }),
+    resultCount: tokenCount,
   };
 };
 
