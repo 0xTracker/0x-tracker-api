@@ -69,7 +69,12 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
     })),
     period,
     granularity,
-    { fillCount: 0, fillVolume: 0, tradeCount: 0, tradeVolume: 0 },
+    {
+      fillCount: 0,
+      fillVolume: { token: '0', USD: 0 },
+      tradeCount: 0,
+      tradeVolume: { token: '0', USD: 0 },
+    },
   );
 };
 
