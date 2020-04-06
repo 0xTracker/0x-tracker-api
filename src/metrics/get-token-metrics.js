@@ -1,88 +1,76 @@
-const _ = require('lodash');
-
-const { GRANULARITY } = require('../constants');
-const formatTokenAmount = require('../tokens/format-token-amount');
+const elasticsearch = require('../util/elasticsearch');
 const getDatesForMetrics = require('../util/get-dates-for-metrics');
 const padMetrics = require('./pad-metrics');
-const TokenMetric = require('../model/token-metric');
 
-const getTokenMetrics = async (token, period, granularity) => {
+const getTokenMetrics = async (tokenAddress, period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
-  const pipeline =
-    granularity === GRANULARITY.DAY || granularity === GRANULARITY.WEEK
-      ? [
-          {
-            $match: {
-              date: { $gte: dateFrom, $lte: dateTo },
-              tokenAddress: token.address,
+  const results = await elasticsearch.getClient().search({
+    index: 'traded_token_metrics_hourly',
+    body: {
+      aggs: {
+        token_metrics: {
+          date_histogram: {
+            field: 'date',
+            calendar_interval: granularity,
+          },
+          aggs: {
+            fillCount: {
+              sum: { field: 'fillCount' },
+            },
+            fillVolume: {
+              sum: { field: 'fillVolume' },
+            },
+            fillVolumeUSD: {
+              sum: { field: 'fillVolumeUSD' },
+            },
+            tradeCount: {
+              sum: { field: 'tradeCount' },
+            },
+            tradeVolume: {
+              sum: { field: 'tradeVolume' },
+            },
+            tradeVolumeUSD: {
+              sum: { field: 'tradeVolumeUSD' },
             },
           },
-          { $sort: { date: 1 } },
-        ]
-      : [
-          {
-            $match: {
-              date: { $gte: dateFrom, $lte: dateTo },
-              tokenAddress: token.address,
-            },
-          },
-          {
-            $unwind: {
-              path: '$hours',
-            },
-          },
-          {
-            $project: {
-              hour: '$hours.date',
-              fillCount: '$hours.fillCount',
-              tokenVolume: '$hours.tokenVolume',
-              usdVolume: '$hours.usdVolume',
-            },
-          },
-          {
-            $match: { hour: { $gte: dateFrom, $lte: dateTo } },
-          },
-          {
-            $group: {
-              _id: '$hour',
-              fillCount: {
-                $sum: '$fillCount',
-              },
-              tokenVolume: {
-                $sum: '$tokenVolume',
-              },
-              usdVolume: {
-                $sum: '$usdVolume',
-              },
-            },
-          },
-          {
-            $sort: {
-              _id: 1,
-            },
-          },
-        ];
-
-  const dataPoints = await TokenMetric.aggregate(pipeline);
-
-  const result = padMetrics(
-    dataPoints.map(dataPoint => {
-      return {
-        date: _.get(dataPoint, 'date', dataPoint._id),
-        fillCount: dataPoint.fillCount,
-        fillVolume: {
-          token: formatTokenAmount(dataPoint.tokenVolume, token),
-          USD: dataPoint.usdVolume,
         },
-      };
-    }),
+      },
+      size: 0,
+      query: {
+        bool: {
+          filter: [
+            {
+              range: {
+                date: {
+                  gte: dateFrom,
+                  lte: dateTo,
+                },
+              },
+            },
+            {
+              term: {
+                tokenAddress,
+              },
+            },
+          ],
+        },
+      },
+    },
+  });
+
+  return padMetrics(
+    results.body.aggregations.token_metrics.buckets.map(x => ({
+      date: new Date(x.key_as_string),
+      fillCount: x.fillCount.value,
+      fillVolume: { token: x.fillVolume.value, USD: x.fillVolumeUSD.value },
+      tradeCount: x.tradeCount.value,
+      tradeVolume: { token: x.tradeVolume.value, USD: x.tradeVolume.value },
+    })),
     period,
     granularity,
-    { fillCount: 0, fillVolume: { token: '0', USD: 0 } },
+    { fillCount: 0, fillVolume: 0, tradeCount: 0, tradeVolume: 0 },
   );
-
-  return result;
 };
 
 module.exports = getTokenMetrics;

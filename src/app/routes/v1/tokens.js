@@ -4,7 +4,6 @@ const Router = require('koa-router');
 const { TIME_PERIOD, TOKEN_TYPE } = require('../../../constants');
 const formatTokenType = require('../../../tokens/format-token-type');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getTokensWith24HourStats = require('../../../tokens/get-tokens-with-24-hour-stats');
 const getTokensWithStatsForDates = require('../../../tokens/get-tokens-with-stats-for-dates');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const middleware = require('../../middleware');
@@ -48,18 +47,15 @@ const createRouter = () => {
       const { statsPeriod } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
 
-      const { tokens, resultCount } =
-        statsPeriod === TIME_PERIOD.DAY
-          ? await getTokensWith24HourStats({
-              page,
-              limit,
-              type: TOKEN_TYPE_REVERSE_MAP[type],
-            })
-          : await getTokensWithStatsForDates(dateFrom, dateTo, {
-              page,
-              limit,
-              type: TOKEN_TYPE_REVERSE_MAP[type],
-            });
+      const { tokens, resultCount } = await getTokensWithStatsForDates(
+        dateFrom,
+        dateTo,
+        {
+          page,
+          limit,
+          type: TOKEN_TYPE_REVERSE_MAP[type],
+        },
+      );
 
       response.body = {
         tokens: tokens.map(token => ({
