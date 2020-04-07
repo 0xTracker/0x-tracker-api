@@ -10,13 +10,12 @@ const transformToken = (token, price) => {
     imageUrl: _.isString(token.imageUrl)
       ? getCdnTokenImageUrl(token.imageUrl)
       : undefined,
-    lastTrade:
-      price !== null
-        ? {
-            date: price.date,
-            id: price.fillId,
-          }
-        : null,
+    lastTrade: _.isObject(price)
+      ? {
+          date: price.date,
+          id: price.fillId,
+        }
+      : null,
     name: token.name,
     price: {
       change:
