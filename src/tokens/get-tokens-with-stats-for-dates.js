@@ -1,6 +1,9 @@
 const _ = require('lodash');
 
+const { TOKEN_TYPE } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
+const getCdnTokenImageUrl = require('./get-cdn-token-image-url');
+const getTokenPrices = require('./get-token-prices');
 const Token = require('../model/token');
 
 const nullifyValueIfZero = value => (value === 0 ? null : value);
@@ -79,19 +82,38 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
   const tokenAddresses = tokenStats.map(x => x.key);
   const tokenCount = res.body.aggregations.tokenCount.value;
 
-  const tokens = await Token.find({
-    address: { $in: tokenAddresses },
-  }).lean();
+  const [tokens, prices] = await Promise.all([
+    Token.find({
+      address: { $in: tokenAddresses },
+    }).lean(),
+    getTokenPrices(tokenAddresses, { from: dateFrom, to: dateTo }),
+  ]);
 
   return {
     tokens: tokenStats.map(stats => {
       const token = tokens.find(t => t.address === stats.key);
+      const price = prices.find(t => t.tokenAddress === stats.key);
 
       return {
-        ..._.pick(token, ['address', 'imageUrl', 'name', 'symbol', 'type']),
-        lastTrade: _.get(token, 'price.lastTrade', null),
+        ..._.pick(token, ['address', 'name', 'symbol', 'type']),
+        imageUrl: _.isString(token.imageUrl)
+          ? getCdnTokenImageUrl(token.imageUrl)
+          : undefined,
+        lastTrade: _.has(price, 'fillId')
+          ? {
+              date: price.date,
+              id: price.fillId,
+            }
+          : null,
         price: {
-          last: _.get(token, 'price.lastPrice', null),
+          change:
+            token.type === TOKEN_TYPE.ERC20
+              ? _.get(price, 'priceChange', null)
+              : null,
+          last:
+            token.type === TOKEN_TYPE.ERC20
+              ? _.get(price, 'priceUSD', null)
+              : null,
         },
         stats: {
           fillCount: stats.fillCount.value,
