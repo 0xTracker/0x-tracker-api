@@ -56,8 +56,6 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
     },
   });
 
-  console.log(results.body.took);
-
   return padMetrics(
     results.body.aggregations.token_metrics.buckets.map(x => ({
       date: new Date(x.key_as_string),
