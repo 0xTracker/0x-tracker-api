@@ -3,7 +3,6 @@ const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
 const checkTraderExists = require('../../../traders/check-trader-exists');
-const determineGranularityForTimePeriod = require('../../../metrics/determine-granularity-for-time-period');
 const getActiveTraderMetrics = require('../../../metrics/get-active-trader-metrics');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
@@ -39,6 +38,10 @@ const createRouter = () => {
   router.get(
     '/token',
     middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    middleware.metricGranularity({
+      period: 'period',
+      granularity: 'granularity',
+    }),
     async ({ params, request, response }, next) => {
       const tokenAddress = request.query.token;
 
@@ -55,8 +58,7 @@ const createRouter = () => {
         );
       }
 
-      const { period } = params;
-      const granularity = determineGranularityForTimePeriod(period);
+      const { granularity, period } = params;
       const metrics = await getTokenMetrics(token.address, period, granularity);
 
       response.body = metrics;
