@@ -2,6 +2,7 @@ const _ = require('lodash');
 
 const { TOKEN_TYPE } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
+const getCdnTokenImageUrl = require('./get-cdn-token-image-url');
 const getTokenPrices = require('./get-token-prices');
 const Token = require('../model/token');
 
@@ -94,7 +95,10 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
       const price = prices.find(t => t.tokenAddress === stats.key);
 
       return {
-        ..._.pick(token, ['address', 'imageUrl', 'name', 'symbol', 'type']),
+        ..._.pick(token, ['address', 'name', 'symbol', 'type']),
+        imageUrl: _.isString(token.imageUrl)
+          ? getCdnTokenImageUrl(token.imageUrl)
+          : undefined,
         lastTrade: _.has(price, 'fillId')
           ? {
               date: price.date,
