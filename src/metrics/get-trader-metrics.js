@@ -12,7 +12,7 @@ const aggregateMetrics = async (
   granularity,
 ) => {
   const results = await elasticsearch.getClient().search({
-    index: `${type}_metrics_hourly`,
+    index: 'fills',
     body: {
       aggs: {
         metrics: {
@@ -21,14 +21,11 @@ const aggregateMetrics = async (
             calendar_interval: granularity,
           },
           aggs: {
-            fillCount: {
-              sum: { field: 'fillCount' },
-            },
             fillVolume: {
-              sum: { field: 'fillVolume' },
+              sum: { field: 'value' },
             },
             tradeCount: {
-              sum: { field: 'tradeCount' },
+              sum: { field: 'tradeCountContribution' },
             },
             tradeVolume: {
               sum: { field: 'tradeVolume' },
@@ -61,7 +58,7 @@ const aggregateMetrics = async (
 
   return results.body.aggregations.metrics.buckets.map(x => ({
     date: new Date(x.key_as_string),
-    fillCount: x.fillCount.value,
+    fillCount: x.doc_count,
     fillVolume: x.fillVolume.value,
     tradeCount: x.tradeCount.value,
     tradeVolume: x.tradeVolume.value,

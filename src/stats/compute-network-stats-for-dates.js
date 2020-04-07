@@ -7,23 +7,20 @@ const formatTokenAmount = require('../tokens/format-token-amount');
 
 const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
   const results = await elasticsearch.getClient().search({
-    index: 'network_metrics_hourly',
+    index: 'fills',
     body: {
       aggs: {
-        fillCount: {
-          sum: { field: 'fillCount' },
-        },
         fillVolume: {
-          sum: { field: 'fillVolume' },
+          sum: { field: 'value' },
         },
         protocolFeesETH: {
-          sum: { field: 'protocolFeesETH' },
+          sum: { field: 'protocolFeeETH' },
         },
         protocolFeesUSD: {
-          sum: { field: 'protocolFeesUSD' },
+          sum: { field: 'protocolFeeUSD' },
         },
         tradeCount: {
-          sum: { field: 'tradeCount' },
+          sum: { field: 'tradeCountContribution' },
         },
         tradeVolume: {
           sum: { field: 'tradeVolume' },
@@ -50,7 +47,7 @@ const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
   const getValue = key => _.get(results.body.aggregations, `${key}.value`);
 
   return {
-    fillCount: getValue('fillCount'),
+    fillCount: results.body.aggregations.doc_count,
     fillVolume: getValue('fillVolume'),
     protocolFees: {
       ETH: formatTokenAmount(getValue('protocolFeesETH'), ETH_TOKEN_DECIMALS),
