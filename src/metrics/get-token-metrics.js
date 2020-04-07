@@ -6,7 +6,7 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const results = await elasticsearch.getClient().search({
-    index: 'traded_token_metrics_hourly',
+    index: 'traded_tokens',
     body: {
       aggs: {
         token_metrics: {
@@ -15,23 +15,20 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
             calendar_interval: granularity,
           },
           aggs: {
-            fillCount: {
-              sum: { field: 'fillCount' },
-            },
             fillVolume: {
-              sum: { field: 'fillVolume' },
+              sum: { field: 'filledAmount' },
             },
             fillVolumeUSD: {
-              sum: { field: 'fillVolumeUSD' },
+              sum: { field: 'filledAmountUSD' },
             },
             tradeCount: {
-              sum: { field: 'tradeCount' },
+              sum: { field: 'tradeCountContribution' },
             },
             tradeVolume: {
-              sum: { field: 'tradeVolume' },
+              sum: { field: 'tradedAmount' },
             },
             tradeVolumeUSD: {
-              sum: { field: 'tradeVolumeUSD' },
+              sum: { field: 'tradedAmountUSD' },
             },
           },
         },
@@ -41,16 +38,16 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
         bool: {
           filter: [
             {
+              term: {
+                tokenAddress,
+              },
+            },
+            {
               range: {
                 date: {
                   gte: dateFrom,
                   lte: dateTo,
                 },
-              },
-            },
-            {
-              term: {
-                tokenAddress,
               },
             },
           ],
@@ -59,10 +56,12 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
     },
   });
 
+  console.log(results.body.took);
+
   return padMetrics(
     results.body.aggregations.token_metrics.buckets.map(x => ({
       date: new Date(x.key_as_string),
-      fillCount: x.fillCount.value,
+      fillCount: x.doc_count,
       fillVolume: { token: x.fillVolume.value, USD: x.fillVolumeUSD.value },
       tradeCount: x.tradeCount.value,
       tradeVolume: { token: x.tradeVolume.value, USD: x.tradeVolume.value },
