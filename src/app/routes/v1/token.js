@@ -1,12 +1,10 @@
 const _ = require('lodash');
 const Router = require('koa-router');
 
-const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getTokenPrice = require('../../../tokens/get-token-price');
 const Token = require('../../../model/token');
 const transformToken = require('./util/transform-token');
 
-const createRouter = () => {
+const createRouter = ({ transformer } = {}) => {
   const router = new Router();
 
   router.get('/tokens/:tokenAddress', async ({ params, response }, next) => {
@@ -18,13 +16,7 @@ const createRouter = () => {
       return;
     }
 
-    const { dateFrom, dateTo } = getDatesForTimePeriod('day');
-    const price = await getTokenPrice(token.address, {
-      from: dateFrom,
-      to: dateTo,
-    });
-
-    response.body = transformToken(token, price);
+    response.body = transformer ? transformer(token) : transformToken(token);
 
     await next();
   });

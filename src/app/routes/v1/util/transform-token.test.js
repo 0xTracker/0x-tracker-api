@@ -34,12 +34,7 @@ it('should only return white-listed fields', () => {
   expect(transformed).toEqual({
     address: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
     imageUrl: 'http://tmpuri.org/test.jpg',
-    lastTrade: null,
     name: 'DAI Stablecoin',
-    price: {
-      change: null,
-      last: null,
-    },
     symbol: 'DAI',
   });
 });
@@ -54,12 +49,7 @@ it('should transform tokens which dont have an image url', () => {
 
   expect(transformed).toEqual({
     address: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
-    lastTrade: null,
     name: 'DAI Stablecoin',
-    price: {
-      change: null,
-      last: null,
-    },
     symbol: 'DAI',
   });
 });
