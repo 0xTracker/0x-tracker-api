@@ -8,29 +8,26 @@ const getNetworkMetrics = async (period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const results = await elasticsearch.getClient().search({
-    index: 'network_metrics_hourly',
+    index: 'fills',
     body: {
       aggs: {
-        network_metrics_by_day: {
+        network_metrics: {
           date_histogram: {
             field: 'date',
             calendar_interval: granularity,
           },
           aggs: {
-            fillCount: {
-              sum: { field: 'fillCount' },
-            },
             fillVolume: {
-              sum: { field: 'fillVolume' },
+              sum: { field: 'value' },
             },
             protocolFeesETH: {
-              sum: { field: 'protocolFeesETH' },
+              sum: { field: 'protocolFeeETH' },
             },
             protocolFeesUSD: {
-              sum: { field: 'protocolFeesUSD' },
+              sum: { field: 'protocolFeeUSD' },
             },
             tradeCount: {
-              sum: { field: 'tradeCount' },
+              sum: { field: 'tradeCountContribution' },
             },
             tradeVolume: {
               sum: { field: 'tradeVolume' },
@@ -51,9 +48,9 @@ const getNetworkMetrics = async (period, granularity) => {
   });
 
   return padMetrics(
-    results.body.aggregations.network_metrics_by_day.buckets.map(x => ({
+    results.body.aggregations.network_metrics.buckets.map(x => ({
       date: new Date(x.key_as_string),
-      fillCount: x.fillCount.value,
+      fillCount: x.doc_count,
       fillVolume: x.fillVolume.value,
       protocolFees: {
         ETH: formatTokenAmount(x.protocolFeesETH.value, ETH_TOKEN_DECIMALS),

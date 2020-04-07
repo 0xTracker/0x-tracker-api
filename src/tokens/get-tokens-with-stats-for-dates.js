@@ -6,7 +6,6 @@ const Token = require('../model/token');
 const nullifyValueIfZero = value => (value === 0 ? null : value);
 
 const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
-  console.log(dateFrom, dateTo);
   const { page, limit, type } = _.defaults({}, options, {
     page: 1,
     limit: 20,

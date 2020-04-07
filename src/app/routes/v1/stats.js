@@ -2,9 +2,7 @@ const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const compute24HourNetworkStats = require('../../../stats/compute-24-hour-network-stats');
 const computeNetworkStatsForDates = require('../../../stats/compute-network-stats-for-dates');
-const compute24HourTraderStats = require('../../../stats/compute-24-hour-trader-stats');
 const computeTraderStatsForDates = require('../../../stats/compute-trader-stats-for-dates');
 const middleware = require('../../middleware');
 
@@ -17,10 +15,7 @@ const createRouter = () => {
     async ({ params, response }, next) => {
       const { period } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const stats =
-        period === TIME_PERIOD.DAY
-          ? await compute24HourNetworkStats()
-          : await computeNetworkStatsForDates(dateFrom, dateTo);
+      const stats = await computeNetworkStatsForDates(dateFrom, dateTo);
 
       response.body = stats;
 
@@ -34,10 +29,7 @@ const createRouter = () => {
     async ({ params, response }, next) => {
       const { period } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const stats =
-        period === TIME_PERIOD.DAY
-          ? await compute24HourNetworkStats()
-          : await computeNetworkStatsForDates(dateFrom, dateTo);
+      const stats = await computeNetworkStatsForDates(dateFrom, dateTo);
 
       response.body = {
         tradeCount: stats.tradeCount,
@@ -54,10 +46,7 @@ const createRouter = () => {
     async ({ params, response }, next) => {
       const { period } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const stats =
-        period === TIME_PERIOD.DAY
-          ? await compute24HourTraderStats()
-          : await computeTraderStatsForDates(dateFrom, dateTo);
+      const stats = await computeTraderStatsForDates(dateFrom, dateTo);
 
       response.body = stats;
 

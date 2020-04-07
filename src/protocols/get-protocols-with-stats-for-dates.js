@@ -10,24 +10,21 @@ const getProtocolsWithStatsForDates = async (dateFrom, dateTo, options) => {
   });
 
   const response = await elasticsearch.getClient().search({
-    index: 'protocol_metrics_hourly',
+    index: 'fills',
     body: {
       aggs: {
         stats_by_protocol: {
           terms: {
             field: 'protocolVersion',
-            order: { [sortBy]: 'desc' },
+            order: sortBy === 'fillCount' ? undefined : { [sortBy]: 'desc' },
             size: 10,
           },
           aggs: {
-            fillCount: {
-              sum: { field: 'fillCount' },
-            },
             fillVolume: {
-              sum: { field: 'fillVolume' },
+              sum: { field: 'value' },
             },
             tradeCount: {
-              sum: { field: 'tradeCount' },
+              sum: { field: 'tradeCountContribution' },
             },
             tradeVolume: {
               sum: { field: 'tradeVolume' },
@@ -53,7 +50,7 @@ const getProtocolsWithStatsForDates = async (dateFrom, dateTo, options) => {
     .take(limit)
     .map(x => ({
       stats: {
-        fillCount: x.fillCount.value,
+        fillCount: x.doc_count,
         fillVolume: x.fillVolume.value,
         tradeCount: x.tradeCount.value,
         tradeVolume: x.tradeVolume.value,

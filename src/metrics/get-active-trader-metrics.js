@@ -1,14 +1,6 @@
-const { GRANULARITY } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForMetrics = require('../util/get-dates-for-metrics');
 const padMetrics = require('./pad-metrics');
-
-const INDEX_MAPPINGS = {
-  [GRANULARITY.DAY]: 'active_trader_metrics_daily',
-  [GRANULARITY.HOUR]: 'active_trader_metrics_hourly',
-  [GRANULARITY.MONTH]: 'active_trader_metrics_monthly',
-  [GRANULARITY.WEEK]: 'active_trader_metrics_weekly',
-};
 
 const getActiveTraderMetrics = async (period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
@@ -23,17 +15,42 @@ const getActiveTraderMetrics = async (period, granularity) => {
           },
         },
       },
+      aggs: {
+        metrics_by_date: {
+          date_histogram: {
+            field: 'date',
+            calendar_interval: granularity,
+          },
+          aggs: {
+            makerCount: {
+              cardinality: {
+                field: 'maker',
+              },
+            },
+            takerCount: {
+              cardinality: {
+                field: 'taker',
+              },
+            },
+            traderCount: {
+              cardinality: {
+                field: 'traders',
+              },
+            },
+          },
+        },
+      },
     },
-    index: INDEX_MAPPINGS[granularity],
-    size: 1000, // TODO: Determine this dynamically
+    index: 'fills',
+    size: 0,
   });
 
   return padMetrics(
-    results.body.hits.hits.map(x => ({
-      date: new Date(x._source.date),
-      makerCount: x._source.activeMakers,
-      takerCount: x._source.activeTakers,
-      traderCount: x._source.activeTraders,
+    results.body.aggregations.metrics_by_date.buckets.map(x => ({
+      date: new Date(x.key_as_string),
+      makerCount: x.makerCount.value,
+      takerCount: x.takerCount.value,
+      traderCount: x.traderCount.value,
     })),
     period,
     granularity,

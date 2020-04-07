@@ -2,13 +2,28 @@ const moment = require('moment');
 
 const elasticsearch = require('../util/elasticsearch');
 
-const getValue = async (type, dateFrom, dateTo) => {
+const computeTraderStatsForDates = async (dateFrom, dateTo) => {
   const response = await elasticsearch.getClient().search({
-    index: `${type}_metrics_hourly`,
+    index: `fills`,
     body: {
       aggs: {
-        count: {
-          cardinality: { field: type, precision_threshold: 10000 },
+        makerCount: {
+          cardinality: {
+            field: 'maker',
+            precision_threshold: 10000,
+          },
+        },
+        takerCount: {
+          cardinality: {
+            field: 'taker',
+            precision_threshold: 10000,
+          },
+        },
+        traderCount: {
+          cardinality: {
+            field: 'traders',
+            precision_threshold: 10000,
+          },
         },
       },
       size: 0,
@@ -30,21 +45,12 @@ const getValue = async (type, dateFrom, dateTo) => {
   });
 
   const { aggregations } = response.body;
-
-  return aggregations.count.value;
-};
-
-const computeTraderStatsForDates = async (dateFrom, dateTo) => {
-  const [makerCount, takerCount, traderCount] = await Promise.all([
-    getValue('maker', dateFrom, dateTo),
-    getValue('taker', dateFrom, dateTo),
-    getValue('trader', dateFrom, dateTo),
-  ]);
+  const { makerCount, takerCount, traderCount } = aggregations;
 
   return {
-    makerCount,
-    takerCount,
-    traderCount,
+    makerCount: makerCount.value,
+    takerCount: takerCount.value,
+    traderCount: traderCount.value,
   };
 };
 
