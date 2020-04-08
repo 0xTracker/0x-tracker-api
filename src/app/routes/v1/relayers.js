@@ -2,7 +2,6 @@ const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getRelayersWith24HourStats = require('../../../relayers/get-relayers-with-24-hour-stats');
 const getRelayersWithStatsForDates = require('../../../relayers/get-relayers-with-stats-for-dates');
 const middleware = require('../../middleware');
 
@@ -21,16 +20,14 @@ const createRouter = () => {
       const { limit, page } = pagination;
       const { statsPeriod } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
-      const { relayers, resultCount } =
-        statsPeriod === TIME_PERIOD.DAY
-          ? await getRelayersWith24HourStats({
-              page,
-              limit,
-            })
-          : await getRelayersWithStatsForDates(dateFrom, dateTo, {
-              page,
-              limit,
-            });
+      const { relayers, resultCount } = await getRelayersWithStatsForDates(
+        dateFrom,
+        dateTo,
+        {
+          page,
+          limit,
+        },
+      );
 
       response.body = {
         relayers,

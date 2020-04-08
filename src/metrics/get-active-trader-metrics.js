@@ -1,6 +1,5 @@
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForMetrics = require('../util/get-dates-for-metrics');
-const padMetrics = require('./pad-metrics');
 
 const getActiveTraderMetrics = async (period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
@@ -20,6 +19,10 @@ const getActiveTraderMetrics = async (period, granularity) => {
           date_histogram: {
             field: 'date',
             calendar_interval: granularity,
+            extended_bounds: {
+              min: dateFrom,
+              max: dateTo,
+            },
           },
           aggs: {
             makerCount: {
@@ -45,17 +48,12 @@ const getActiveTraderMetrics = async (period, granularity) => {
     size: 0,
   });
 
-  return padMetrics(
-    results.body.aggregations.metrics_by_date.buckets.map(x => ({
-      date: new Date(x.key_as_string),
-      makerCount: x.makerCount.value,
-      takerCount: x.takerCount.value,
-      traderCount: x.traderCount.value,
-    })),
-    period,
-    granularity,
-    { makerCount: 0, takerCount: 0, traderCount: 0 },
-  );
+  return results.body.aggregations.metrics_by_date.buckets.map(x => ({
+    date: new Date(x.key_as_string),
+    makerCount: x.makerCount.value,
+    takerCount: x.takerCount.value,
+    traderCount: x.traderCount.value,
+  }));
 };
 
 module.exports = getActiveTraderMetrics;

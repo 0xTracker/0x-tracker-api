@@ -11,35 +11,39 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
 
   const [unknownResults, knownResults] = await Promise.all([
     elasticsearch.getClient().search({
-      index: 'unknown_relayer_metrics_hourly',
+      index: 'fills',
       body: {
         aggs: {
           fillCount: {
-            sum: { field: 'fillCount' },
+            value_count: { field: '_id' },
           },
           fillVolume: {
-            sum: { field: 'fillVolume' },
+            sum: { field: 'value' },
           },
-          tradeCount: {
-            sum: { field: 'tradeCount' },
-          },
-          tradeVolume: {
-            sum: { field: 'tradeVolume' },
+          traderCount: {
+            cardinality: { field: 'traders' },
           },
         },
         size: 0,
         query: {
-          range: {
-            date: {
-              gte: dateFrom,
-              lte: dateTo,
-            },
+          bool: {
+            filter: [
+              {
+                range: {
+                  date: {
+                    gte: dateFrom,
+                    lte: dateTo,
+                  },
+                },
+              },
+            ],
+            must_not: [{ exists: { field: 'relayerId' } }],
           },
         },
       },
     }),
     elasticsearch.getClient().search({
-      index: 'relayer_metrics_hourly',
+      index: 'fills',
       body: {
         aggs: {
           stats_by_relayer: {
@@ -49,17 +53,17 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
               size: 500,
             },
             aggs: {
-              fillCount: {
-                sum: { field: 'fillCount' },
-              },
               fillVolume: {
-                sum: { field: 'fillVolume' },
+                sum: { field: 'value' },
               },
               tradeCount: {
-                sum: { field: 'tradeCount' },
+                sum: { field: 'tradeCountContribution' },
               },
               tradeVolume: {
                 sum: { field: 'tradeVolume' },
+              },
+              traderCount: {
+                cardinality: { field: 'traders' },
               },
             },
           },
@@ -78,22 +82,24 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
   ]);
 
   const stats = _(knownResults.body.aggregations.stats_by_relayer.buckets)
-    .concat({
-      fillCount: unknownResults.body.aggregations.fillCount,
-      fillVolume: unknownResults.body.aggregations.fillVolume,
-      tradeCount: unknownResults.body.aggregations.fillCount,
-      tradeVolume: unknownResults.body.aggregations.fillVolume,
-    })
-    .orderBy('tradeVolume.value', 'desc')
-    .drop((page - 1) * limit)
-    .take(limit)
     .map(x => ({
-      relayerId: x.key,
-      fillCount: x.fillCount.value,
+      fillCount: x.doc_count,
       fillVolume: x.fillVolume.value,
+      relayerId: x.key,
       tradeCount: x.tradeCount.value,
       tradeVolume: x.tradeVolume.value,
+      traderCount: x.traderCount.value,
     }))
+    .concat({
+      fillCount: unknownResults.body.aggregations.fillCount.value,
+      fillVolume: unknownResults.body.aggregations.fillVolume.value,
+      tradeCount: unknownResults.body.aggregations.fillCount.value,
+      tradeVolume: unknownResults.body.aggregations.fillVolume.value,
+      traderCount: unknownResults.body.aggregations.traderCount.value,
+    })
+    .orderBy('tradeVolume', 'desc')
+    .drop((page - 1) * limit)
+    .take(limit)
     .value();
 
   const relayerIds = stats.map(x => x.relayerId);
@@ -119,7 +125,8 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
 
   return {
     relayers: results,
-    resultCount: knownResults.body.aggregations.stats_by_relayer.buckets.length,
+    resultCount:
+      knownResults.body.aggregations.stats_by_relayer.buckets.length + 1,
   };
 };
 
