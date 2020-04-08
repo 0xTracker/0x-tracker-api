@@ -2,7 +2,6 @@ const _ = require('lodash');
 
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForMetrics = require('../util/get-dates-for-metrics');
-const padMetrics = require('./pad-metrics');
 
 const aggregateMetrics = async (
   type,
@@ -19,6 +18,10 @@ const aggregateMetrics = async (
           date_histogram: {
             field: 'date',
             calendar_interval: granularity,
+            extended_bounds: {
+              min: dateFrom,
+              max: dateTo,
+            },
           },
           aggs: {
             fillVolume: {
@@ -110,17 +113,7 @@ const getTraderMetrics = async (address, period, granularity) => {
     aggregateMetrics('taker', address, dateFrom, dateTo, granularity),
   ]);
 
-  return padMetrics(
-    reduceMetrics(makerMetrics, takerMetrics),
-    period,
-    granularity,
-    {
-      fillCount: { maker: 0, taker: 0, total: 0 },
-      fillVolume: { maker: 0, taker: 0, total: 0 },
-      tradeCount: { maker: 0, taker: 0, total: 0 },
-      tradeVolume: { maker: 0, taker: 0, total: 0 },
-    },
-  );
+  return reduceMetrics(makerMetrics, takerMetrics);
 };
 
 module.exports = getTraderMetrics;

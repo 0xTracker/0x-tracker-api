@@ -1,6 +1,5 @@
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForMetrics = require('../util/get-dates-for-metrics');
-const padMetrics = require('./pad-metrics');
 
 const getRelayerMetrics = async (relayerId, period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
@@ -16,6 +15,10 @@ const getRelayerMetrics = async (relayerId, period, granularity) => {
           date_histogram: {
             field: 'date',
             calendar_interval: granularity,
+            extended_bounds: {
+              min: dateFrom,
+              max: dateTo,
+            },
           },
           aggs: {
             fillCount: {
@@ -58,19 +61,13 @@ const getRelayerMetrics = async (relayerId, period, granularity) => {
     },
   });
 
-  return padMetrics(
-    results.body.aggregations.relayer_metrics_by_day.buckets.map(x => ({
-      date: new Date(x.key_as_string),
-      fillCount: x.fillCount.value,
-      fillVolume: x.fillVolume.value,
-      tradeCount: relayerId === null ? x.fillCount.value : x.tradeCount.value,
-      tradeVolume:
-        relayerId === null ? x.fillVolume.value : x.tradeVolume.value,
-    })),
-    period,
-    granularity,
-    { fillCount: 0, fillVolume: 0, tradeCount: 0, tradeVolume: 0 },
-  );
+  return results.body.aggregations.relayer_metrics_by_day.buckets.map(x => ({
+    date: new Date(x.key_as_string),
+    fillCount: x.fillCount.value,
+    fillVolume: x.fillVolume.value,
+    tradeCount: relayerId === null ? x.fillCount.value : x.tradeCount.value,
+    tradeVolume: relayerId === null ? x.fillVolume.value : x.tradeVolume.value,
+  }));
 };
 
 module.exports = getRelayerMetrics;
