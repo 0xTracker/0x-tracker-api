@@ -2,7 +2,6 @@ const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getProtocolsWith24HourStats = require('../../../protocols/get-protocols-with-24-hour-stats');
 const getProtocolsWithStatsForDates = require('../../../protocols/get-protocols-with-stats-for-dates');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const middleware = require('../../middleware');
@@ -35,18 +34,15 @@ const createRouter = () => {
         );
       }
 
-      const { protocols, resultCount } =
-        statsPeriod === TIME_PERIOD.DAY
-          ? await getProtocolsWith24HourStats({
-              page,
-              limit,
-              sortBy,
-            })
-          : await getProtocolsWithStatsForDates(dateFrom, dateTo, {
-              page,
-              limit,
-              sortBy,
-            });
+      const { protocols, resultCount } = await getProtocolsWithStatsForDates(
+        dateFrom,
+        dateTo,
+        {
+          page,
+          limit,
+          sortBy,
+        },
+      );
 
       response.body = {
         protocols,
