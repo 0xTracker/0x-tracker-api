@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 const getTokenPriceMetrics = require('./get-token-price-metrics');
 const getTokenVolumeMetrics = require('./get-token-volume-metrics');
 
@@ -15,7 +17,7 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
     return {
       ...x,
       price: {
-        close: price.close,
+        close: _.get(price, 'close', null),
       },
     };
   });

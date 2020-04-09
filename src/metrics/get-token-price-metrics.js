@@ -39,7 +39,7 @@ const getPriceForPreviousPeriod = async (tokenAddress, currentPeriodStart) => {
     },
   });
 
-  return _.get(results, 'body.hits.hits[0]._source.priceUSD', 0);
+  return _.get(results, 'body.hits.hits[0]._source.priceUSD', null);
 };
 
 const getTokenMetrics = async (tokenAddress, period, granularity) => {
@@ -84,7 +84,7 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
             field: 'date',
             calendar_interval: granularity,
             extended_bounds: {
-              min: dateFrom,
+              min: period === 'all' ? undefined : dateFrom,
               max: dateTo,
             },
           },
