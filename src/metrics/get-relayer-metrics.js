@@ -27,6 +27,9 @@ const getRelayerMetrics = async (relayerId, period, granularity) => {
             tradeVolume: {
               sum: { field: 'tradeVolume' },
             },
+            traderCount: {
+              cardinality: { field: 'traders' },
+            },
           },
         },
       },
@@ -70,6 +73,7 @@ const getRelayerMetrics = async (relayerId, period, granularity) => {
     fillVolume: x.fillVolume.value,
     tradeCount: relayerId === null ? x.doc_count : x.tradeCount.value,
     tradeVolume: relayerId === null ? x.fillVolume.value : x.tradeVolume.value,
+    traderCount: x.traderCount.value,
   }));
 };
 
