@@ -29,45 +29,57 @@ async function getTokenPrices(tokenAddresses, period) {
                 priceUSD: { gt: 0 },
               },
             },
-            { range: { date: { lt: period.to } } },
           ],
         },
       },
       aggs: {
-        currentPrices: {
-          terms: {
-            field: 'tokenAddress',
-            size: tokenAddresses.length,
+        selectedPeriod: {
+          filter: {
+            range: { date: { gt: period.from, lt: period.to } },
           },
           aggs: {
-            mostRecentTrade: {
-              top_hits: {
-                size: 1,
-                sort: {
-                  date: {
-                    order: 'desc',
-                  },
+            stats_by_token: {
+              terms: {
+                field: 'tokenAddress',
+                size: tokenAddresses.length,
+              },
+              aggs: {
+                minPrice: {
+                  min: { field: 'priceUSD' },
                 },
-                _source: {
-                  includes: ['date', 'fillId', 'priceUSD'],
+                maxPrice: {
+                  max: { field: 'priceUSD' },
+                },
+                lastTrade: {
+                  top_hits: {
+                    size: 1,
+                    sort: {
+                      date: {
+                        order: 'desc',
+                      },
+                    },
+                    _source: {
+                      includes: ['date', 'fillId', 'priceUSD'],
+                    },
+                  },
                 },
               },
             },
           },
         },
-        previousPrices: {
-          terms: {
-            field: 'tokenAddress',
-            size: tokenAddresses.length,
+        previousPeriod: {
+          filter: {
+            range: {
+              date: {
+                lt: period.from,
+              },
+            },
           },
           aggs: {
-            filter_by_date: {
-              filter: {
-                range: {
-                  date: {
-                    lt: period.from,
-                  },
-                },
+            stats_by_token: {
+              terms: {
+                field: 'tokenAddress',
+                size: tokenAddresses.length,
               },
               aggs: {
                 lastTrade: {
@@ -79,7 +91,7 @@ async function getTokenPrices(tokenAddresses, period) {
                       },
                     },
                     _source: {
-                      includes: ['priceUSD'],
+                      includes: ['fillId', 'priceUSD'],
                     },
                   },
                 },
@@ -91,32 +103,35 @@ async function getTokenPrices(tokenAddresses, period) {
     },
   });
 
-  const prices = res.body.aggregations.currentPrices.buckets.map(bucket => {
-    const tokenAddress = bucket.key;
-    const {
-      date,
-      fillId,
-      priceUSD,
-    } = bucket.mostRecentTrade.hits.hits[0]._source;
+  const { aggregations } = res.body;
+  const { previousPeriod, selectedPeriod } = aggregations;
 
-    const previousPriceBucket = res.body.aggregations.previousPrices.buckets.find(
-      pb => pb.key === tokenAddress,
+  const prices = selectedPeriod.stats_by_token.buckets.map(bucket => {
+    const { date, fillId, priceUSD } = bucket.lastTrade.hits.hits[0]._source;
+    const tokenAddress = bucket.key;
+
+    const prevBucket = previousPeriod.stats_by_token.buckets.find(
+      b => b.key === tokenAddress,
     );
 
-    const previousPriceUSD = _.get(
-      previousPriceBucket,
-      'filter_by_date.lastTrade.hits.hits.0._source.priceUSD',
+    const prevPrice = _.get(
+      prevBucket,
+      'lastTrade.hits.hits.0._source.priceUSD',
       null,
     );
 
+    const minPrice = _.get(bucket, 'minPrice.value', null);
+    const maxPrice = _.get(bucket, 'maxPrice.value', null);
+
     const priceChange =
-      previousPriceUSD === null
-        ? null
-        : ((priceUSD - previousPriceUSD) / previousPriceUSD) * 100;
+      prevPrice === null ? null : ((priceUSD - prevPrice) / prevPrice) * 100;
 
     return {
       date,
       fillId,
+      openPriceUSD: prevPrice,
+      maxPriceUSD: maxPrice,
+      minPriceUSD: minPrice,
       priceChange,
       priceUSD,
       tokenAddress,

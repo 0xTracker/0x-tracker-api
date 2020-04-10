@@ -1,33 +1,42 @@
 const _ = require('lodash');
 const Router = require('koa-router');
 
-const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
+const { TIME_PERIOD } = require('../../../constants');
 const getTokenPrice = require('../../../tokens/get-token-price');
+const getTokenStatsForPeriod = require('../../../tokens/get-token-stats-for-period');
+const middleware = require('../../middleware');
 const Token = require('../../../model/token');
 const transformToken = require('./util/transform-token');
 
 const createRouter = () => {
   const router = new Router();
 
-  router.get('/tokens/:tokenAddress', async ({ params, response }, next) => {
-    const token = await Token.findOne({ address: params.tokenAddress }).lean();
+  router.get(
+    '/tokens/:tokenAddress',
+    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    async ({ params, response }, next) => {
+      const { statsPeriod, tokenAddress } = params;
 
-    if (_.isNull(token)) {
-      response.status = 404;
+      const token = await Token.findOne({
+        address: tokenAddress,
+      }).lean();
+
+      if (_.isNull(token)) {
+        response.status = 404;
+        await next();
+        return;
+      }
+
+      const [price, stats] = await Promise.all([
+        getTokenPrice(token.address, statsPeriod),
+        getTokenStatsForPeriod(token, statsPeriod),
+      ]);
+
+      response.body = transformToken(token, price, stats, statsPeriod);
+
       await next();
-      return;
-    }
-
-    const { dateFrom, dateTo } = getDatesForTimePeriod('day');
-    const price = await getTokenPrice(token.address, {
-      from: dateFrom,
-      to: dateTo,
-    });
-
-    response.body = transformToken(token, price);
-
-    await next();
-  });
+    },
+  );
 
   return router;
 };

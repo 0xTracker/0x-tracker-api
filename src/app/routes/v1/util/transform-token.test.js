@@ -38,7 +38,11 @@ it('should only return white-listed fields', () => {
     name: 'DAI Stablecoin',
     price: {
       change: null,
+      close: null,
+      high: null,
       last: null,
+      low: null,
+      open: null,
     },
     symbol: 'DAI',
   });
@@ -58,7 +62,11 @@ it('should transform tokens which dont have an image url', () => {
     name: 'DAI Stablecoin',
     price: {
       change: null,
+      close: null,
+      high: null,
       last: null,
+      low: null,
+      open: null,
     },
     symbol: 'DAI',
   });
