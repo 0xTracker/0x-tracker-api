@@ -64,7 +64,7 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
     fillCount: x.doc_count,
     fillVolume: { token: x.fillVolume.value, USD: x.fillVolumeUSD.value },
     tradeCount: x.tradeCount.value,
-    tradeVolume: { token: x.tradeVolume.value, USD: x.tradeVolume.value },
+    tradeVolume: { token: x.tradeVolume.value, USD: x.tradeVolumeUSD.value },
   }));
 
   return metrics;
