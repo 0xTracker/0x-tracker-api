@@ -4,7 +4,7 @@ const { TOKEN_TYPE } = require('../../../../constants');
 const formatTokenType = require('../../../../tokens/format-token-type');
 const getCdnTokenImageUrl = require('../../../../tokens/get-cdn-token-image-url');
 
-const transformToken = (token, price) => {
+const transformToken = (token, price, stats, statsPeriod) => {
   return {
     address: token.address,
     imageUrl: _.isString(token.imageUrl)
@@ -39,6 +39,8 @@ const transformToken = (token, price) => {
           ? _.get(price, 'openPriceUSD', null)
           : null,
     },
+    stats,
+    statsPeriod,
     symbol: token.symbol,
     type: formatTokenType(token.type),
   };
