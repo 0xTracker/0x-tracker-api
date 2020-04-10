@@ -110,9 +110,25 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
             token.type === TOKEN_TYPE.ERC20
               ? _.get(price, 'priceChange', null)
               : null,
+          close:
+            token.type === TOKEN_TYPE.ERC20
+              ? _.get(price, 'priceUSD', null)
+              : null,
+          high:
+            token.type === TOKEN_TYPE.ERC20
+              ? _.get(price, 'maxPriceUSD', null)
+              : null,
           last:
             token.type === TOKEN_TYPE.ERC20
               ? _.get(price, 'priceUSD', null)
+              : null,
+          low:
+            token.type === TOKEN_TYPE.ERC20
+              ? _.get(price, 'minPriceUSD', null)
+              : null,
+          open:
+            token.type === TOKEN_TYPE.ERC20
+              ? _.get(price, 'openPriceUSD', null)
               : null,
         },
         stats: {
