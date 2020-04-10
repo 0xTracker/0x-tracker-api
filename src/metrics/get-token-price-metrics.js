@@ -35,6 +35,9 @@ const getPriceForPreviousPeriod = async (tokenAddress, currentPeriodStart) => {
           ],
         },
       },
+      sort: {
+        date: 'desc',
+      },
       size: 1,
     },
   });
