@@ -33,9 +33,37 @@ async function getTokenPrices(tokenAddresses, period) {
         },
       },
       aggs: {
+        allTime: {
+          filter: {
+            range: { date: { lte: period.to } },
+          },
+          aggs: {
+            stats_by_token: {
+              terms: {
+                field: 'tokenAddress',
+                size: tokenAddresses.length,
+              },
+              aggs: {
+                lastTrade: {
+                  top_hits: {
+                    size: 1,
+                    sort: {
+                      date: {
+                        order: 'desc',
+                      },
+                    },
+                    _source: {
+                      includes: ['date', 'fillId', 'priceUSD'],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         selectedPeriod: {
           filter: {
-            range: { date: { gt: period.from, lt: period.to } },
+            range: { date: { gte: period.from, lte: period.to } },
           },
           aggs: {
             stats_by_token: {
@@ -49,19 +77,6 @@ async function getTokenPrices(tokenAddresses, period) {
                 },
                 maxPrice: {
                   max: { field: 'priceUSD' },
-                },
-                lastTrade: {
-                  top_hits: {
-                    size: 1,
-                    sort: {
-                      date: {
-                        order: 'desc',
-                      },
-                    },
-                    _source: {
-                      includes: ['date', 'fillId', 'priceUSD'],
-                    },
-                  },
                 },
               },
             },
@@ -104,14 +119,23 @@ async function getTokenPrices(tokenAddresses, period) {
   });
 
   const { aggregations } = res.body;
-  const { previousPeriod, selectedPeriod } = aggregations;
+  const { allTime, previousPeriod, selectedPeriod } = aggregations;
 
-  const prices = selectedPeriod.stats_by_token.buckets.map(bucket => {
-    const { date, fillId, priceUSD } = bucket.lastTrade.hits.hits[0]._source;
+  const prices = allTime.stats_by_token.buckets.map(bucket => {
     const tokenAddress = bucket.key;
+
+    const selectedPeriodBucket = selectedPeriod.stats_by_token.buckets.find(
+      b => b.key === tokenAddress,
+    );
 
     const prevBucket = previousPeriod.stats_by_token.buckets.find(
       b => b.key === tokenAddress,
+    );
+
+    const { date, fillId, priceUSD } = _.get(
+      bucket,
+      'lastTrade.hits.hits.0._source',
+      {},
     );
 
     const prevPrice = _.get(
@@ -120,8 +144,8 @@ async function getTokenPrices(tokenAddresses, period) {
       null,
     );
 
-    const minPrice = _.get(bucket, 'minPrice.value', null);
-    const maxPrice = _.get(bucket, 'maxPrice.value', null);
+    const minPrice = _.get(selectedPeriodBucket, 'minPrice.value', null);
+    const maxPrice = _.get(selectedPeriodBucket, 'maxPrice.value', null);
 
     const priceChange =
       prevPrice === null ? null : ((priceUSD - prevPrice) / prevPrice) * 100;
