@@ -14,6 +14,7 @@ const tokenStatsShape = {
 
 const schema = Schema({
   address: String,
+  circulatingSupply: Number,
   decimals: Number,
   imageUrl: { type: String, trim: true },
   name: String,
@@ -30,6 +31,7 @@ const schema = Schema({
     '24h': tokenStatsShape,
   },
   symbol: String,
+  totalSupply: Number,
   type: Number,
 });
 

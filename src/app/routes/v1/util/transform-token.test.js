@@ -33,8 +33,10 @@ it('should only return white-listed fields', () => {
 
   expect(transformed).toEqual({
     address: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
+    circulatingSupply: null,
     imageUrl: 'http://tmpuri.org/test.jpg',
     lastTrade: null,
+    marketCap: null,
     name: 'DAI Stablecoin',
     price: {
       change: null,
@@ -45,6 +47,7 @@ it('should only return white-listed fields', () => {
       open: null,
     },
     symbol: 'DAI',
+    totalSupply: null,
   });
 });
 
@@ -58,7 +61,10 @@ it('should transform tokens which dont have an image url', () => {
 
   expect(transformed).toEqual({
     address: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
+    circulatingSupply: null,
+    imageUrl: null,
     lastTrade: null,
+    marketCap: null,
     name: 'DAI Stablecoin',
     price: {
       change: null,
@@ -69,5 +75,6 @@ it('should transform tokens which dont have an image url', () => {
       open: null,
     },
     symbol: 'DAI',
+    totalSupply: null,
   });
 });
