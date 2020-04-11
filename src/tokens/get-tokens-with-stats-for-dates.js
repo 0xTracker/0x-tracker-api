@@ -6,15 +6,13 @@ const getCdnTokenImageUrl = require('./get-cdn-token-image-url');
 const getTokenPrices = require('./get-token-prices');
 const Token = require('../model/token');
 
-const nullifyValueIfZero = value => (value === 0 ? null : value);
-
 const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
-  const { page, limit, type } = _.defaults({}, options, {
+  const opts = _.defaults({}, options, {
     page: 1,
     limit: 20,
   });
 
-  const startIndex = (page - 1) * limit;
+  const startIndex = (opts.page - 1) * opts.limit;
 
   const res = await elasticsearch.getClient().search({
     index: 'traded_tokens',
@@ -24,7 +22,7 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
           terms: {
             field: 'tokenAddress',
             order: { tradeVolumeUSD: 'desc' },
-            size: page * limit,
+            size: opts.page * opts.limit,
           },
           aggs: {
             fillCount: {
@@ -47,7 +45,7 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
             },
             bucket_truncate: {
               bucket_sort: {
-                size: limit,
+                size: opts.limit,
                 from: startIndex,
               },
             },
@@ -63,7 +61,9 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
       query: {
         bool: {
           filter: [
-            type === undefined ? undefined : { term: { tokenType: type } },
+            opts.type === undefined
+              ? undefined
+              : { term: { tokenType: opts.type } },
             {
               range: {
                 date: {
@@ -94,55 +94,71 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
       const token = tokens.find(t => t.address === stats.key);
       const price = prices.find(t => t.tokenAddress === stats.key);
 
+      const {
+        address,
+        circulatingSupply,
+        imageUrl,
+        name,
+        symbol,
+        totalSupply,
+        type,
+      } = token;
+
+      const supply = _.isNil(circulatingSupply)
+        ? totalSupply
+        : circulatingSupply;
+
+      const closePrice = _.get(price, 'priceUSD', null);
+      const marketCap =
+        supply === null || closePrice === null ? null : supply * closePrice;
+
       return {
-        ..._.pick(token, ['address', 'name', 'symbol', 'type']),
-        imageUrl: _.isString(token.imageUrl)
-          ? getCdnTokenImageUrl(token.imageUrl)
-          : undefined,
+        address,
+        circulatingSupply: _.isFinite(circulatingSupply)
+          ? circulatingSupply
+          : null,
+        imageUrl: _.isString(imageUrl) ? getCdnTokenImageUrl(imageUrl) : null,
         lastTrade: _.has(price, 'fillId')
           ? {
               date: price.date,
               id: price.fillId,
             }
           : null,
-        price: {
-          change:
-            token.type === TOKEN_TYPE.ERC20
-              ? _.get(price, 'priceChange', null)
-              : null,
-          close:
-            token.type === TOKEN_TYPE.ERC20
-              ? _.get(price, 'priceUSD', null)
-              : null,
-          high:
-            token.type === TOKEN_TYPE.ERC20
-              ? _.get(price, 'maxPriceUSD', null)
-              : null,
-          last:
-            token.type === TOKEN_TYPE.ERC20
-              ? _.get(price, 'priceUSD', null)
-              : null,
-          low:
-            token.type === TOKEN_TYPE.ERC20
-              ? _.get(price, 'minPriceUSD', null)
-              : null,
-          open:
-            token.type === TOKEN_TYPE.ERC20
-              ? _.get(price, 'openPriceUSD', null)
-              : null,
-        },
+        marketCap,
+        name: _.isString(name) ? name : null,
+        price:
+          token.type === TOKEN_TYPE.ERC20
+            ? {
+                change: _.get(price, 'priceChange', null),
+                close: _.get(price, 'priceUSD', null),
+                high: _.get(price, 'maxPriceUSD', null),
+                last: _.get(price, 'priceUSD', null),
+                low: _.get(price, 'minPriceUSD', null),
+                open: _.get(price, 'openPriceUSD', null),
+              }
+            : {
+                change: null,
+                close: null,
+                high: null,
+                last: null,
+                low: null,
+                open: null,
+              },
         stats: {
           fillCount: stats.fillCount.value,
           fillVolume: {
-            token: nullifyValueIfZero(stats.fillVolume.value),
-            USD: nullifyValueIfZero(stats.fillVolumeUSD.value),
+            token: stats.fillVolume.value,
+            USD: stats.fillVolumeUSD.value,
           },
           tradeCount: stats.tradeCount.value,
           tradeVolume: {
-            token: nullifyValueIfZero(stats.tradeVolume.value),
-            USD: nullifyValueIfZero(stats.tradeVolumeUSD.value),
+            token: stats.tradeVolume.value,
+            USD: stats.tradeVolumeUSD.value,
           },
         },
+        symbol: _.isString(symbol) ? symbol : null,
+        totalSupply: _.isFinite(totalSupply) ? totalSupply : null,
+        type,
       };
     }),
     resultCount: tokenCount,
