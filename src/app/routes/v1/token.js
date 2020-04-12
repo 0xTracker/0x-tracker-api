@@ -42,12 +42,11 @@ const createRouter = () => {
   router.get(
     '/relayers',
     middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
-    middleware.enum('sortBy', [
-      'fillCount',
-      'fillVolumeUSD',
-      'tradeCount',
+    middleware.enum(
+      'sortBy',
+      ['fillCount', 'fillVolumeUSD', 'tradeCount', 'tradeVolumeUSD'],
       'tradeVolumeUSD',
-    ]),
+    ),
     middleware.limit(50, 10),
     async ({ params, response }, next) => {
       const { limit, sortBy, statsPeriod, tokenAddress } = params;
@@ -62,14 +61,13 @@ const createRouter = () => {
         return;
       }
 
-      // TODO: Make limit dynamic
       const relayers = await getRelayersForTokenInPeriod(
         tokenAddress,
         statsPeriod,
         { sortBy, limit },
       );
 
-      response.body = relayers;
+      response.body = { limit, relayers, sortBy, statsPeriod };
 
       await next();
     },
