@@ -13,10 +13,7 @@ const getOrderByKey = sortBy => {
 };
 
 const getRelayersForTokenInPeriod = async (tokenAddress, period, options) => {
-  const { limit, sortBy } = _.defaults({}, options, {
-    limit: 10,
-    sortBy: 'tradeVolumeUSD',
-  });
+  const { limit, sortBy } = options;
   const { dateFrom, dateTo } = getDatesForPeriod(period);
 
   const response = await elasticsearch.getClient().search({
