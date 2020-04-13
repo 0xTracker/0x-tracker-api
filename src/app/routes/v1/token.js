@@ -47,9 +47,14 @@ const createRouter = () => {
       ['fillCount', 'fillVolumeUSD', 'tradeCount', 'tradeVolumeUSD'],
       'tradeVolumeUSD',
     ),
-    middleware.limit(50, 10),
-    async ({ params, response }, next) => {
-      const { limit, sortBy, statsPeriod, tokenAddress } = params;
+    middleware.pagination({
+      defaultLimit: 20,
+      maxLimit: 50,
+      maxPage: Infinity,
+    }),
+    async ({ pagination, params, response }, next) => {
+      const { sortBy, statsPeriod, tokenAddress } = params;
+      const { limit, page } = pagination;
 
       const token = await Token.findOne({
         address: tokenAddress,
@@ -61,13 +66,25 @@ const createRouter = () => {
         return;
       }
 
-      const relayers = await getRelayersForTokenInPeriod(
+      const { relayers, resultCount } = await getRelayersForTokenInPeriod(
         tokenAddress,
         statsPeriod,
-        { sortBy, limit },
+        {
+          sortBy,
+          limit,
+          page,
+        },
       );
 
-      response.body = { limit, relayers, sortBy, statsPeriod };
+      response.body = {
+        limit,
+        page,
+        pageCount: Math.ceil(resultCount / limit),
+        relayers,
+        sortBy,
+        statsPeriod,
+        total: resultCount,
+      };
 
       await next();
     },
