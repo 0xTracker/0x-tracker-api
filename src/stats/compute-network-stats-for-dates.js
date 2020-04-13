@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const moment = require('moment');
 
 const { ETH_TOKEN_DECIMALS } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
@@ -30,14 +29,8 @@ const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
       query: {
         range: {
           date: {
-            gte: moment
-              .utc(dateFrom)
-              .startOf('day')
-              .toDate(),
-            lte: moment
-              .utc(dateTo)
-              .endOf('day')
-              .toDate(),
+            gte: dateFrom,
+            lte: dateTo,
           },
         },
       },

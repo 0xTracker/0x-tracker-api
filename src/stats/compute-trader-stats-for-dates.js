@@ -1,5 +1,3 @@
-const moment = require('moment');
-
 const elasticsearch = require('../util/elasticsearch');
 
 const computeTraderStatsForDates = async (dateFrom, dateTo) => {
@@ -30,14 +28,8 @@ const computeTraderStatsForDates = async (dateFrom, dateTo) => {
       query: {
         range: {
           date: {
-            gte: moment
-              .utc(dateFrom)
-              .startOf('day')
-              .toDate(),
-            lte: moment
-              .utc(dateTo)
-              .endOf('day')
-              .toDate(),
+            gte: dateFrom,
+            lte: dateTo,
           },
         },
       },
