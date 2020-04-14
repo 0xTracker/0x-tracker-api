@@ -4,7 +4,7 @@ const elasticsearch = require('../util/elasticsearch');
 const getDatesForPeriod = require('../util/get-dates-for-time-period');
 const Relayer = require('../model/relayer');
 
-const getOrderByKey = sortBy => {
+const getElasticsearchOrderByKey = sortBy => {
   if (sortBy === 'fillCount') {
     return '_count';
   }
@@ -44,11 +44,8 @@ const getRelayersForTokenInPeriod = async (tokenAddress, period, options) => {
         stats_by_relayer: {
           terms: {
             field: 'relayerId',
-            size: limit * page,
             missing: -1,
-            order: {
-              [getOrderByKey(sortBy)]: 'desc',
-            },
+            size: limit * page,
           },
           aggs: {
             fillVolume: {
@@ -61,25 +58,60 @@ const getRelayersForTokenInPeriod = async (tokenAddress, period, options) => {
                 field: 'filledAmountUSD',
               },
             },
-            tradeCount: {
+            rawTradeCount: {
               sum: {
                 field: 'tradeCountContribution',
               },
             },
-            tradeVolume: {
+            rawTradeVolume: {
               sum: {
                 field: 'tradedAmount',
               },
             },
-            tradeVolumeUSD: {
+            rawTradeVolumeUSD: {
               sum: {
                 field: 'tradedAmountUSD',
+              },
+            },
+            tradeCount: {
+              bucket_script: {
+                buckets_path: {
+                  fillCount: '_count',
+                  tradeCount: 'rawTradeCount',
+                },
+                script:
+                  'if (params.tradeCount == 0) { params.fillCount } else { params.tradeCount }',
+              },
+            },
+            tradeVolume: {
+              bucket_script: {
+                buckets_path: {
+                  fillVolume: 'fillVolume',
+                  tradeVolume: 'rawTradeVolume',
+                },
+                script:
+                  'if (params.tradeVolume == 0) { params.fillVolume } else { params.tradeVolume }',
+              },
+            },
+            tradeVolumeUSD: {
+              bucket_script: {
+                buckets_path: {
+                  fillVolumeUSD: 'fillVolumeUSD',
+                  tradeVolumeUSD: 'rawTradeVolumeUSD',
+                },
+                script:
+                  'if (params.tradeVolumeUSD == 0) { params.fillVolumeUSD } else { params.tradeVolumeUSD }',
               },
             },
             bucket_truncate: {
               bucket_sort: {
                 size: limit,
                 from: startIndex,
+                sort: [
+                  {
+                    [getElasticsearchOrderByKey(sortBy)]: { order: 'desc' },
+                  },
+                ],
               },
             },
           },
@@ -98,38 +130,35 @@ const getRelayersForTokenInPeriod = async (tokenAddress, period, options) => {
   );
 
   const relayers = await Relayer.find({ lookupId: { $in: relayerIds } }).lean();
-
   const relayerCount = response.body.aggregations.relayerCount.value;
+  const relayersWithStats = response.body.aggregations.stats_by_relayer.buckets.map(
+    bucket => {
+      const relayer = relayers.find(r => r.lookupId === bucket.key);
+
+      return {
+        id: _.get(relayer, 'id', 'unknown'),
+        imageUrl: _.get(relayer, 'imageUrl', null),
+        name: _.get(relayer, 'name', 'Unknown'),
+        slug: _.get(relayer, 'slug', 'unknown'),
+        stats: {
+          fillCount: bucket.doc_count,
+          fillVolume: {
+            token: bucket.fillVolume.value,
+            USD: bucket.fillVolumeUSD.value,
+          },
+          tradeCount: bucket.tradeCount.value,
+          tradeVolume: {
+            token: bucket.tradeVolume.value,
+            USD: bucket.tradeVolumeUSD.value,
+          },
+        },
+        url: _.get(relayer, 'url', null),
+      };
+    },
+  );
 
   return {
-    relayers: response.body.aggregations.stats_by_relayer.buckets.map(
-      bucket => {
-        const relayer =
-          bucket.key === -1
-            ? { id: 'unknown', name: 'Unknown', slug: 'unknown' }
-            : relayers.find(r => r.lookupId === bucket.key);
-
-        return {
-          id: _.get(relayer, 'id', null),
-          imageUrl: _.get(relayer, 'imageUrl', null),
-          name: _.get(relayer, 'name', null),
-          slug: _.get(relayer, 'slug', null),
-          stats: {
-            fillCount: bucket.doc_count,
-            fillVolume: {
-              token: bucket.fillVolume.value,
-              USD: bucket.fillVolumeUSD.value,
-            },
-            tradeCount: bucket.tradeCount.value,
-            tradeVolume: {
-              token: bucket.tradeVolume.value,
-              USD: bucket.tradeVolumeUSD.value,
-            },
-          },
-          url: _.get(relayer, 'url', null),
-        };
-      },
-    ),
+    relayers: relayersWithStats,
     resultCount: relayerCount,
   };
 };
