@@ -37,9 +37,9 @@ const transformToken = (token, tokenPrice, stats, statsPeriod) => {
       : {
           change: null,
           close: null,
-          high: null,
+          high: _.get(tokenPrice, 'maxPriceUSD', null),
           last: null,
-          low: null,
+          low: _.get(tokenPrice, 'minPriceUSD', null),
           open: null,
         };
 

@@ -10,16 +10,6 @@ async function getTokenPrices(tokenAddresses, period) {
         bool: {
           filter: [
             {
-              exists: {
-                field: 'relayerId',
-              },
-            },
-            {
-              exists: {
-                field: 'priceUSD',
-              },
-            },
-            {
               terms: {
                 tokenAddress: tokenAddresses,
               },
@@ -27,6 +17,11 @@ async function getTokenPrices(tokenAddresses, period) {
             {
               range: {
                 priceUSD: { gt: 0 },
+              },
+            },
+            {
+              range: {
+                tradedAmountUSD: { gte: 1 },
               },
             },
           ],

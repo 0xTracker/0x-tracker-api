@@ -13,7 +13,7 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
             field: 'date',
             calendar_interval: granularity,
             extended_bounds: {
-              min: period === 'all' ? undefined : dateFrom,
+              min: dateFrom,
               max: dateTo,
             },
           },
