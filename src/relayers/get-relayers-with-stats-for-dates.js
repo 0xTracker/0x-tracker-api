@@ -9,124 +9,113 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
     limit: 20,
   });
 
-  const [unknownResults, knownResults] = await Promise.all([
-    elasticsearch.getClient().search({
-      index: 'fills',
-      body: {
-        aggs: {
-          fillCount: {
-            value_count: { field: '_id' },
+  const startIndex = (page - 1) * limit;
+
+  const response = await elasticsearch.getClient().search({
+    index: 'fills',
+    body: {
+      aggs: {
+        relayers: {
+          terms: {
+            field: 'relayerId',
+            missing: -1,
+            size: limit * page,
           },
-          fillVolume: {
-            sum: { field: 'value' },
-          },
-          traderCount: {
-            cardinality: { field: 'traders' },
-          },
-        },
-        size: 0,
-        query: {
-          bool: {
-            filter: [
-              {
-                range: {
-                  date: {
-                    gte: dateFrom,
-                    lte: dateTo,
-                  },
+          aggs: {
+            fillVolume: {
+              sum: { field: 'value' },
+            },
+            traderCount: {
+              cardinality: { field: 'traders' },
+            },
+            rawTradeCount: {
+              sum: {
+                field: 'tradeCountContribution',
+              },
+            },
+            rawTradeVolume: {
+              sum: {
+                field: 'tradeVolume',
+              },
+            },
+            tradeCount: {
+              bucket_script: {
+                buckets_path: {
+                  fillCount: '_count',
+                  tradeCount: 'rawTradeCount',
                 },
+                script:
+                  'if (params.tradeCount == 0) { params.fillCount } else { params.tradeCount }',
               },
-            ],
-            must_not: [{ exists: { field: 'relayerId' } }],
+            },
+            tradeVolume: {
+              bucket_script: {
+                buckets_path: {
+                  fillVolume: 'fillVolume',
+                  tradeVolume: 'rawTradeVolume',
+                },
+                script:
+                  'if (params.tradeVolume == 0) { params.fillVolume } else { params.tradeVolume }',
+              },
+            },
+            bucket_truncate: {
+              bucket_sort: {
+                size: limit,
+                from: startIndex,
+                sort: [
+                  {
+                    tradeVolume: { order: 'desc' },
+                  },
+                ],
+              },
+            },
+          },
+        },
+        relayerCount: {
+          cardinality: {
+            field: 'relayerId',
           },
         },
       },
-    }),
-    elasticsearch.getClient().search({
-      index: 'fills',
-      body: {
-        aggs: {
-          stats_by_relayer: {
-            terms: {
-              field: 'relayerId',
-              order: { tradeVolume: 'desc' },
-              size: 500,
-            },
-            aggs: {
-              fillVolume: {
-                sum: { field: 'value' },
-              },
-              tradeCount: {
-                sum: { field: 'tradeCountContribution' },
-              },
-              tradeVolume: {
-                sum: { field: 'tradeVolume' },
-              },
-              traderCount: {
-                cardinality: { field: 'traders' },
-              },
-            },
-          },
-        },
-        size: 0,
-        query: {
-          range: {
-            date: {
-              gte: dateFrom,
-              lte: dateTo,
-            },
+      size: 0,
+      query: {
+        range: {
+          date: {
+            gte: dateFrom,
+            lte: dateTo,
           },
         },
       },
-    }),
-  ]);
+    },
+  });
 
-  const stats = _(knownResults.body.aggregations.stats_by_relayer.buckets)
-    .map(x => ({
-      fillCount: x.doc_count,
-      fillVolume: x.fillVolume.value,
-      relayerId: x.key,
-      tradeCount: x.tradeCount.value,
-      tradeVolume: x.tradeVolume.value,
-      traderCount: x.traderCount.value,
-    }))
-    .concat({
-      fillCount: unknownResults.body.aggregations.fillCount.value,
-      fillVolume: unknownResults.body.aggregations.fillVolume.value,
-      tradeCount: unknownResults.body.aggregations.fillCount.value,
-      tradeVolume: unknownResults.body.aggregations.fillVolume.value,
-      traderCount: unknownResults.body.aggregations.traderCount.value,
-    })
-    .orderBy('tradeVolume', 'desc')
-    .drop((page - 1) * limit)
-    .take(limit)
-    .value();
-
-  const relayerIds = stats.map(x => x.relayerId);
+  const relayerCount = response.body.aggregations.relayerCount.value;
+  const relayerBuckets = response.body.aggregations.relayers.buckets;
+  const relayerIds = relayerBuckets.map(bucket => bucket.key);
   const relayers = await Relayer.find({ lookupId: { $in: relayerIds } }).lean();
 
-  const results = stats.map(x => {
-    if (x.relayerId === undefined) {
-      return {
-        id: 'unknown',
-        name: 'Unknown',
-        slug: 'unknown',
-        stats: _.omit(x, 'relayerId'),
-      };
-    }
-
-    const relayer = relayers.find(r => r.lookupId === x.relayerId);
+  const relayersWithStats = relayerBuckets.map(bucket => {
+    const relayer = relayers.find(r => r.lookupId === bucket.key);
 
     return {
-      ..._.pick(relayer, 'name', 'id', 'url', 'imageUrl', 'slug'),
-      stats: _.omit(x, 'relayerId'),
+      id: _.get(relayer, 'id', 'unknown'),
+      imageUrl: _.get(relayer, 'imageUrl', null),
+      name: _.get(relayer, 'name', 'Unknown'),
+      slug: _.get(relayer, 'slug', 'unknown'),
+      stats: {
+        fillCount: bucket.doc_count,
+        fillVolume: bucket.fillVolume.value,
+        tradeCount: bucket.tradeCount.value,
+        tradeVolume: bucket.tradeVolume.value,
+        traderCount: bucket.traderCount.value,
+      },
+      url: _.get(relayer, 'url', null),
     };
   });
 
   return {
-    relayers: results,
-    resultCount:
-      knownResults.body.aggregations.stats_by_relayer.buckets.length + 1,
+    relayers: relayersWithStats,
+    resultCount: relayerCount,
   };
 };
 
