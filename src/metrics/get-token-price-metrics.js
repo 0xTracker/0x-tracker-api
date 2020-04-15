@@ -23,13 +23,13 @@ const getPriceForPreviousPeriod = async (tokenAddress, currentPeriodStart) => {
               },
             },
             {
-              exists: {
-                field: 'relayerId',
+              range: {
+                priceUSD: { gt: 0 },
               },
             },
             {
-              exists: {
-                field: 'priceUSD',
+              range: {
+                tradedAmountUSD: { gte: 1 },
               },
             },
           ],
@@ -68,13 +68,13 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
               },
             },
             {
-              exists: {
-                field: 'relayerId',
+              range: {
+                priceUSD: { gt: 0 },
               },
             },
             {
-              exists: {
-                field: 'priceUSD',
+              range: {
+                tradedAmountUSD: { gte: 1 },
               },
             },
           ],
@@ -87,7 +87,7 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
             field: 'date',
             calendar_interval: granularity,
             extended_bounds: {
-              min: period === 'all' ? undefined : dateFrom,
+              min: dateFrom,
               max: dateTo,
             },
           },

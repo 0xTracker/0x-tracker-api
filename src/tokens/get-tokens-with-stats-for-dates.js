@@ -139,9 +139,9 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
             : {
                 change: null,
                 close: null,
-                high: null,
+                high: _.get(price, 'maxPriceUSD', null),
                 last: null,
-                low: null,
+                low: _.get(price, 'minPriceUSD', null),
                 open: null,
               },
         stats: {
