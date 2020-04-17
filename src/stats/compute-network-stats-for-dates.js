@@ -9,6 +9,9 @@ const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
     index: 'fills',
     body: {
       aggs: {
+        fillCount: {
+          value_count: { field: '_id' },
+        },
         fillVolume: {
           sum: { field: 'value' },
         },
@@ -40,7 +43,7 @@ const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
   const getValue = key => _.get(results.body.aggregations, `${key}.value`);
 
   return {
-    fillCount: results.body.aggregations.doc_count,
+    fillCount: getValue('fillCount'),
     fillVolume: getValue('fillVolume'),
     protocolFees: {
       ETH: formatTokenAmount(getValue('protocolFeesETH'), ETH_TOKEN_DECIMALS),
