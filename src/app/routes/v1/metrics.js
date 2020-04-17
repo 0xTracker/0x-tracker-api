@@ -4,6 +4,7 @@ const Router = require('koa-router');
 const { TIME_PERIOD } = require('../../../constants');
 const checkTraderExists = require('../../../traders/check-trader-exists');
 const getActiveTraderMetrics = require('../../../metrics/get-active-trader-metrics');
+const getAssetBridgeMetrics = require('../../../metrics/get-asset-bridge-metrics');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
@@ -162,6 +163,29 @@ const createRouter = () => {
     async ({ params, response }, next) => {
       const { granularity, period } = params;
       const metrics = await getActiveTraderMetrics(period, granularity);
+
+      response.body = metrics;
+
+      await next();
+    },
+  );
+
+  router.get(
+    '/asset-bridge',
+    middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    middleware.metricGranularity({
+      period: 'period',
+      granularity: 'granularity',
+    }),
+    async ({ params, request, response }, next) => {
+      const { address } = request.query;
+
+      if (address === undefined) {
+        throw new MissingParameterError('address');
+      }
+
+      const { granularity, period } = params;
+      const metrics = await getAssetBridgeMetrics(address, period, granularity);
 
       response.body = metrics;
 
