@@ -2,6 +2,7 @@ const Router = require('koa-router');
 
 const createArticlesRouter = require('./articles');
 const createArticleSourcesRouter = require('./article-sources');
+const createAssetBridgesRouter = require('./asset-bridges');
 const createFillsRouter = require('./fills');
 const createMetricsRouter = require('./metrics');
 const createProtocolsRouter = require('./protocols');
@@ -29,6 +30,7 @@ const createRouter = () => {
     createTokensRouter().routes(),
     createTradersRouter().routes(),
     createZrxPriceRouter().routes(),
+    createAssetBridgesRouter().routes(),
   );
 
   return router;
