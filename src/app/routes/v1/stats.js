@@ -4,6 +4,7 @@ const { TIME_PERIOD } = require('../../../constants');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const computeNetworkStatsForDates = require('../../../stats/compute-network-stats-for-dates');
 const computeTraderStatsForDates = require('../../../stats/compute-trader-stats-for-dates');
+const getAssetBridgingStatsForPeriod = require('../../../asset-bridges/get-asset-bridging-stats-for-period');
 const middleware = require('../../middleware');
 
 const createRouter = () => {
@@ -47,6 +48,19 @@ const createRouter = () => {
       const { period } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
       const stats = await computeTraderStatsForDates(dateFrom, dateTo);
+
+      response.body = stats;
+
+      await next();
+    },
+  );
+
+  router.get(
+    '/asset-bridging',
+    middleware.timePeriod('period', TIME_PERIOD.DAY),
+    async ({ params, response }, next) => {
+      const { period } = params;
+      const stats = await getAssetBridgingStatsForPeriod(period);
 
       response.body = stats;
 
