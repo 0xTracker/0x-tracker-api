@@ -19,7 +19,7 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
           terms: {
             field: 'relayerId',
             missing: -1,
-            size: limit * page,
+            size: 500,
           },
           aggs: {
             fillVolume: {
