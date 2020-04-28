@@ -4,12 +4,24 @@ const moment = require('moment');
 const AddressMetric = require('../model/address-metric');
 const getRelayerTakerAddresses = require('../relayers/get-relayer-taker-addresses');
 
+const getSortKey = orderBy =>
+  ({
+    'fillVolume.maker': 'fillVolumeMaker',
+    'fillVolume.taker': 'fillVolumeTaker',
+    'fillVolume.total': 'fillVolumeTotal',
+  }[orderBy]);
+
 const getTradersWith24HourStats = async options => {
-  const { excludeRelayers, page, limit, type } = _.defaults({}, options, {
-    excludeRelayers: true,
-    page: 1,
-    limit: 20,
-  });
+  const { excludeRelayers, sortBy, page, limit, type } = _.defaults(
+    {},
+    options,
+    {
+      excludeRelayers: true,
+      page: 1,
+      sortBy: 'fillVolume.total',
+      limit: 20,
+    },
+  );
 
   const dateTo = moment.utc().toDate();
   const dateFrom = moment
@@ -110,7 +122,7 @@ const getTradersWith24HourStats = async options => {
       {
         $facet: {
           addresses: [
-            { $sort: { fillVolumeTotal: -1 } },
+            { $sort: { [getSortKey(sortBy)]: -1 } },
             { $skip: (page - 1) * limit },
             { $limit: limit },
             {
