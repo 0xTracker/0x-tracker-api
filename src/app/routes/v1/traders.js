@@ -19,6 +19,12 @@ const parseBooleanString = value => {
   return undefined;
 };
 
+const VALID_SORT_VALUES = [
+  'fillVolume.maker',
+  'fillVolume.taker',
+  'fillVolume.total',
+];
+
 const createRouter = () => {
   const router = new Router();
 
@@ -31,7 +37,7 @@ const createRouter = () => {
     }),
     middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
     async ({ pagination, params, request, response }, next) => {
-      const { excludeRelayers, type } = request.query;
+      const { excludeRelayers, sortBy, type } = request.query;
 
       if (type !== undefined && type !== 'maker' && type !== 'taker') {
         throw new InvalidParameterError(
@@ -51,6 +57,13 @@ const createRouter = () => {
         );
       }
 
+      if (sortBy !== undefined && !VALID_SORT_VALUES.includes(sortBy)) {
+        throw new InvalidParameterError(
+          `Must be one of: ${VALID_SORT_VALUES.join(', ')}`,
+          'Invalid query parameter: sortBy',
+        );
+      }
+
       const { limit, page } = pagination;
       const { statsPeriod } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
@@ -60,12 +73,14 @@ const createRouter = () => {
               excludeRelayers: parseBooleanString(excludeRelayers),
               page,
               limit,
+              sortBy,
               type,
             })
           : await getTradersWithStatsForDates(dateFrom, dateTo, {
               excludeRelayers,
               page,
               limit,
+              sortBy,
               type,
             });
 

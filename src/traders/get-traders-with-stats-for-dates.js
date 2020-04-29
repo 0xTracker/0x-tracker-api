@@ -3,12 +3,24 @@ const _ = require('lodash');
 const AddressMetric = require('../model/address-metric');
 const getRelayerTakerAddresses = require('../relayers/get-relayer-taker-addresses');
 
+const getSortKey = orderBy =>
+  ({
+    'fillVolume.maker': 'fillVolumeMaker',
+    'fillVolume.taker': 'fillVolumeTaker',
+    'fillVolume.total': 'fillVolumeTotal',
+  }[orderBy]);
+
 const getTradersWithStatsForDates = async (dateFrom, dateTo, options) => {
-  const { excludeRelayers, page, limit, type } = _.defaults({}, options, {
-    excludeRelayers: true,
-    page: 1,
-    limit: 20,
-  });
+  const { excludeRelayers, sortBy, page, limit, type } = _.defaults(
+    {},
+    options,
+    {
+      excludeRelayers: true,
+      sortBy: 'fillVolume.total',
+      page: 1,
+      limit: 20,
+    },
+  );
 
   const relayerTakerAddresses = await getRelayerTakerAddresses();
   const result = await AddressMetric.aggregate(
@@ -76,7 +88,7 @@ const getTradersWithStatsForDates = async (dateFrom, dateTo, options) => {
       {
         $facet: {
           addresses: [
-            { $sort: { fillVolumeTotal: -1 } },
+            { $sort: { [getSortKey(sortBy)]: -1 } },
             { $skip: (page - 1) * limit },
             { $limit: limit },
             {
