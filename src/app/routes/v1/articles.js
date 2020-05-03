@@ -38,6 +38,35 @@ const createRouter = () => {
     await next();
   });
 
+  router.get('/:feedSlug/:articleSlug', async ({ response, params }, next) => {
+    const { feedSlug, articleSlug } = params;
+    const sources = await getArticleSources();
+    const feed = _.findKey(sources, s => s.slug === feedSlug);
+    const article = await Article.findOne({ feed, slug: articleSlug }).lean();
+
+    if (article === null) {
+      response.status = 404;
+      await next();
+      return;
+    }
+
+    const source = _.find(sources, s => s.slug === feedSlug);
+    const { author, content, date, slug, summary, title, url } = article;
+
+    response.body = {
+      author,
+      content,
+      date,
+      slug,
+      source,
+      summary,
+      title,
+      url,
+    };
+
+    await next();
+  });
+
   return router;
 };
 
