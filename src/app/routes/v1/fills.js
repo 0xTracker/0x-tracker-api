@@ -61,8 +61,6 @@ const createRouter = () => {
           : undefined;
       const bridged = parseBoolean(request.query.bridged);
 
-      const minDate = moment().subtract(6, 'months');
-
       if (
         status !== undefined &&
         !['failed', 'pending', 'successful'].includes(status)
@@ -99,11 +97,6 @@ const createRouter = () => {
           'Must be in ISO 8601 format',
           'Invalid query parameter: dateFrom',
         );
-      } else if (dateFrom !== undefined && dateFrom < minDate) {
-        throw new InvalidParameterError(
-          'Cannot be more than six months ago',
-          'Invalid query parameter: dateFrom',
-        );
       } else if (
         dateFrom !== undefined &&
         dateTo !== undefined &&
@@ -118,11 +111,6 @@ const createRouter = () => {
       if (dateTo !== undefined && !dateTo.isValid()) {
         throw new InvalidParameterError(
           'Must be in ISO 8601 format',
-          'Invalid query parameter: dateTo',
-        );
-      } else if (dateTo !== undefined && dateTo < minDate) {
-        throw new InvalidParameterError(
-          'Cannot be more than six months ago',
           'Invalid query parameter: dateTo',
         );
       }
@@ -155,7 +143,7 @@ const createRouter = () => {
           address,
           bridgeAddress,
           bridged,
-          dateFrom: dateFrom !== undefined ? dateFrom : minDate,
+          dateFrom,
           dateTo,
           protocolVersion,
           query,
