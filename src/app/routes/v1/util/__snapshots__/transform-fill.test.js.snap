@@ -79,7 +79,7 @@ Object {
   "protocolFee": undefined,
   "protocolVersion": 1,
   "relayer": Object {
-    "imageUrl": "https://0xtracker.com/assets/logos/ethfinex.png",
+    "imageUrl": "https://resources.0xtracker.com/logos/ethfinex.png",
     "name": "Ethfinex",
     "slug": "ethfinex",
   },
@@ -180,7 +180,7 @@ Object {
   "protocolFee": undefined,
   "protocolVersion": 2,
   "relayer": Object {
-    "imageUrl": "https://0xtracker.com/assets/logos/ethfinex.png",
+    "imageUrl": "https://resources.0xtracker.com/logos/ethfinex.png",
     "name": "Ethfinex",
     "slug": "ethfinex",
   },

@@ -49,13 +49,13 @@ module.exports = {
     '0xproject': {
       name: '0x',
       url: 'https://0x.org',
-      imageUrl: 'https://0xtracker.com/assets/logos/0x.png',
+      imageUrl: 'https://resources.0xtracker.com/logos/0x.png',
       slug: '0x',
     },
     '0xtracker': {
       name: '0x Tracker',
       url: 'https://0xtracker.com',
-      imageUrl: 'https://0xtracker.com/assets/logos/0x-tracker.png',
+      imageUrl: 'https://resources.0xtracker.com/logos/0x-tracker.png',
       slug: '0x-tracker',
     },
     boxSwap: {
@@ -64,7 +64,7 @@ module.exports = {
     dYdX: {
       name: 'dYdX',
       url: 'https://dydx.exchange/',
-      imageUrl: 'https://0xtracker.com/assets/logos/dydx.png',
+      imageUrl: 'https://resources.0xtracker.com/logos/dydx.png',
       slug: 'dydx',
     },
     emoon: {
@@ -74,7 +74,7 @@ module.exports = {
     ethfinex: {
       name: 'Ethfinex',
       url: 'https://www.ethfinex.com/',
-      imageUrl: 'https://0xtracker.com/assets/logos/ethfinex.png',
+      imageUrl: 'https://resources.0xtracker.com/logos/ethfinex.png',
       slug: 'ethfinex',
     },
     ledgerDex: {
@@ -101,7 +101,7 @@ module.exports = {
     veil: {
       name: 'Veil',
       url: 'https://veil.co',
-      imageUrl: 'https://0xtracker.com/assets/logos/veil.png',
+      imageUrl: 'https://resources.0xtracker.com/logos/veil.png',
       slug: 'veil',
     },
   },
