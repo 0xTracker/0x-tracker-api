@@ -3,6 +3,7 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const Router = require('koa-router');
 
+const { logSearch } = require('../../../search');
 const Fill = require('../../../model/fill');
 const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
@@ -138,23 +139,26 @@ const createRouter = () => {
         );
       }
 
-      const { docs, pages, total } = await searchFills(
-        {
-          address,
-          bridgeAddress,
-          bridged,
-          dateFrom,
-          dateTo,
-          protocolVersion,
-          query,
-          relayerId: relayerLookupId,
-          status: reverseMapStatus(status),
-          token,
-          valueFrom,
-          valueTo,
-        },
-        { limit, page },
-      );
+      const [{ docs, pages, total }] = await Promise.all([
+        searchFills(
+          {
+            address,
+            bridgeAddress,
+            bridged,
+            dateFrom,
+            dateTo,
+            protocolVersion,
+            query,
+            relayerId: relayerLookupId,
+            status: reverseMapStatus(status),
+            token,
+            valueFrom,
+            valueTo,
+          },
+          { limit, page },
+        ),
+        query !== undefined ? logSearch(query, new Date()) : Promise.resolve(),
+      ]);
 
       response.body = {
         fills: transformFills(docs),
