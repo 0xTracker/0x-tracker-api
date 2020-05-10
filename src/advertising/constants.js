@@ -1,0 +1,12 @@
+const AD_SLOT_TYPE = {
+  FALLBACK: 0,
+  USER_GENERATED: 1,
+};
+
+const AD_SLOT_SUBMISSION_STATUS = {
+  PENDING: 0,
+  APPROVED: 1,
+  REJECTED: 2,
+};
+
+module.exports = { AD_SLOT_SUBMISSION_STATUS, AD_SLOT_TYPE };
