@@ -1,8 +1,13 @@
 const _ = require('lodash');
+const ethers = require('ethers');
 const Router = require('koa-router');
 
+const { InvalidParameterError } = require('../../errors');
 const getAdSlotContentForToken = require('../../../advertising/get-ad-slot-content-for-token');
 const getContentForCurrentAdSlot = require('../../../advertising/get-content-for-current-ad-slot');
+const isSlotToken = require('../../../advertising/is-slot-token');
+const microsponsors = require('../../../advertising/microsponsors');
+const saveAdSlotContentSubmission = require('../../../advertising/save-ad-slot-content-submission');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/ad-slots' });
@@ -37,34 +42,44 @@ const createRouter = () => {
     await next();
   });
 
-  // router.get('/:feedSlug/:articleSlug', async ({ response, params }, next) => {
-  //   const { feedSlug, articleSlug } = params;
-  //   const sources = await getArticleSources();
-  //   const feed = _.findKey(sources, s => s.slug === feedSlug);
-  //   const article = await Article.findOne({ feed, slug: articleSlug }).lean();
+  router.patch(
+    '/:tokenAddress/:tokenId',
+    async ({ params, response, request }, next) => {
+      const { tokenAddress } = params;
+      const tokenId = _.toNumber(params.tokenId);
 
-  //   if (article === null) {
-  //     response.status = 404;
-  //     await next();
-  //     return;
-  //   }
+      const tokenMetadata = await microsponsors.getTokenMetadata(
+        tokenAddress,
+        tokenId,
+      );
 
-  //   const source = _.find(sources, s => s.slug === feedSlug);
-  //   const { author, content, date, slug, summary, title, url } = article;
+      if (!isSlotToken(tokenMetadata)) {
+        response.status = 404;
+        await next();
+        return;
+      }
 
-  //   response.body = {
-  //     author,
-  //     content,
-  //     date,
-  //     slug,
-  //     source,
-  //     summary,
-  //     title,
-  //     url,
-  //   };
+      const { message, signature } = request.body;
+      const signer = ethers.utils.verifyMessage(message, signature);
 
-  //   await next();
-  // });
+      if (tokenMetadata.owner !== signer) {
+        throw new InvalidParameterError(
+          'Signature did not originate from token owner',
+          'Invalid body parameter: signature',
+        );
+      }
+
+      const parsedMessage = JSON.parse(request.body.message);
+      const adSlotContent = await saveAdSlotContentSubmission(
+        tokenMetadata,
+        parsedMessage,
+      );
+
+      response.body = adSlotContent;
+
+      await next();
+    },
+  );
 
   return router;
 };

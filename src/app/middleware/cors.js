@@ -1,6 +1,7 @@
 const createMiddleware = () => async (context, next) => {
   context.set('Access-Control-Allow-Origin', '*');
-  context.set('Access-Control-Allow-Methods', 'GET,HEAD,PUT,POST,DELETE');
+  context.set('Access-Control-Allow-Methods', '*');
+  context.set('Access-Control-Allow-Headers', '*');
 
   await next();
 };

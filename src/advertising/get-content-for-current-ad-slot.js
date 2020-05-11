@@ -7,7 +7,7 @@ const getContentForCurrentAdSlot = async () => {
     dateTo: { $gte: Date.now() },
     submissionStatus: AD_SLOT_SUBMISSION_STATUS.APPROVED,
     type: AD_SLOT_TYPE.USER_GENERATED,
-  });
+  }).sort({ _id: -1 });
 
   if (ugContent !== null) {
     return {
