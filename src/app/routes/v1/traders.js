@@ -1,6 +1,8 @@
+const _ = require('lodash');
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
+const AddressMetadata = require('../../../model/address-metadata');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const getTradersWith24HourStats = require('../../../traders/get-traders-with-24-hour-stats');
 const getTradersWithStatsForDates = require('../../../traders/get-traders-with-stats-for-dates');
@@ -84,12 +86,24 @@ const createRouter = () => {
               type,
             });
 
+      const addresses = traders.map(trader => trader.address);
+
+      const addressMetadatas = await AddressMetadata.find({
+        address: { $in: addresses },
+      });
+
       response.body = {
         page,
         pageCount: Math.ceil(resultCount / limit),
         limit,
         total: resultCount,
-        traders,
+        traders: traders.map(trader => {
+          const metadata = addressMetadatas.find(
+            m => m.address === trader.address,
+          );
+
+          return { ...trader, name: _.get(metadata, 'name', null) };
+        }),
       };
 
       await next();
