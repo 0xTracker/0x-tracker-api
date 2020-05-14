@@ -6,6 +6,7 @@ const { InvalidParameterError } = require('../../errors');
 const getAdSlotContentForToken = require('../../../advertising/get-ad-slot-content-for-token');
 const getContentForCurrentAdSlot = require('../../../advertising/get-content-for-current-ad-slot');
 const isSlotToken = require('../../../advertising/is-slot-token');
+const middleware = require('../../middleware');
 const microsponsors = require('../../../advertising/microsponsors');
 const saveAdSlotContentSubmission = require('../../../advertising/save-ad-slot-content-submission');
 const trackAdvertHit = require('../../../advertising/track-advert-hit');
@@ -13,28 +14,32 @@ const trackAdvertHit = require('../../../advertising/track-advert-hit');
 const createRouter = () => {
   const router = new Router({ prefix: '/ad-slots' });
 
-  router.get('/current', async ({ response, request }, next) => {
-    const { track } = request.query;
-    const [adContentId, content] = await getContentForCurrentAdSlot();
+  router.get(
+    '/current',
+    middleware.cacheControl({ maxAge: 0 }),
+    async ({ response, request }, next) => {
+      const { track } = request.query;
+      const [adContentId, content] = await getContentForCurrentAdSlot();
 
-    if (content === null) {
-      response.body = null;
+      if (content === null) {
+        response.body = null;
+        await next();
+        return;
+      }
+
+      if (track !== 'false') {
+        await trackAdvertHit(adContentId, {
+          origin: request.headers.origin,
+          referer: request.headers.referer,
+          userAgent: request.headers['user-agent'],
+        });
+      }
+
+      response.body = content;
+
       await next();
-      return;
-    }
-
-    if (track !== 'false') {
-      await trackAdvertHit(adContentId, {
-        origin: request.headers.origin,
-        referer: request.headers.referer,
-        userAgent: request.headers['user-agent'],
-      });
-    }
-
-    response.body = content;
-
-    await next();
-  });
+    },
+  );
 
   router.get('/:tokenAddress/:tokenId', async ({ params, response }, next) => {
     const { tokenAddress } = params;
