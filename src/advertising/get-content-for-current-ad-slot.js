@@ -10,12 +10,15 @@ const getContentForCurrentAdSlot = async () => {
   }).sort({ _id: -1 });
 
   if (ugContent !== null) {
-    return {
-      description: ugContent.description,
-      imageUrl: ugContent.imageUrl,
-      title: ugContent.title,
-      url: ugContent.url,
-    };
+    return [
+      ugContent._id,
+      {
+        description: ugContent.description,
+        imageUrl: ugContent.imageUrl,
+        title: ugContent.title,
+        url: ugContent.url,
+      },
+    ];
   }
 
   const fallbackCount = await AdSlotContent.countDocuments({
@@ -35,12 +38,15 @@ const getContentForCurrentAdSlot = async () => {
     .skip(randomizer);
 
   if (fallbackContent.length > 0) {
-    return {
-      description: fallbackContent[0].description,
-      imageUrl: fallbackContent[0].imageUrl,
-      title: fallbackContent[0].title,
-      url: fallbackContent[0].url,
-    };
+    return [
+      fallbackContent[0]._id,
+      {
+        description: fallbackContent[0].description,
+        imageUrl: fallbackContent[0].imageUrl,
+        title: fallbackContent[0].title,
+        url: fallbackContent[0].url,
+      },
+    ];
   }
 
   return null;

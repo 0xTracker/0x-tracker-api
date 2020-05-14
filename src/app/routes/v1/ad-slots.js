@@ -8,20 +8,30 @@ const getContentForCurrentAdSlot = require('../../../advertising/get-content-for
 const isSlotToken = require('../../../advertising/is-slot-token');
 const microsponsors = require('../../../advertising/microsponsors');
 const saveAdSlotContentSubmission = require('../../../advertising/save-ad-slot-content-submission');
+const trackAdvertHit = require('../../../advertising/track-advert-hit');
 
 const createRouter = () => {
   const router = new Router({ prefix: '/ad-slots' });
 
-  router.get('/current', async ({ response }, next) => {
-    const adSlot = await getContentForCurrentAdSlot();
+  router.get('/current', async ({ response, request }, next) => {
+    const { track } = request.query;
+    const [adContentId, content] = await getContentForCurrentAdSlot();
 
-    if (adSlot === null) {
+    if (content === null) {
       response.body = null;
       await next();
       return;
     }
 
-    response.body = adSlot;
+    if (track !== 'false') {
+      await trackAdvertHit(adContentId, {
+        origin: request.headers.origin,
+        referer: request.headers.referer,
+        userAgent: request.headers['user-agent'],
+      });
+    }
+
+    response.body = content;
 
     await next();
   });
