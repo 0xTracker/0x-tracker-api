@@ -11,4 +11,4 @@ router.get('/', ({ response }) => {
   response.body = 'OK';
 });
 
-module.exports = router.routes();
+module.exports = router;

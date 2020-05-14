@@ -1,3 +1,4 @@
+const body = require('koa-body');
 const compress = require('koa-compress');
 const etag = require('koa-etag');
 const helmet = require('koa-helmet');
@@ -6,7 +7,7 @@ const Koa = require('koa');
 const { getLogger } = require('../util/logging');
 const errorLogger = require('../util/error-logger');
 const middleware = require('./middleware');
-const routes = require('./routes');
+const router = require('./routes');
 
 const start = port => {
   const logger = getLogger('application');
@@ -20,9 +21,10 @@ const start = port => {
   app.use(compress());
   app.use(etag());
   app.use(middleware.cacheControl());
-  app.use(routes);
+  app.use(body());
+  app.use(router.routes());
+  app.use(router.allowedMethods());
   app.use(middleware.invalidUrl());
-
   app.listen(port);
 
   if (process.env.NODE_ENV === 'development') {
