@@ -14,7 +14,11 @@ const transformFill = require('./util/transform-fill');
 const transformFills = require('./util/transform-fills');
 
 const parseDate = dateString => {
-  if (dateString === undefined) {
+  if (
+    dateString === undefined ||
+    dateString === null ||
+    dateString.trim().length === 0
+  ) {
     return undefined;
   }
 
@@ -22,7 +26,11 @@ const parseDate = dateString => {
 };
 
 const parseNumber = numberString => {
-  if (numberString === undefined) {
+  if (
+    numberString === undefined ||
+    numberString === null ||
+    numberString.trim().length === 0
+  ) {
     return undefined;
   }
 
@@ -30,11 +38,27 @@ const parseNumber = numberString => {
 };
 
 const parseBoolean = booleanString => {
-  if (booleanString === undefined) {
+  if (
+    booleanString === undefined ||
+    booleanString === null ||
+    booleanString.trim().length === 0
+  ) {
     return undefined;
   }
 
   return booleanString === 'true';
+};
+
+const normalizeQueryParam = param => {
+  if (param === undefined || param === null) {
+    return undefined;
+  }
+
+  if (param.trim().length === 0) {
+    return undefined;
+  }
+
+  return param;
 };
 
 const createRouter = () => {
@@ -47,20 +71,24 @@ const createRouter = () => {
       maxLimit: 50,
       maxPage: Infinity,
     }),
-    async ({ pagination: { limit, page }, request, response }, next) => {
-      const { address, bridgeAddress, status, token } = request.query;
-      const relayerId = request.query.relayer;
-      const query = request.query.q;
+    async (
+      { pagination: { limit, page }, request: { query }, response },
+      next,
+    ) => {
+      const address = normalizeQueryParam(query.address);
+      const bridged = parseBoolean(query.bridged);
+      const bridgeAddress = normalizeQueryParam(query.bridgeAddress);
+      const dateFrom = parseDate(query.dateFrom);
+      const dateTo = parseDate(query.dateTo);
+      const protocolVersion = parseNumber(query.protocolVersion);
+      const relayerId = normalizeQueryParam(query.relayer);
+      const searchTerm = normalizeQueryParam(query.q);
+      const status = normalizeQueryParam(query.status);
+      const token = normalizeQueryParam(query.token);
+      const valueFrom = parseNumber(query.valueFrom);
+      const valueTo = parseNumber(query.valueTo);
+
       const relayerLookupId = await getRelayerLookupId(relayerId);
-      const dateFrom = parseDate(request.query.dateFrom);
-      const dateTo = parseDate(request.query.dateTo);
-      const valueFrom = parseNumber(request.query.valueFrom);
-      const valueTo = parseNumber(request.query.valueTo);
-      const protocolVersion =
-        request.query.protocolVersion !== undefined
-          ? _.toNumber(request.query.protocolVersion)
-          : undefined;
-      const bridged = parseBoolean(request.query.bridged);
 
       if (
         status !== undefined &&
@@ -148,7 +176,7 @@ const createRouter = () => {
             dateFrom,
             dateTo,
             protocolVersion,
-            query,
+            query: searchTerm,
             relayerId: relayerLookupId,
             status: reverseMapStatus(status),
             token,
@@ -157,7 +185,9 @@ const createRouter = () => {
           },
           { limit, page },
         ),
-        query !== undefined ? logSearch(query, new Date()) : Promise.resolve(),
+        searchTerm !== undefined
+          ? logSearch(searchTerm, new Date())
+          : Promise.resolve(),
       ]);
 
       response.body = {
