@@ -1,10 +1,109 @@
 const _ = require('lodash');
+const moment = require('moment');
 
 const { TOKEN_TYPE } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 const getCdnTokenImageUrl = require('./get-cdn-token-image-url');
 const getTokenPrices = require('./get-token-prices');
 const Token = require('../model/token');
+
+const getPreviousPeriod = (dateFrom, dateTo) => {
+  const diff = moment(dateTo).diff(dateFrom);
+  const prevDateTo = moment(dateFrom)
+    .subtract('millisecond', 1)
+    .toDate();
+  const prevDateFrom = moment(prevDateTo)
+    .subtract('millisecond', diff)
+    .toDate();
+
+  return { prevDateFrom, prevDateTo };
+};
+
+const getStatsForPreviousPeriod = async (tokenAddresses, dateFrom, dateTo) => {
+  const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
+
+  const res = await elasticsearch.getClient().search({
+    index: 'traded_tokens',
+    body: {
+      aggs: {
+        tokenStats: {
+          terms: {
+            field: 'tokenAddress',
+            size: tokenAddresses.length,
+          },
+          aggs: {
+            fillCount: {
+              value_count: { field: 'fillId' },
+            },
+            fillVolume: {
+              sum: { field: 'filledAmount' },
+            },
+            fillVolumeUSD: {
+              sum: { field: 'filledAmountUSD' },
+            },
+            tradeCount: {
+              sum: { field: 'tradeCountContribution' },
+            },
+            tradeVolume: {
+              sum: { field: 'tradedAmount' },
+            },
+            tradeVolumeUSD: {
+              sum: { field: 'tradedAmountUSD' },
+            },
+          },
+        },
+      },
+      size: 0,
+      query: {
+        bool: {
+          filter: [
+            {
+              terms: {
+                tokenAddress: tokenAddresses,
+              },
+            },
+            {
+              range: {
+                date: {
+                  gte: prevDateFrom,
+                  lte: prevDateTo,
+                },
+              },
+            },
+          ].filter(f => f !== undefined),
+        },
+      },
+    },
+  });
+
+  const { buckets } = res.body.aggregations.tokenStats;
+
+  return tokenAddresses.map(tokenAddress => {
+    const bucket = buckets.find(b => b.key === tokenAddress);
+
+    return {
+      fillCount: _.get(bucket, 'doc_count', 0),
+      fillVolume: {
+        token: _.get(bucket, 'fillVolume.value', 0),
+        USD: _.get(bucket, 'fillVolumeUSD.value', 0),
+      },
+      tradeCount: _.get(bucket, 'tradeCount.value', 0),
+      tradeVolume: {
+        token: _.get(bucket, 'tradeVolume.value', 0),
+        USD: _.get(bucket, 'tradeVolumeUSD.value', 0),
+      },
+      tokenAddress,
+    };
+  });
+};
+
+const getPercentageChange = (valueA, valueB) => {
+  if (valueA === 0) {
+    return null;
+  }
+
+  return ((valueB - valueA) / valueA) * 100;
+};
 
 const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
   const opts = _.defaults({}, options, {
@@ -78,21 +177,23 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
     },
   });
 
-  const tokenStats = res.body.aggregations.tokenStats.buckets;
-  const tokenAddresses = tokenStats.map(x => x.key);
+  const { buckets } = res.body.aggregations.tokenStats;
+  const tokenAddresses = buckets.map(x => x.key);
   const tokenCount = res.body.aggregations.tokenCount.value;
 
-  const [tokens, prices] = await Promise.all([
+  const [tokens, prices, previousStats] = await Promise.all([
     Token.find({
       address: { $in: tokenAddresses },
     }).lean(),
     getTokenPrices(tokenAddresses, { from: dateFrom, to: dateTo }),
+    getStatsForPreviousPeriod(tokenAddresses, dateFrom, dateTo),
   ]);
 
   return {
-    tokens: tokenStats.map(stats => {
-      const token = tokens.find(t => t.address === stats.key);
-      const price = prices.find(t => t.tokenAddress === stats.key);
+    tokens: buckets.map(bucket => {
+      const token = tokens.find(t => t.address === bucket.key);
+      const price = prices.find(t => t.tokenAddress === bucket.key);
+      const prev = previousStats.find(s => s.tokenAddress === bucket.key);
 
       const {
         address,
@@ -145,15 +246,43 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
                 open: null,
               },
         stats: {
-          fillCount: stats.fillCount.value,
+          fillCount: bucket.fillCount.value,
+          fillCountChange: getPercentageChange(
+            prev.fillCount,
+            bucket.fillCount.value,
+          ),
           fillVolume: {
-            token: stats.fillVolume.value,
-            USD: stats.fillVolumeUSD.value,
+            token: bucket.fillVolume.value,
+            USD: bucket.fillVolumeUSD.value,
           },
-          tradeCount: stats.tradeCount.value,
+          fillVolumeChange: {
+            token: getPercentageChange(
+              prev.fillVolume.token,
+              bucket.fillVolume.value,
+            ),
+            USD: getPercentageChange(
+              prev.fillVolume.USD,
+              bucket.fillVolumeUSD.value,
+            ),
+          },
+          tradeCount: bucket.tradeCount.value,
+          tradeCountChange: getPercentageChange(
+            prev.tradeCount,
+            bucket.tradeCount.value,
+          ),
           tradeVolume: {
-            token: stats.tradeVolume.value,
-            USD: stats.tradeVolumeUSD.value,
+            token: bucket.tradeVolume.value,
+            USD: bucket.tradeVolumeUSD.value,
+          },
+          tradeVolumeChange: {
+            token: getPercentageChange(
+              prev.tradeVolume.token,
+              bucket.tradeVolume.value,
+            ),
+            USD: getPercentageChange(
+              prev.tradeVolume.USD,
+              bucket.tradeVolumeUSD.value,
+            ),
           },
         },
         symbol: _.isString(symbol) ? symbol : null,

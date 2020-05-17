@@ -28,7 +28,7 @@ const getStatsForPreviousPeriod = async (relayerIds, dateFrom, dateTo) => {
             field: 'relayerId',
             missing: -1,
             order: { tradeVolume: 'desc' },
-            size: 500,
+            size: relayerIds.length,
           },
           aggs: {
             fillVolume: {
