@@ -113,7 +113,7 @@ const buildQuery = ({
     }
   }
 
-  return filters.length === 0
+  return filters.length === 0 && exclusions.length === 0
     ? undefined
     : {
         bool: { filter: filters, must_not: exclusions },
