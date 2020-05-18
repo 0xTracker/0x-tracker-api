@@ -58,6 +58,9 @@ module.exports = {
       imageUrl: 'https://resources.0xtracker.com/logos/0x-tracker.png',
       slug: '0x-tracker',
     },
+    bambooRelay: {
+      relayer: 'bambooRelay',
+    },
     boxSwap: {
       relayer: 'boxSwap',
     },
