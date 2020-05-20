@@ -46,6 +46,7 @@ const getRelayersForTokenInPeriod = async (tokenAddress, period, options) => {
             field: 'relayerId',
             missing: -1,
             size: limit * page,
+            order: { [getElasticsearchOrderByKey(sortBy)]: 'desc' },
           },
           aggs: {
             fillVolume: {
@@ -58,60 +59,25 @@ const getRelayersForTokenInPeriod = async (tokenAddress, period, options) => {
                 field: 'filledAmountUSD',
               },
             },
-            rawTradeCount: {
+            tradeCount: {
               sum: {
                 field: 'tradeCountContribution',
               },
             },
-            rawTradeVolume: {
+            tradeVolume: {
               sum: {
                 field: 'tradedAmount',
               },
             },
-            rawTradeVolumeUSD: {
+            tradeVolumeUSD: {
               sum: {
                 field: 'tradedAmountUSD',
-              },
-            },
-            tradeCount: {
-              bucket_script: {
-                buckets_path: {
-                  fillCount: '_count',
-                  tradeCount: 'rawTradeCount',
-                },
-                script:
-                  'if (params.tradeCount == 0) { params.fillCount } else { params.tradeCount }',
-              },
-            },
-            tradeVolume: {
-              bucket_script: {
-                buckets_path: {
-                  fillVolume: 'fillVolume',
-                  tradeVolume: 'rawTradeVolume',
-                },
-                script:
-                  'if (params.tradeVolume == 0) { params.fillVolume } else { params.tradeVolume }',
-              },
-            },
-            tradeVolumeUSD: {
-              bucket_script: {
-                buckets_path: {
-                  fillVolumeUSD: 'fillVolumeUSD',
-                  tradeVolumeUSD: 'rawTradeVolumeUSD',
-                },
-                script:
-                  'if (params.tradeVolumeUSD == 0) { params.fillVolumeUSD } else { params.tradeVolumeUSD }',
               },
             },
             bucket_truncate: {
               bucket_sort: {
                 size: limit,
                 from: startIndex,
-                sort: [
-                  {
-                    [getElasticsearchOrderByKey(sortBy)]: { order: 'desc' },
-                  },
-                ],
               },
             },
           },
