@@ -11,12 +11,12 @@ const createRouter = () => {
 
     const limit =
       request.query.limit !== undefined ? _.toNumber(request.query.limit) : 5;
-    const relayers = await searchRelayers(q, { limit });
+    const relayers = await searchRelayers(q || null, { limit });
 
     response.body = {
       limit,
       relayers: relayers.map(relayer => relayer),
-      q,
+      q: q || null,
     };
 
     await next();
