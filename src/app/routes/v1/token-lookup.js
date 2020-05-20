@@ -13,22 +13,20 @@ const createRouter = () => {
 
     const limit =
       request.query.limit !== undefined ? _.toNumber(request.query.limit) : 5;
-    const tokens = await searchTokens(q, { limit });
+    const tokens = await searchTokens(q || null, { limit });
 
     response.body = {
       limit,
       tokens: tokens.map(token => ({
         address: token.address,
-        circulatingSupply: _.get(token, 'circulatingSupply', null),
         imageUrl: _.isString(token.imageUrl)
           ? getCdnTokenImageUrl(token.imageUrl)
           : null,
         name: _.get(token, 'name', null),
         symbol: _.get(token, 'symbol', null),
-        totalSupply: _.get(token, 'totalSupply', null),
         type: formatTokenType(token.type),
       })),
-      q,
+      q: q || null,
     };
 
     await next();
