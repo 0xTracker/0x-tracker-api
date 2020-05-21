@@ -5,6 +5,7 @@ const error = require('./error');
 const invalidUrl = require('./invalid-url');
 const limit = require('./limit');
 const metricGranularity = require('./metric-granularity');
+const number = require('./number');
 const pagination = require('./pagination');
 const timePeriod = require('./time-period');
 
@@ -16,6 +17,7 @@ module.exports = {
   invalidUrl,
   limit,
   metricGranularity,
+  number,
   pagination,
   timePeriod,
 };

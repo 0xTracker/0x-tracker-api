@@ -5,7 +5,78 @@ const { ETH_TOKEN_DECIMALS } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 const formatTokenAmount = require('../tokens/format-token-amount');
 
-const getBasicStatsForDates = async (dateFrom, dateTo) => {
+const buildQuery = (
+  dateFrom,
+  dateTo,
+  { address, protocolVersion, relayerId, status, token, valueFrom, valueTo },
+) => {
+  const filters = [];
+  const exclusions = [];
+
+  if (dateFrom !== undefined || dateTo !== undefined) {
+    filters.push({
+      range: {
+        date: {
+          gte: dateFrom !== undefined ? dateFrom.toISOString() : undefined,
+          lte: dateTo !== undefined ? dateTo.toISOString() : undefined,
+        },
+      },
+    });
+  }
+
+  if (valueFrom !== undefined || valueTo !== undefined) {
+    filters.push({
+      range: {
+        value: {
+          gte: valueFrom !== undefined ? valueFrom : undefined,
+          lte: valueTo !== undefined ? valueTo : undefined,
+        },
+      },
+    });
+  }
+
+  if (_.isFinite(relayerId)) {
+    filters.push({ term: { relayerId } });
+  }
+
+  if (_.isNull(relayerId)) {
+    exclusions.push({
+      exists: {
+        field: 'relayerId',
+      },
+    });
+  }
+
+  if (_.isFinite(protocolVersion)) {
+    filters.push({ term: { protocolVersion } });
+  }
+
+  if (_.isString(token)) {
+    filters.push({ match_phrase: { 'assets.tokenAddress': token } });
+  }
+
+  if (_.isString(address)) {
+    filters.push({
+      multi_match: {
+        fields: ['maker', 'taker'],
+        query: address,
+        type: 'phrase',
+      },
+    });
+  }
+
+  if (_.isNumber(status)) {
+    filters.push({ term: { status } });
+  }
+
+  return filters.length === 0 && exclusions.length === 0
+    ? undefined
+    : {
+        bool: { filter: filters, must_not: exclusions },
+      };
+};
+
+const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
   const results = await elasticsearch.getClient().search({
     index: 'fills',
     body: {
@@ -30,14 +101,7 @@ const getBasicStatsForDates = async (dateFrom, dateTo) => {
         },
       },
       size: 0,
-      query: {
-        range: {
-          date: {
-            gte: dateFrom,
-            lte: dateTo,
-          },
-        },
-      },
+      query: buildQuery(dateFrom, dateTo, filters),
     },
   });
 
@@ -75,12 +139,19 @@ const getPercentageChange = (valueA, valueB) => {
   return ((valueB - valueA) / valueA) * 100;
 };
 
-const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
+const computeNetworkStatsForDates = async (dateFrom, dateTo, filters) => {
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
-  const specifiedPeriodStats = await getBasicStatsForDates(dateFrom, dateTo);
+
+  const specifiedPeriodStats = await getBasicStatsForDates(
+    dateFrom,
+    dateTo,
+    filters,
+  );
+
   const previousPeriodStats = await getBasicStatsForDates(
     prevDateFrom,
     prevDateTo,
+    filters,
   );
 
   return {

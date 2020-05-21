@@ -12,11 +12,26 @@ const createRouter = () => {
 
   router.get(
     '/network',
-    middleware.timePeriod('period', TIME_PERIOD.DAY),
+    middleware.timePeriod('period', TIME_PERIOD.DAY, { allowCustom: true }),
+    middleware.number('protocolVersion'),
+    middleware.number('valueFrom'),
+    middleware.number('valueTo'),
     async ({ params, response }, next) => {
-      const { period } = params;
+      // const { query } = request;
+      const { period, protocolVersion, valueFrom, valueTo } = params;
+      // const relayerId = normalizeQueryParam(query.relayer);
+      // const status = normalizeQueryParam(query.status);
+      // const token = normalizeQueryParam(query.token);
+
+      // const relayerLookupId = await getRelayerLookupId(relayerId);
+
       const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const stats = await computeNetworkStatsForDates(dateFrom, dateTo);
+
+      const stats = await computeNetworkStatsForDates(dateFrom, dateTo, {
+        protocolVersion,
+        valueFrom,
+        valueTo,
+      });
 
       response.body = stats;
 
