@@ -15,6 +15,7 @@ const createTokenLookupRouter = require('./token-lookup');
 const createTokenRouter = require('./token');
 const createTokensRouter = require('./tokens');
 const createTraderRouter = require('./trader');
+const createTraderLookupRouter = require('./trader-lookup');
 const createTradersRouter = require('./traders');
 const createZrxPriceRouter = require('./zrx-price');
 
@@ -36,6 +37,7 @@ const createRouter = () => {
     createTokenRouter().routes(),
     createTokensRouter().routes(),
     createTraderRouter().routes(),
+    createTraderLookupRouter().routes(),
     createTradersRouter().routes(),
     createZrxPriceRouter().routes(),
     createAssetBridgesRouter().routes(),
