@@ -16,21 +16,19 @@ const createRouter = () => {
     middleware.number('protocolVersion'),
     middleware.number('valueFrom'),
     middleware.number('valueTo'),
+    middleware.relayer('relayer'),
+    middleware.token('token'),
+    middleware.fillStatus('status'),
     async ({ params, response }, next) => {
-      // const { query } = request;
-      const { period, protocolVersion, valueFrom, valueTo } = params;
-      // const relayerId = normalizeQueryParam(query.relayer);
-      // const status = normalizeQueryParam(query.status);
-      // const token = normalizeQueryParam(query.token);
-
-      // const relayerLookupId = await getRelayerLookupId(relayerId);
-
-      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+      const { dateFrom, dateTo } = getDatesForTimePeriod(params.period);
 
       const stats = await computeNetworkStatsForDates(dateFrom, dateTo, {
-        protocolVersion,
-        valueFrom,
-        valueTo,
+        protocolVersion: params.protocolVersion,
+        relayerId: params.relayer,
+        status: params.status,
+        token: params.token,
+        valueFrom: params.valueFrom,
+        valueTo: params.valueTo,
       });
 
       response.body = stats;

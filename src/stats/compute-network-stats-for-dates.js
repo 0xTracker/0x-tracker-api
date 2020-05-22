@@ -139,7 +139,7 @@ const getPercentageChange = (valueA, valueB) => {
   return ((valueB - valueA) / valueA) * 100;
 };
 
-const computeNetworkStatsForDates = async (dateFrom, dateTo, filters) => {
+const computeNetworkStatsForDates = async (dateFrom, dateTo, filters = {}) => {
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
 
   const specifiedPeriodStats = await getBasicStatsForDates(
