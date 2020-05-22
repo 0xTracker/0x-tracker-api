@@ -1,9 +1,10 @@
 const { ETH_TOKEN_DECIMALS } = require('../constants');
+const buildFillsQuery = require('../fills/build-fills-query');
 const elasticsearch = require('../util/elasticsearch');
 const formatTokenAmount = require('../tokens/format-token-amount');
 const getDatesForMetrics = require('../util/get-dates-for-metrics');
 
-const getNetworkMetrics = async (period, granularity) => {
+const getNetworkMetrics = async (period, granularity, filters) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const results = await elasticsearch.getClient().search({
@@ -39,14 +40,7 @@ const getNetworkMetrics = async (period, granularity) => {
         },
       },
       size: 0,
-      query: {
-        range: {
-          date: {
-            gte: dateFrom,
-            lte: dateTo,
-          },
-        },
-      },
+      query: buildFillsQuery({ ...filters, dateFrom, dateTo }),
     },
   });
 

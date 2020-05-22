@@ -22,14 +22,37 @@ const createRouter = () => {
 
   router.get(
     '/network',
-    middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    middleware.timePeriod('period', TIME_PERIOD.MONTH, { allowCustom: true }),
     middleware.metricGranularity({
       period: 'period',
       granularity: 'granularity',
     }),
+    middleware.number('protocolVersion'),
+    middleware.number('valueFrom'),
+    middleware.number('valueTo'),
+    middleware.relayer('relayer'),
+    middleware.token('token'),
+    middleware.fillStatus('status'),
     async ({ params, response }, next) => {
-      const { granularity, period } = params;
-      const metrics = await getNetworkMetrics(period, granularity);
+      const {
+        granularity,
+        period,
+        protocolVersion,
+        relayer,
+        status,
+        token,
+        valueFrom,
+        valueTo,
+      } = params;
+
+      const metrics = await getNetworkMetrics(period, granularity, {
+        protocolVersion,
+        relayerId: relayer,
+        status,
+        token,
+        valueFrom,
+        valueTo,
+      });
 
       response.body = metrics;
 

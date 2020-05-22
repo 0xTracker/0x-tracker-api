@@ -1,18 +1,28 @@
-const { GRANULARITY, TIME_PERIOD } = require('../constants');
+const moment = require('moment');
+
+const { GRANULARITY } = require('../constants');
+const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
+
+const convertPeriodToDuration = period => {
+  const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+
+  const diff = moment.utc(dateTo).diff(dateFrom);
+
+  return moment.duration(diff, 'milliseconds');
+};
 
 const determineGranularityForTimePeriod = timePeriod => {
-  switch (timePeriod) {
-    case TIME_PERIOD.DAY:
-    case TIME_PERIOD.WEEK:
-      return GRANULARITY.HOUR;
-    case TIME_PERIOD.MONTH:
-    case TIME_PERIOD.YEAR:
-      return GRANULARITY.DAY;
-    case TIME_PERIOD.ALL:
-      return GRANULARITY.WEEK;
-    default:
-      throw new Error(`Invalid time period: ${timePeriod}`);
+  const duration = convertPeriodToDuration(timePeriod);
+
+  if (duration < moment.duration(30, 'days')) {
+    return GRANULARITY.HOUR;
   }
+
+  if (duration <= moment.duration(365, 'days')) {
+    return GRANULARITY.DAY;
+  }
+
+  return GRANULARITY.WEEK;
 };
 
 module.exports = determineGranularityForTimePeriod;
