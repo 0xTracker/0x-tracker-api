@@ -38,29 +38,25 @@ const createRouter = () => {
   );
 
   router.get(
-    '/relayer',
-    middleware.timePeriod('period', TIME_PERIOD.DAY),
-    async ({ params, response }, next) => {
-      const { period } = params;
-      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const stats = await computeNetworkStatsForDates(dateFrom, dateTo);
-
-      response.body = {
-        tradeCount: stats.tradeCount,
-        tradeVolume: stats.tradeVolume,
-      };
-
-      await next();
-    },
-  );
-
-  router.get(
     '/trader',
-    middleware.timePeriod('period', TIME_PERIOD.DAY),
+    middleware.timePeriod('period', TIME_PERIOD.DAY, { allowCustom: true }),
+    middleware.number('protocolVersion'),
+    middleware.number('valueFrom'),
+    middleware.number('valueTo'),
+    middleware.relayer('relayer'),
+    middleware.token('token'),
+    middleware.fillStatus('status'),
     async ({ params, response }, next) => {
-      const { period } = params;
-      const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-      const stats = await computeTraderStatsForDates(dateFrom, dateTo);
+      const { dateFrom, dateTo } = getDatesForTimePeriod(params.period);
+
+      const stats = await computeTraderStatsForDates(dateFrom, dateTo, {
+        protocolVersion: params.protocolVersion,
+        relayerId: params.relayer,
+        status: params.status,
+        token: params.token,
+        valueFrom: params.valueFrom,
+        valueTo: params.valueTo,
+      });
 
       response.body = stats;
 
