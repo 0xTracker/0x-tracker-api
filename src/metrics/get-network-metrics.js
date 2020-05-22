@@ -44,17 +44,19 @@ const getNetworkMetrics = async (period, granularity, filters) => {
     },
   });
 
-  return results.body.aggregations.network_metrics.buckets.map(x => ({
-    date: new Date(x.key_as_string),
-    fillCount: x.doc_count,
-    fillVolume: x.fillVolume.value,
-    protocolFees: {
-      ETH: formatTokenAmount(x.protocolFeesETH.value, ETH_TOKEN_DECIMALS),
-      USD: x.protocolFeesUSD.value,
-    },
-    tradeCount: x.tradeCount.value,
-    tradeVolume: x.tradeVolume.value,
-  }));
+  return results.body.aggregations.network_metrics.buckets.map(x => {
+    return {
+      date: new Date(x.key_as_string),
+      fillCount: x.doc_count,
+      fillVolume: x.fillVolume.value,
+      protocolFees: {
+        ETH: formatTokenAmount(x.protocolFeesETH.value, ETH_TOKEN_DECIMALS),
+        USD: x.protocolFeesUSD.value,
+      },
+      tradeCount: x.tradeCount.value,
+      tradeVolume: x.tradeVolume.value,
+    };
+  });
 };
 
 module.exports = getNetworkMetrics;
