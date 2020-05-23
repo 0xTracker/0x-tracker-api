@@ -90,7 +90,7 @@ const createRouter = () => {
 
       const addressMetadatas = await AddressMetadata.find({
         address: { $in: addresses },
-      });
+      }).lean();
 
       response.body = {
         page,
@@ -102,7 +102,11 @@ const createRouter = () => {
             m => m.address === trader.address,
           );
 
-          return { ...trader, name: _.get(metadata, 'name', null) };
+          return {
+            ...trader,
+            imageUrl: _.get(metadata, 'imageUrl', null),
+            name: _.get(metadata, 'name', null),
+          };
         }),
       };
 
