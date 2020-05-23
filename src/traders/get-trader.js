@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 const AddressMetadata = require('../model/address-metadata');
 const checkTraderExists = require('./check-trader-exists');
 
@@ -16,8 +18,10 @@ const getTrader = async address => {
 
   return {
     address,
-    description: addressMetadata.description,
-    name: addressMetadata.name,
+    description: _.get(addressMetadata, 'description', null),
+    imageUrl: _.get(addressMetadata, 'imageUrl', null),
+    name: _.get(addressMetadata, 'name', null),
+    url: _.get(addressMetadata, 'url', null),
   };
 };
 

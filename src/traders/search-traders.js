@@ -133,6 +133,7 @@ const searchTraders = async (query, options) => {
 
     return {
       address,
+      imageUrl: _.get(metadata, 'imageUrl', null),
       name: _.get(metadata, 'name', null),
     };
   });
