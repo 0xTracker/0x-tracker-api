@@ -11,6 +11,11 @@ const getStatsForDates = async (dateFrom, dateTo) => {
     index: 'fills',
     body: {
       aggs: {
+        bridgeCount: {
+          cardinality: {
+            field: 'assets.bridgeAddress',
+          },
+        },
         fillCount: {
           value_count: { field: '_id' },
         },
@@ -49,12 +54,14 @@ const getStatsForDates = async (dateFrom, dateTo) => {
 
   const getValue = key => _.get(response.body.aggregations, `${key}.value`);
 
+  const bridgeCount = getValue('bridgeCount');
   const fillCount = getValue('fillCount');
   const fillVolume = getValue('fillVolume');
   const tradeCount = getValue('tradeCount');
   const tradeVolume = getValue('tradeVolume');
 
   return {
+    bridgeCount,
     fillCount,
     fillCountShare: (fillCount / networkStats.fillCount) * 100,
     fillVolume,
@@ -98,6 +105,11 @@ const getAssetBridgingStatsForPeriod = async period => {
   const previousPeriodStats = await getStatsForDates(prevDateFrom, prevDateTo);
 
   return {
+    bridgeCount: specifiedPeriodStats.bridgeCount,
+    bridgeCountChange: getPercentageChange(
+      previousPeriodStats.bridgeCount,
+      specifiedPeriodStats.bridgeCount,
+    ),
     fillCount: specifiedPeriodStats.fillCount,
     fillCountChange: getPercentageChange(
       previousPeriodStats.fillCount,
