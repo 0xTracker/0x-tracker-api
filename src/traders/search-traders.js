@@ -53,6 +53,7 @@ const getSuggestedTraders = async limit => {
 
     return {
       address,
+      imageUrl: _.get(addressMetadata, 'imageUrl', null),
       name: _.get(addressMetadata, 'name', null),
     };
   });
