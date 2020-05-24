@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const moment = require('moment');
 
 const { GENESIS_DATE, TIME_PERIOD } = require('../constants');
@@ -64,6 +65,10 @@ const getStartDate = (timePeriod, endDate, granularity) => {
 };
 
 const getDatesForMetrics = (period, granularity) => {
+  if (_.isPlainObject(period)) {
+    return { dateFrom: period.from, dateTo: period.to };
+  }
+
   const endDate = moment.utc().toDate();
   const startDate = getStartDate(period, endDate, granularity);
 

@@ -1,14 +1,11 @@
-const _ = require('lodash');
 const moment = require('moment');
 const mongoose = require('mongoose');
 const Router = require('koa-router');
 
 const { logSearch } = require('../../../search');
 const Fill = require('../../../model/fill');
-const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const middleware = require('../../middleware');
-const reverseMapStatus = require('../../../fills/reverse-map-status');
 const searchFills = require('../../../fills/search-fills');
 const transformFill = require('./util/transform-fill');
 const transformFills = require('./util/transform-fills');
@@ -23,18 +20,6 @@ const parseDate = dateString => {
   }
 
   return moment(dateString);
-};
-
-const parseNumber = numberString => {
-  if (
-    numberString === undefined ||
-    numberString === null ||
-    numberString.trim().length === 0
-  ) {
-    return undefined;
-  }
-
-  return _.toNumber(numberString);
 };
 
 const parseBoolean = booleanString => {
@@ -71,55 +56,31 @@ const createRouter = () => {
       maxLimit: 50,
       maxPage: Infinity,
     }),
-    async (
-      { pagination: { limit, page }, request: { query }, response },
-      next,
-    ) => {
+    middleware.number('protocolVersion'),
+    middleware.number('valueFrom'),
+    middleware.number('valueTo'),
+    middleware.relayer('relayer'),
+    middleware.token('token'),
+    middleware.fillStatus('status'),
+    async ({ pagination, params, request, response }, next) => {
+      const { query } = request;
+      const { limit, page } = pagination;
+
+      const {
+        protocolVersion,
+        relayer,
+        status,
+        token,
+        valueFrom,
+        valueTo,
+      } = params;
+
       const address = normalizeQueryParam(query.address);
       const bridged = parseBoolean(query.bridged);
       const bridgeAddress = normalizeQueryParam(query.bridgeAddress);
       const dateFrom = parseDate(query.dateFrom);
       const dateTo = parseDate(query.dateTo);
-      const protocolVersion = parseNumber(query.protocolVersion);
-      const relayerId = normalizeQueryParam(query.relayer);
       const searchTerm = normalizeQueryParam(query.q);
-      const status = normalizeQueryParam(query.status);
-      const token = normalizeQueryParam(query.token);
-      const valueFrom = parseNumber(query.valueFrom);
-      const valueTo = parseNumber(query.valueTo);
-
-      const relayerLookupId = await getRelayerLookupId(relayerId);
-
-      if (
-        status !== undefined &&
-        !['failed', 'pending', 'successful'].includes(status)
-      ) {
-        throw new InvalidParameterError(
-          'Must be one of: failed, pending, successful',
-          'Invalid query parameter: status',
-        );
-      }
-
-      if (relayerId !== undefined && relayerLookupId === undefined) {
-        throw new InvalidParameterError(
-          `No relayer exists with an ID of "${relayerId}"`,
-          `Invalid query parameter: relayer`,
-        );
-      }
-
-      if (protocolVersion !== undefined && !_.isFinite(protocolVersion)) {
-        throw new InvalidParameterError(
-          'Must be a valid number',
-          'Invalid query parameter: protocolVersion',
-        );
-      }
-
-      if (protocolVersion !== undefined && protocolVersion < 1) {
-        throw new InvalidParameterError(
-          'Cannot be less than 1',
-          'Invalid query parameter: protocolVersion',
-        );
-      }
 
       if (dateFrom !== undefined && !dateFrom.isValid()) {
         throw new InvalidParameterError(
@@ -144,29 +105,6 @@ const createRouter = () => {
         );
       }
 
-      if (valueFrom !== undefined && valueFrom < 0) {
-        throw new InvalidParameterError(
-          'Cannot be less than zero',
-          'Invalid query parameter: valueFrom',
-        );
-      } else if (
-        valueFrom !== undefined &&
-        valueTo !== undefined &&
-        valueFrom > valueTo
-      ) {
-        throw new InvalidParameterError(
-          'Cannot be greater than valueTo',
-          'Invalid query parameter: valueFrom',
-        );
-      }
-
-      if (valueTo !== undefined && valueTo < 0) {
-        throw new InvalidParameterError(
-          'Cannot be less than zero',
-          'Invalid query parameter: valueTo',
-        );
-      }
-
       const [{ docs, pages, total }] = await Promise.all([
         searchFills(
           {
@@ -177,8 +115,8 @@ const createRouter = () => {
             dateTo,
             protocolVersion,
             query: searchTerm,
-            relayerId: relayerLookupId,
-            status: reverseMapStatus(status),
+            relayerId: relayer,
+            status,
             token,
             valueFrom,
             valueTo,

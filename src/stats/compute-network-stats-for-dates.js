@@ -2,10 +2,11 @@ const _ = require('lodash');
 const moment = require('moment');
 
 const { ETH_TOKEN_DECIMALS } = require('../constants');
+const buildFillsQuery = require('../fills/build-fills-query');
 const elasticsearch = require('../util/elasticsearch');
 const formatTokenAmount = require('../tokens/format-token-amount');
 
-const getBasicStatsForDates = async (dateFrom, dateTo) => {
+const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
   const results = await elasticsearch.getClient().search({
     index: 'fills',
     body: {
@@ -30,14 +31,7 @@ const getBasicStatsForDates = async (dateFrom, dateTo) => {
         },
       },
       size: 0,
-      query: {
-        range: {
-          date: {
-            gte: dateFrom,
-            lte: dateTo,
-          },
-        },
-      },
+      query: buildFillsQuery({ ...filters, dateFrom, dateTo }),
     },
   });
 
@@ -75,12 +69,19 @@ const getPercentageChange = (valueA, valueB) => {
   return ((valueB - valueA) / valueA) * 100;
 };
 
-const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
+const computeNetworkStatsForDates = async (dateFrom, dateTo, filters = {}) => {
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
-  const specifiedPeriodStats = await getBasicStatsForDates(dateFrom, dateTo);
+
+  const specifiedPeriodStats = await getBasicStatsForDates(
+    dateFrom,
+    dateTo,
+    filters,
+  );
+
   const previousPeriodStats = await getBasicStatsForDates(
     prevDateFrom,
     prevDateTo,
+    filters,
   );
 
   return {

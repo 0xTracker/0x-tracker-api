@@ -1,8 +1,9 @@
 const moment = require('moment');
 
+const buildFillsQuery = require('../fills/build-fills-query');
 const elasticsearch = require('../util/elasticsearch');
 
-const getBasicStatsForDates = async (dateFrom, dateTo) => {
+const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
   const response = await elasticsearch.getClient().search({
     index: `fills`,
     body: {
@@ -27,14 +28,7 @@ const getBasicStatsForDates = async (dateFrom, dateTo) => {
         },
       },
       size: 0,
-      query: {
-        range: {
-          date: {
-            gte: dateFrom,
-            lte: dateTo,
-          },
-        },
-      },
+      query: buildFillsQuery({ ...filters, dateFrom, dateTo }),
     },
   });
 
@@ -68,12 +62,17 @@ const getPercentageChange = (valueA, valueB) => {
   return ((valueB - valueA) / valueA) * 100;
 };
 
-const computeTraderStatsForDates = async (dateFrom, dateTo) => {
+const computeTraderStatsForDates = async (dateFrom, dateTo, filters) => {
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
-  const specifiedPeriodStats = await getBasicStatsForDates(dateFrom, dateTo);
+  const specifiedPeriodStats = await getBasicStatsForDates(
+    dateFrom,
+    dateTo,
+    filters,
+  );
   const previousPeriodStats = await getBasicStatsForDates(
     prevDateFrom,
     prevDateTo,
+    filters,
   );
 
   return {
