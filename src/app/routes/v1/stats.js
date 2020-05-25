@@ -19,6 +19,7 @@ const createRouter = () => {
     middleware.relayer('relayer'),
     middleware.token('token'),
     middleware.fillStatus('status'),
+    middleware.trader('trader'),
     async ({ params, response }, next) => {
       const { dateFrom, dateTo } = getDatesForTimePeriod(params.period);
 
@@ -27,6 +28,7 @@ const createRouter = () => {
         relayerId: params.relayer,
         status: params.status,
         token: params.token,
+        trader: params.trader,
         valueFrom: params.valueFrom,
         valueTo: params.valueTo,
       });
@@ -46,6 +48,7 @@ const createRouter = () => {
     middleware.relayer('relayer'),
     middleware.token('token'),
     middleware.fillStatus('status'),
+    middleware.trader('trader'),
     async ({ params, response }, next) => {
       const { dateFrom, dateTo } = getDatesForTimePeriod(params.period);
 
@@ -54,6 +57,7 @@ const createRouter = () => {
         relayerId: params.relayer,
         status: params.status,
         token: params.token,
+        trader: params.trader,
         valueFrom: params.valueFrom,
         valueTo: params.valueTo,
       });

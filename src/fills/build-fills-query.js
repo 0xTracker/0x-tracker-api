@@ -20,6 +20,7 @@ const buildFillsQuery = params => {
     relayerId,
     status,
     token,
+    trader,
     valueFrom,
     valueTo,
   } = params;
@@ -74,6 +75,16 @@ const buildFillsQuery = params => {
       multi_match: {
         fields: ['maker', 'taker'],
         query: address,
+        type: 'phrase',
+      },
+    });
+  }
+
+  if (_.isString(trader)) {
+    filters.push({
+      multi_match: {
+        fields: ['maker', 'taker'],
+        query: trader,
         type: 'phrase',
       },
     });

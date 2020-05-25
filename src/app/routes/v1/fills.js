@@ -62,6 +62,7 @@ const createRouter = () => {
     middleware.relayer('relayer'),
     middleware.token('token'),
     middleware.fillStatus('status'),
+    middleware.trader('trader'),
     async ({ pagination, params, request, response }, next) => {
       const { query } = request;
       const { limit, page } = pagination;
@@ -71,6 +72,7 @@ const createRouter = () => {
         relayer,
         status,
         token,
+        trader,
         valueFrom,
         valueTo,
       } = params;
@@ -118,6 +120,7 @@ const createRouter = () => {
             relayerId: relayer,
             status,
             token,
+            trader,
             valueFrom,
             valueTo,
           },

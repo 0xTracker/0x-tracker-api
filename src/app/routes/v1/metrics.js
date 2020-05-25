@@ -33,6 +33,7 @@ const createRouter = () => {
     middleware.relayer('relayer'),
     middleware.token('token'),
     middleware.fillStatus('status'),
+    middleware.trader('trader'),
     async ({ params, response }, next) => {
       const {
         granularity,
@@ -41,6 +42,7 @@ const createRouter = () => {
         relayer,
         status,
         token,
+        trader,
         valueFrom,
         valueTo,
       } = params;
@@ -50,6 +52,7 @@ const createRouter = () => {
         relayerId: relayer,
         status,
         token,
+        trader,
         valueFrom,
         valueTo,
       });
