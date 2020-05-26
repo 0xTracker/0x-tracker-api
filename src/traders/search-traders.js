@@ -1,8 +1,9 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const elasticsearch = require('../util/elasticsearch');
 const AddressMetadata = require('../model/address-metadata');
+const elasticsearch = require('../util/elasticsearch');
+const getTrader = require('./get-trader');
 
 const getSuggestedTraders = async limit => {
   const response = await elasticsearch.getClient().search({
@@ -110,6 +111,10 @@ const getValidTraderAddresses = async (addresses, limit) => {
   return validAddresses;
 };
 
+function escapeRegex(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
 const searchTraders = async (query, options) => {
   if (query === '' || query === null) {
     const traders = await getSuggestedTraders(options.limit);
@@ -117,8 +122,14 @@ const searchTraders = async (query, options) => {
     return traders;
   }
 
+  const trader = await getTrader(query);
+
+  if (trader !== null) {
+    return [trader];
+  }
+
   const metadatas = await AddressMetadata.find({
-    name: new RegExp(query, 'ig'),
+    name: new RegExp(escapeRegex(query), 'ig'),
   })
     .sort({ name: 1 })
     .limit(options.limit)

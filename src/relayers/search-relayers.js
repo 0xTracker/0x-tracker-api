@@ -65,6 +65,10 @@ const getSuggestedRelayers = async limit => {
   return relayersWithStats;
 };
 
+function escapeRegex(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
 const searchRelayers = async (query, options) => {
   if (query === '' || query === null) {
     const relayers = await getSuggestedRelayers(options.limit);
@@ -72,7 +76,9 @@ const searchRelayers = async (query, options) => {
     return relayers;
   }
 
-  const relayers = await Relayer.find({ name: new RegExp(query, 'ig') })
+  const relayers = await Relayer.find({
+    name: new RegExp(escapeRegex(query), 'ig'),
+  })
     .sort({ name: 1 })
     .limit(options.limit)
     .lean();
