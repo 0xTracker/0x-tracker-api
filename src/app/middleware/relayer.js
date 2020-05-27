@@ -21,8 +21,8 @@ const createMiddleware = (paramName, defaultValue) => async (context, next) => {
   const relayerId = normalizeStringParam(request.query[paramName]);
   const relayerLookupId = await getRelayerLookupId(relayerId);
 
-  if (relayerLookupId !== undefined) {
-    if (!_.isFinite(relayerLookupId)) {
+  if (relayerId !== undefined) {
+    if (relayerLookupId === undefined) {
       throw new InvalidParameterError(
         'Must be a valid relayer',
         `Invalid ${paramName} parameter: ${relayerId}`,
