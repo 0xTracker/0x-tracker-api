@@ -106,7 +106,7 @@ const getValidTraderAddresses = async (addresses, limit) => {
     response.body.aggregations.matching_takers.takers.buckets,
   );
 
-  const validAddresses = buckets.map(bucket => bucket.key);
+  const validAddresses = _.uniq(buckets.map(bucket => bucket.key));
 
   return validAddresses;
 };
