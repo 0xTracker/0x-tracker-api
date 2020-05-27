@@ -67,6 +67,10 @@ const getSuggestedTokens = async limit => {
   });
 };
 
+function escapeRegex(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
 const searchTokens = async (query, options) => {
   if (query === '' || query === null) {
     const tokens = await getSuggestedTokens(options.limit);
@@ -77,8 +81,8 @@ const searchTokens = async (query, options) => {
   const tokens = await Token.find({
     $or: [
       { address: query },
-      { name: new RegExp(query, 'ig') },
-      { symbol: new RegExp(query, 'ig') },
+      { name: new RegExp(escapeRegex(query), 'ig') },
+      { symbol: new RegExp(escapeRegex(query), 'ig') },
     ],
   })
     .sort({ name: 1 })
