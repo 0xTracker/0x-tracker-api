@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`transformRelayer should transfer relayer with stats 1`] = `
+Object {
+  "id": "starBit",
+  "imageUrl": "https://resources.0xtracker.com/logos/starbit.png",
+  "name": "STAR BIT",
+  "slug": "star-bit",
+  "stats": Object {
+    "fillCount": 687,
+    "fillVolume": 18907,
+    "tradeCount": 512,
+    "tradeVolume": 150567.87,
+  },
+  "url": "https://www.starbitex.com",
+}
+`;
+
+exports[`transformRelayer should transform relayer with minimal fields 1`] = `
+Object {
+  "id": "starBit",
+  "imageUrl": null,
+  "name": "STAR BIT",
+  "slug": "star-bit",
+  "stats": Object {
+    "fillCount": 687,
+    "fillVolume": 18907,
+    "tradeCount": 512,
+    "tradeVolume": 150567.87,
+  },
+  "url": null,
+}
+`;
+
+exports[`transformRelayer should transform relayer without stats 1`] = `
+Object {
+  "id": "starBit",
+  "imageUrl": "https://resources.0xtracker.com/logos/starbit.png",
+  "name": "STAR BIT",
+  "slug": "star-bit",
+  "url": "https://www.starbitex.com",
+}
+`;

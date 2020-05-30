@@ -1,7 +1,17 @@
 const _ = require('lodash');
 
-const transformRelayer = relayer => {
-  return _.pick(relayer, ['id', 'imageUrl', 'name', 'slug', 'url']);
+const transformRelayer = (relayer, stats) => {
+  return _.pickBy(
+    {
+      id: relayer.id,
+      imageUrl: _.get(relayer, 'imageUrl', null),
+      name: relayer.name,
+      slug: relayer.slug,
+      stats,
+      url: _.get(relayer, 'url', null),
+    },
+    val => val !== undefined,
+  );
 };
 
 module.exports = transformRelayer;

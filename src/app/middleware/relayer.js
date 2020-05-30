@@ -15,7 +15,7 @@ const normalizeStringParam = param => {
   return param;
 };
 
-const createMiddleware = (paramName, defaultValue) => async (context, next) => {
+const createMiddleware = paramName => async (context, next) => {
   const { request } = context;
 
   const relayerId = normalizeStringParam(request.query[paramName]);
@@ -34,7 +34,6 @@ const createMiddleware = (paramName, defaultValue) => async (context, next) => {
     return;
   }
 
-  _.set(context, ['params', paramName], defaultValue);
   await next();
 };
 
