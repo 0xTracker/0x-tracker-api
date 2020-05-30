@@ -5,6 +5,7 @@ const transformArticle = (sources, article) => {
 
   return {
     ..._.pick(article, ['date', 'id', 'slug', 'summary', 'title', 'url']),
+    imageUrl: _.get(article, 'metadata.og:image', null),
     source,
   };
 };
