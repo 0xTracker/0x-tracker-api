@@ -4,6 +4,7 @@ const getRelayerBySlug = async slug => {
   if (slug === 'unknown') {
     return {
       id: 'unknown',
+      lookupId: null,
       name: 'Unknown',
       slug: 'unknown',
     };
