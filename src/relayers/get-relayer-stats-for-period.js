@@ -41,9 +41,10 @@ const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
               },
             },
           ].filter(f => f !== undefined),
-          must_not: [
-            relayerId === null ? { exists: { field: 'relayerId' } } : undefined,
-          ].filter(f => f !== null),
+          must_not:
+            relayerId === null
+              ? [{ exists: { field: 'relayerId' } }]
+              : undefined,
         },
       },
     },

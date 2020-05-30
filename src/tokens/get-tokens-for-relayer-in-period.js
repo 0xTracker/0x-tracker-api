@@ -41,9 +41,10 @@ const getRelayersForTokenInPeriod = async (relayerId, period, options) => {
                 }
               : undefined,
           ].filter(f => f !== undefined),
-          must_not: [
-            relayerId === null ? { exists: { field: 'relayerId' } } : undefined,
-          ].filter(f => f !== undefined),
+          must_not:
+            relayerId === null
+              ? [{ exists: { field: 'relayerId' } }]
+              : undefined,
         },
       },
       aggs: {
