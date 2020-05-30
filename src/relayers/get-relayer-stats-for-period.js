@@ -31,7 +31,7 @@ const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
       query: {
         bool: {
           filter: [
-            { term: { relayerId } },
+            relayerId !== null ? { term: { relayerId } } : undefined,
             {
               range: {
                 date: {
@@ -40,7 +40,10 @@ const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
                 },
               },
             },
-          ],
+          ].filter(f => f !== undefined),
+          must_not: [
+            relayerId === null ? { exists: { field: 'relayerId' } } : undefined,
+          ].filter(f => f !== null),
         },
       },
     },
