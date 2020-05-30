@@ -20,7 +20,7 @@ const searchFills = async (params, options) => {
   const fills = await Fill.find({ _id: { $in: fillIds } })
     .populate([
       { path: 'relayer', select: 'imageUrl name slug' },
-      { path: 'assets.token', select: 'decimals name symbol type' },
+      { path: 'assets.token', select: 'decimals name symbol type imageUrl' },
       { path: 'fees.token', select: 'decimals name symbol type' },
     ])
     .sort({ date: -1 });
