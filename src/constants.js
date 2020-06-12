@@ -47,10 +47,16 @@ module.exports = {
   ZRX_TOKEN_DECIMALS: 18,
   ARTICLE_SOURCES: {
     '0xproject': {
-      name: '0x',
+      name: '0x Team',
       url: 'https://0x.org',
       imageUrl: 'https://resources.0xtracker.com/logos/0x.png',
       slug: '0x',
+    },
+    '0xvideos': {
+      name: '0x YouTube',
+      url: 'https://www.youtube.com/channel/UCFrSpPi9WUW9wYTa0Q1sdnA',
+      imageUrl: 'https://resources.0xtracker.com/logos/0x.png',
+      slug: '0x-youtube',
     },
     '0xtracker': {
       name: '0x Tracker',
