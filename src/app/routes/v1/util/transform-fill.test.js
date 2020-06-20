@@ -215,7 +215,7 @@ describe('transformFill', () => {
         amount: { token: new BigNumber('0.005'), USD: 0.3 },
         token: {
           address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-          id: undefined,
+          id: null,
           name: 'Wrapped Ether',
           symbol: 'WETH',
           type: 'erc-20',
@@ -223,7 +223,7 @@ describe('transformFill', () => {
         traderType: 'maker',
       },
       {
-        amount: { token: new BigNumber('1'), USD: undefined },
+        amount: { token: new BigNumber('1'), USD: null },
         token: {
           address: '0xf5b0a3efb8e8e4c201e2a935f110eaaf3ffecb8d',
           id: 58,

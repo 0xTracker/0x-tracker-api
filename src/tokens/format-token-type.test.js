@@ -5,7 +5,7 @@ describe('formatTokenType', () => {
   it('should handle undefined token type gracefully', () => {
     const formatted = formatTokenType(undefined);
 
-    expect(formatted).toBeUndefined();
+    expect(formatted).toBeNull();
   });
 
   it('should format ERC-20 token type', () => {

@@ -5,16 +5,20 @@ const formatTokenType = require('../tokens/format-token-type');
 const formatTraderType = require('../traders/format-trader-type');
 
 const transformFee = fee => {
+  const tokenAmount = formatTokenAmount(_.get(fee, 'amount.token'), fee.token);
+
   return {
-    amount: {
-      token: formatTokenAmount(_.get(fee, 'amount.token'), fee.token),
-      USD: _.get(fee, 'amount.USD'),
-    },
+    amount: !_.isNil(tokenAmount)
+      ? {
+          token: tokenAmount,
+          USD: _.get(fee, 'amount.USD', null),
+        }
+      : null,
     token: {
       address: fee.tokenAddress,
-      id: fee.tokenId,
-      name: _.get(fee.token, 'name'),
-      symbol: _.get(fee.token, 'symbol'),
+      id: _.get(fee, 'tokenId', null),
+      name: _.get(fee.token, 'name', null),
+      symbol: _.get(fee.token, 'symbol', null),
       type: formatTokenType(_.get(fee.token, 'type')),
     },
     traderType: formatTraderType(fee.traderType),

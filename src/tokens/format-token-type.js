@@ -1,8 +1,8 @@
 const { TOKEN_TYPE } = require('../constants');
 
 const formatTokenType = tokenType => {
-  if (tokenType === undefined) {
-    return undefined;
+  if (tokenType === undefined || tokenType === null) {
+    return null;
   }
 
   switch (tokenType) {
