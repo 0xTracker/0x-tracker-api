@@ -72,13 +72,38 @@ Object {
   ],
   "date": "2018-09-06T10:47:38.000Z",
   "feeRecipient": "0xe269e891a2ec8585a378882ffa531141205e92e9",
-  "fees": undefined,
+  "fees": Array [
+    Object {
+      "amount": Object {
+        "USD": 9.13,
+        "token": "15",
+      },
+      "token": Object {
+        "address": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+        "id": null,
+        "name": "0x Protocol Token",
+        "symbol": "ZRX",
+        "type": "erc-20",
+      },
+      "traderType": "maker",
+    },
+    Object {
+      "amount": Object {
+        "USD": 3.04,
+        "token": "5",
+      },
+      "token": Object {
+        "address": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+        "id": null,
+        "name": "0x Protocol Token",
+        "symbol": "ZRX",
+        "type": "erc-20",
+      },
+      "traderType": "taker",
+    },
+  ],
   "id": "5b9107e00d05f400042e3494",
   "makerAddress": "0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb",
-  "makerFee": Object {
-    "USD": 9.13,
-    "ZRX": "15",
-  },
   "orderHash": "0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5",
   "protocolFee": undefined,
   "protocolVersion": 1,
@@ -90,14 +115,6 @@ Object {
   "senderAddress": undefined,
   "status": "successful",
   "takerAddress": "0xe269e891a2ec8585a378882ffa531141205e92e9",
-  "takerFee": Object {
-    "USD": 3.04,
-    "ZRX": "5",
-  },
-  "totalFees": Object {
-    "USD": 12.170000000000002,
-    "ZRX": "20",
-  },
   "transactionHash": "0x4c69e925be055eec7bc49cc681fd5267d1aca7e1db21f687ab19ab9d75b7447c",
   "value": Object {
     "USD": 1601.76195501,
@@ -119,7 +136,7 @@ Object {
   "tokenSymbol": undefined,
   "tokenType": undefined,
   "traderType": "maker",
-  "type": undefined,
+  "type": null,
 }
 `;
 
@@ -137,7 +154,7 @@ Object {
   "tokenSymbol": undefined,
   "tokenType": undefined,
   "traderType": "taker",
-  "type": undefined,
+  "type": null,
 }
 `;
 
@@ -177,13 +194,38 @@ Object {
   ],
   "date": "2018-09-06T10:47:38.000Z",
   "feeRecipient": "0xe269e891a2ec8585a378882ffa531141205e92e9",
-  "fees": undefined,
+  "fees": Array [
+    Object {
+      "amount": Object {
+        "USD": 0.2,
+        "token": "15",
+      },
+      "token": Object {
+        "address": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+        "id": null,
+        "name": "0x Protocol Token",
+        "symbol": "ZRX",
+        "type": "erc-20",
+      },
+      "traderType": "maker",
+    },
+    Object {
+      "amount": Object {
+        "USD": 0.3,
+        "token": "5",
+      },
+      "token": Object {
+        "address": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+        "id": null,
+        "name": "0x Protocol Token",
+        "symbol": "ZRX",
+        "type": "erc-20",
+      },
+      "traderType": "taker",
+    },
+  ],
   "id": "5b9107e00d05f400042e3494",
   "makerAddress": "0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb",
-  "makerFee": Object {
-    "USD": 0.2,
-    "ZRX": "15",
-  },
   "orderHash": "0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5",
   "protocolFee": undefined,
   "protocolVersion": 2,
@@ -195,14 +237,6 @@ Object {
   "senderAddress": undefined,
   "status": "successful",
   "takerAddress": "0xe269e891a2ec8585a378882ffa531141205e92e9",
-  "takerFee": Object {
-    "USD": 0.3,
-    "ZRX": "5",
-  },
-  "totalFees": Object {
-    "USD": 0.5,
-    "ZRX": "20",
-  },
   "transactionHash": "0x4c69e925be055eec7bc49cc681fd5267d1aca7e1db21f687ab19ab9d75b7447c",
   "value": Object {
     "USD": 37.77675,

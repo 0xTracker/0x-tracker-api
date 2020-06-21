@@ -28,6 +28,7 @@ it('should only return white-listed fields', () => {
     imageUrl: 'http://tmpuri.org/test.jpg',
     name: 'DAI Stablecoin',
     symbol: 'DAI',
+    type: 0,
   };
   const transformed = transformToken(token);
 
@@ -48,6 +49,7 @@ it('should only return white-listed fields', () => {
     },
     symbol: 'DAI',
     totalSupply: null,
+    type: 'erc-20',
   });
 });
 
@@ -56,6 +58,7 @@ it('should transform tokens which dont have an image url', () => {
     address: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
     name: 'DAI Stablecoin',
     symbol: 'DAI',
+    type: 0,
   };
   const transformed = transformToken(token);
 
@@ -76,5 +79,6 @@ it('should transform tokens which dont have an image url', () => {
     },
     symbol: 'DAI',
     totalSupply: null,
+    type: 'erc-20',
   });
 });
