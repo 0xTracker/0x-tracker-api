@@ -1,9 +1,6 @@
 const _ = require('lodash');
 
-const {
-  ETH_TOKEN_DECIMALS,
-  ZRX_TOKEN_DECIMALS,
-} = require('../../../../constants');
+const { ETH_TOKEN_DECIMALS } = require('../../../../constants');
 const formatFillStatus = require('../../../../fills/format-fill-status');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
 const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
@@ -16,33 +13,6 @@ const transformFill = fill => {
   const assets = getAssetsForFill(fill);
   const fees = getFeesForFill(fill);
   const conversions = _.get(fill, `conversions.USD`);
-
-  const makerFee =
-    fill.makerFee !== undefined
-      ? {
-          USD: _.get(conversions, 'makerFee'),
-          ZRX: formatTokenAmount(fill.makerFee, ZRX_TOKEN_DECIMALS),
-        }
-      : undefined;
-
-  const takerFee =
-    fill.takerFee !== undefined
-      ? {
-          USD: _.get(conversions, 'takerFee'),
-          ZRX: formatTokenAmount(fill.takerFee, ZRX_TOKEN_DECIMALS),
-        }
-      : undefined;
-
-  const totalFees =
-    takerFee !== undefined || makerFee !== undefined
-      ? {
-          USD: makerFee.USD + takerFee.USD,
-          ZRX:
-            makerFee.ZRX === undefined
-              ? undefined
-              : makerFee.ZRX.plus(takerFee.ZRX),
-        }
-      : undefined;
 
   const protocolFee =
     fill.protocolFee !== undefined
@@ -59,7 +29,6 @@ const transformFill = fill => {
     feeRecipient: fill.feeRecipient,
     id: fill.id,
     makerAddress: fill.maker,
-    makerFee,
     orderHash: fill.orderHash,
     protocolFee,
     protocolVersion: fill.protocolVersion,
@@ -67,8 +36,6 @@ const transformFill = fill => {
     senderAddress: fill.senderAddress,
     status: formatFillStatus(fill.status),
     takerAddress: fill.taker,
-    takerFee,
-    totalFees,
     transactionHash: fill.transactionHash,
     value: _.has(conversions, 'amount')
       ? {
