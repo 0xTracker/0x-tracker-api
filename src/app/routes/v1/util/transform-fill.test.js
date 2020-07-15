@@ -235,4 +235,39 @@ describe('transformFill', () => {
       },
     ]);
   });
+
+  it('should transform fill with unknown affiliate', () => {
+    const fill = {
+      ...simpleFill,
+      affiliateAddress: '0xa258b39954cef5cb142fd567a46cddb31a670124',
+    };
+
+    const viewModel = transformFill(fill);
+
+    expect(viewModel.affiliate).toEqual({
+      address: '0xa258b39954cef5cb142fd567a46cddb31a670124',
+      imageUrl: null,
+      name: null,
+    });
+  });
+
+  it('should transform fill with known affiliate', () => {
+    const fill = {
+      ...simpleFill,
+      affiliateAddress: '0xa258b39954cef5cb142fd567a46cddb31a670124',
+      affiliate: {
+        address: '0xa258b39954cef5cb142fd567a46cddb31a670124',
+        imageUrl: 'https://resources.0xtracker.com/logos/swarm.png',
+        name: 'Swarm',
+      },
+    };
+
+    const viewModel = transformFill(fill);
+
+    expect(viewModel.affiliate).toEqual({
+      address: '0xa258b39954cef5cb142fd567a46cddb31a670124',
+      imageUrl: 'https://resources.0xtracker.com/logos/swarm.png',
+      name: 'Swarm',
+    });
+  });
 });

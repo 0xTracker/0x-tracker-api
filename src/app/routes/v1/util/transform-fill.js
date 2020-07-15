@@ -23,6 +23,13 @@ const transformFill = fill => {
       : undefined;
 
   return {
+    affiliate: _.isNil(fill.affiliateAddress)
+      ? null
+      : {
+          address: fill.affiliateAddress,
+          imageUrl: _.get(fill, 'affiliate.imageUrl', null),
+          name: _.get(fill, 'affiliate.name', null),
+        },
     assets,
     date: fill.date,
     fees,
