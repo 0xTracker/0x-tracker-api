@@ -38,6 +38,7 @@ Object {
 
 exports[`transformFill should transform V1 fill 1`] = `
 Object {
+  "affiliate": null,
   "assets": Array [
     Object {
       "amount": "7.1373405",
@@ -160,6 +161,7 @@ Object {
 
 exports[`transformFill should transform V2 fill 1`] = `
 Object {
+  "affiliate": null,
   "assets": Array [
     Object {
       "amount": "1",

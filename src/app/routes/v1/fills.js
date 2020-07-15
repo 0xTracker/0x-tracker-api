@@ -151,6 +151,7 @@ const createRouter = () => {
             { path: 'relayer', select: 'imageUrl name slug' },
             { path: 'assets.token', select: 'decimals name symbol type' },
             { path: 'fees.token', select: 'decimals name symbol type' },
+            { path: 'affiliate', select: 'name imageUrl' },
           ],
         })
       : null;
