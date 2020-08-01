@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 
 const createAdSlotsRouter = require('./ad-slots');
+const createAppRouter = require('./app');
 const createAppsRouter = require('./apps');
 const createArticlesRouter = require('./articles');
 const createArticleSourcesRouter = require('./article-sources');
@@ -26,6 +27,7 @@ const createRouter = () => {
 
   router.use(
     createAdSlotsRouter().routes(),
+    createAppRouter().routes(),
     createAppsRouter().routes(),
     createArticlesRouter().routes(),
     createArticleSourcesRouter().routes(),
