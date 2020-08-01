@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
@@ -16,7 +17,8 @@ const createRouter = () => {
       maxPage: Infinity,
     }),
     middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
-    async ({ pagination, params, response }, next) => {
+    async ({ pagination, params, request, response }, next) => {
+      const { category } = request.query;
       const { limit, page } = pagination;
       const { statsPeriod } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
@@ -24,6 +26,7 @@ const createRouter = () => {
         dateFrom,
         dateTo,
         {
+          category: _.isEmpty(category) ? undefined : category,
           page,
           limit,
         },

@@ -3,11 +3,26 @@ const _ = require('lodash');
 const App = require('../model/app');
 const elasticsearch = require('../util/elasticsearch');
 
+const getFilteredAppIds = async category => {
+  if (category === undefined) {
+    return undefined;
+  }
+
+  const apps = await App.find({ categories: category })
+    .select('_id')
+    .lean();
+
+  return apps.map(app => app._id);
+};
+
 const getAppsWithStatsForDates = async (dateFrom, dateTo, options) => {
+  const { category } = options;
   const { page, limit } = _.defaults({}, options, {
     page: 1,
     limit: 20,
   });
+
+  const filteredAppIds = await getFilteredAppIds(category);
 
   const response = await elasticsearch.getClient().search({
     index: 'app_fill_attributions',
@@ -66,11 +81,20 @@ const getAppsWithStatsForDates = async (dateFrom, dateTo, options) => {
       },
       size: 0,
       query: {
-        range: {
-          date: {
-            gte: dateFrom,
-            lte: dateTo,
-          },
+        bool: {
+          filter: [
+            filteredAppIds !== undefined
+              ? { terms: { appId: filteredAppIds } }
+              : undefined,
+            {
+              range: {
+                date: {
+                  gte: dateFrom,
+                  lte: dateTo,
+                },
+              },
+            },
+          ].filter(f => f !== undefined),
         },
       },
     },
