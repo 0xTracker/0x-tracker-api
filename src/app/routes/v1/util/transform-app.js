@@ -4,7 +4,7 @@ const transformApp = (app, stats) => {
   return _.pickBy(
     {
       categories: app.categories,
-      id: app.id,
+      description: _.get(app, 'description', null),
       logoUrl: _.get(app, 'logoUrl', null),
       name: app.name,
       stats,
