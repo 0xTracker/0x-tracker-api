@@ -4,6 +4,8 @@ const Router = require('koa-router');
 const { TIME_PERIOD } = require('../../../constants');
 const checkTraderExists = require('../../../traders/check-trader-exists');
 const getActiveRelayerMetrics = require('../../../metrics/get-active-relayer-metrics');
+const getAppBySlug = require('../../../apps/get-app-by-slug');
+const getAppMetrics = require('../../../metrics/get-app-metrics');
 const getTradedTokenMetrics = require('../../../metrics/get-traded-token-metrics');
 const getActiveTraderMetrics = require('../../../metrics/get-active-trader-metrics');
 const getAssetBridgeMetrics = require('../../../metrics/get-asset-bridge-metrics');
@@ -266,6 +268,38 @@ const createRouter = () => {
     async ({ params, response }, next) => {
       const { granularity, period } = params;
       const metrics = await getTradedTokenMetrics(period, granularity);
+
+      response.body = metrics;
+
+      await next();
+    },
+  );
+
+  router.get(
+    '/app',
+    middleware.timePeriod('period', TIME_PERIOD.MONTH),
+    middleware.metricGranularity({
+      period: 'period',
+      granularity: 'granularity',
+    }),
+    async ({ params, request, response }, next) => {
+      const appSlug = request.query.app;
+
+      if (appSlug === undefined) {
+        throw new MissingParameterError('app');
+      }
+
+      const app = await getAppBySlug(appSlug);
+
+      if (app === null) {
+        throw new InvalidParameterError(
+          `No app found matching "${app}"`,
+          `Invalid query parameter: app`,
+        );
+      }
+
+      const { granularity, period } = params;
+      const metrics = await getAppMetrics(app._id, period, granularity);
 
       response.body = metrics;
 
