@@ -111,6 +111,7 @@ const getAppsWithStatsForDates = async (dateFrom, dateTo, options) => {
 
     return {
       categories: app.categories,
+      description: _.get(app, 'description', null),
       id: app.id,
       logoUrl: _.get(app, 'logoUrl', null),
       name: app.name,
