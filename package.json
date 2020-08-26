@@ -9,7 +9,7 @@
     "test:watch": "jest --watch"
   },
   "devDependencies": {
-    "eslint": "6.8.0",
+    "eslint": "7.7.0",
     "eslint-config-airbnb-base": "14.0.0",
     "eslint-config-prettier": "6.10.0",
     "eslint-plugin-import": "2.20.1",
@@ -19,7 +19,7 @@
     "lint-staged": "9.5.0",
     "nodemon": "2.0.2",
     "pino-pretty": "3.6.1",
-    "prettier": "1.19.1"
+    "prettier": "2.1.1"
   },
   "dependencies": {
     "@0x/types": "3.1.0",
