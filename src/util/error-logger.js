@@ -6,12 +6,11 @@ const { getLogger } = require('./logging');
 
 let bugsnagClient;
 
-const logError = (error, opts) => {
+const logError = (error, metadata) => {
   const logger = getLogger('application');
-  const report = _.get(opts, 'report', false);
 
-  if (bugsnagClient && report) {
-    bugsnagClient.notify(error);
+  if (bugsnagClient) {
+    bugsnagClient.notify(error, metadata);
   }
 
   logger.error(error);
