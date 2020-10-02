@@ -25,33 +25,55 @@ const getActiveTraderMetrics = async (period, granularity) => {
             },
           },
           aggs: {
-            makerCount: {
-              cardinality: {
-                field: 'maker',
+            makers: {
+              filter: {
+                range: {
+                  makerFillCount: {
+                    gt: 0,
+                  },
+                },
+              },
+              aggs: {
+                makerCount: {
+                  cardinality: {
+                    field: 'address',
+                  },
+                },
               },
             },
-            takerCount: {
-              cardinality: {
-                field: 'taker',
+            takers: {
+              filter: {
+                range: {
+                  takerFillCount: {
+                    gt: 0,
+                  },
+                },
+              },
+              aggs: {
+                takerCount: {
+                  cardinality: {
+                    field: 'address',
+                  },
+                },
               },
             },
             traderCount: {
               cardinality: {
-                field: 'traders',
+                field: 'address',
               },
             },
           },
         },
       },
     },
-    index: 'fills',
+    index: 'trader_fills',
     size: 0,
   });
 
   return results.body.aggregations.metrics_by_date.buckets.map(x => ({
     date: new Date(x.key_as_string),
-    makerCount: x.makerCount.value,
-    takerCount: x.takerCount.value,
+    makerCount: x.makers.makerCount.value,
+    takerCount: x.takers.takerCount.value,
     traderCount: x.traderCount.value,
   }));
 };
