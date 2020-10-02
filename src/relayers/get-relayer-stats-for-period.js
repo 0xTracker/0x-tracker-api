@@ -3,28 +3,13 @@ const moment = require('moment');
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 
-const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
+const getTraderCount = async (relayerId, dateFrom, dateTo) => {
   const res = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: 'trader_fills',
     body: {
       aggs: {
-        fillCount: {
-          value_count: { field: '_id' },
-        },
-        fillVolume: {
-          sum: { field: 'value' },
-        },
-        tradeCount: {
-          sum: { field: 'tradeCountContribution' },
-        },
         traderCount: {
-          cardinality: { field: 'traders' },
-        },
-        tradeVolume: {
-          sum: { field: 'tradeVolume' },
-        },
-        tokenCount: {
-          cardinality: { field: 'assets.tokenAddress' },
+          cardinality: { field: 'address' },
         },
       },
       size: 0,
@@ -50,12 +35,63 @@ const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
     },
   });
 
+  const { traderCount } = res.body.aggregations;
+
+  return traderCount.value;
+};
+
+const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
+  const [res, traderCount] = await Promise.all([
+    elasticsearch.getClient().search({
+      index: 'fills',
+      body: {
+        aggs: {
+          fillCount: {
+            value_count: { field: '_id' },
+          },
+          fillVolume: {
+            sum: { field: 'value' },
+          },
+          tradeCount: {
+            sum: { field: 'tradeCountContribution' },
+          },
+          tradeVolume: {
+            sum: { field: 'tradeVolume' },
+          },
+          tokenCount: {
+            cardinality: { field: 'assets.tokenAddress' },
+          },
+        },
+        size: 0,
+        query: {
+          bool: {
+            filter: [
+              relayerId !== null ? { term: { relayerId } } : undefined,
+              {
+                range: {
+                  date: {
+                    gte: dateFrom,
+                    lte: dateTo,
+                  },
+                },
+              },
+            ].filter(f => f !== undefined),
+            must_not:
+              relayerId === null
+                ? [{ exists: { field: 'relayerId' } }]
+                : undefined,
+          },
+        },
+      },
+    }),
+    getTraderCount(relayerId, dateFrom, dateTo),
+  ]);
+
   const {
     fillCount,
     fillVolume,
     tokenCount,
     tradeCount,
-    traderCount,
     tradeVolume,
   } = res.body.aggregations;
 
@@ -64,7 +100,7 @@ const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
     fillVolume: fillVolume.value,
     tokenCount: tokenCount.value,
     tradeCount: tradeCount.value,
-    traderCount: traderCount.value,
+    traderCount,
     tradeVolume: tradeVolume.value,
   };
 };
