@@ -4,15 +4,15 @@ const AddressMetadata = require('../model/address-metadata');
 const checkTraderExists = require('./check-trader-exists');
 
 const getTrader = async address => {
+  const exists = await checkTraderExists(address);
+
+  if (!exists) {
+    return null;
+  }
+
   const addressMetadata = await AddressMetadata.findOne({ address }).lean();
 
   if (addressMetadata === null) {
-    const exists = await checkTraderExists(address);
-
-    if (!exists) {
-      return null;
-    }
-
     return { address, name: null };
   }
 

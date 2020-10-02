@@ -7,19 +7,19 @@ const getTrader = require('./get-trader');
 
 const getSuggestedTraders = async limit => {
   const response = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: 'trader_fills',
     body: {
       aggs: {
         traders: {
           terms: {
-            field: 'traders',
+            field: 'address',
             order: { tradeVolume: 'desc' },
             size: limit,
           },
           aggs: {
             tradeVolume: {
               sum: {
-                field: 'tradeVolume',
+                field: 'totalTradeValue',
               },
             },
             bucket_truncate: {
@@ -64,37 +64,18 @@ const getSuggestedTraders = async limit => {
 
 const getValidTraderAddresses = async (addresses, limit) => {
   const response = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: 'trader_fills',
     body: {
-      aggs: {
-        matching_makers: {
-          filter: {
-            terms: {
-              maker: addresses,
-            },
-          },
-          aggs: {
-            makers: {
-              terms: {
-                field: 'maker',
-                size: limit,
-              },
-            },
-          },
+      query: {
+        terms: {
+          address: addresses,
         },
-        matching_takers: {
-          filter: {
-            terms: {
-              taker: addresses,
-            },
-          },
-          aggs: {
-            takers: {
-              terms: {
-                field: 'taker',
-                size: limit,
-              },
-            },
+      },
+      aggs: {
+        traders: {
+          terms: {
+            field: 'address',
+            size: limit,
           },
         },
       },
@@ -102,11 +83,9 @@ const getValidTraderAddresses = async (addresses, limit) => {
     },
   });
 
-  const buckets = response.body.aggregations.matching_makers.makers.buckets.concat(
-    response.body.aggregations.matching_takers.takers.buckets,
+  const validAddresses = _.uniq(
+    response.body.aggregations.traders.buckets.map(bucket => bucket.key),
   );
-
-  const validAddresses = _.uniq(buckets.map(bucket => bucket.key));
 
   return validAddresses;
 };
