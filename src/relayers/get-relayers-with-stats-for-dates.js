@@ -16,77 +16,63 @@ const getPreviousPeriod = (dateFrom, dateTo) => {
   return { prevDateFrom, prevDateTo };
 };
 
-const getStatsForPreviousPeriod = async (relayerIds, dateFrom, dateTo) => {
-  const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
+const getQueryForRelayers = (relayerIds, dateFrom, dateTo) => ({
+  bool: {
+    must: {
+      bool: {
+        should: [
+          relayerIds.includes(-1)
+            ? {
+                bool: {
+                  must_not: {
+                    exists: {
+                      field: 'relayerId',
+                    },
+                  },
+                },
+              }
+            : undefined,
+          {
+            terms: {
+              relayerId: relayerIds,
+            },
+          },
+        ].filter(s => s !== undefined),
+      },
+    },
+    filter: [
+      {
+        range: {
+          date: {
+            gte: dateFrom,
+            lte: dateTo,
+          },
+        },
+      },
+    ],
+  },
+});
 
+const getActiveTraderStats = async (relayerIds, dateFrom, dateTo) => {
   const response = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: 'trader_fills',
     body: {
       aggs: {
         relayers: {
           terms: {
             field: 'relayerId',
             missing: -1,
-            order: { tradeVolume: 'desc' },
             size: relayerIds.length,
           },
           aggs: {
-            fillVolume: {
-              sum: { field: 'value' },
-            },
             traderCount: {
-              cardinality: { field: 'traders' },
-            },
-            tradeCount: {
-              sum: {
-                field: 'tradeCountContribution',
-              },
-            },
-            tradeVolume: {
-              sum: {
-                field: 'tradeVolume',
-              },
+              cardinality: { field: 'address' },
             },
           },
         },
       },
       size: 0,
-      query: {
-        bool: {
-          must: {
-            bool: {
-              should: [
-                relayerIds.includes(-1)
-                  ? {
-                      bool: {
-                        must_not: {
-                          exists: {
-                            field: 'relayerId',
-                          },
-                        },
-                      },
-                    }
-                  : undefined,
-                {
-                  terms: {
-                    relayerId: relayerIds,
-                  },
-                },
-              ].filter(s => s !== undefined),
-            },
-          },
-          filter: [
-            {
-              range: {
-                date: {
-                  gte: prevDateFrom,
-                  lte: prevDateTo,
-                },
-              },
-            },
-          ],
-        },
-      },
+      query: getQueryForRelayers(relayerIds, dateFrom, dateTo),
     },
   });
 
@@ -96,11 +82,67 @@ const getStatsForPreviousPeriod = async (relayerIds, dateFrom, dateTo) => {
     const bucket = buckets.find(b => b.key === relayerId);
 
     return {
+      traderCount: _.get(bucket, 'traderCount.value', 0),
+      relayerId,
+    };
+  });
+};
+
+const getStatsForPreviousPeriod = async (relayerIds, dateFrom, dateTo) => {
+  const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
+
+  const [response, activeTraderStats] = await Promise.all([
+    elasticsearch.getClient().search({
+      index: 'fills',
+      body: {
+        aggs: {
+          relayers: {
+            terms: {
+              field: 'relayerId',
+              missing: -1,
+              order: { tradeVolume: 'desc' },
+              size: relayerIds.length,
+            },
+            aggs: {
+              fillVolume: {
+                sum: { field: 'value' },
+              },
+              tradeCount: {
+                sum: {
+                  field: 'tradeCountContribution',
+                },
+              },
+              tradeVolume: {
+                sum: {
+                  field: 'tradeVolume',
+                },
+              },
+            },
+          },
+        },
+        size: 0,
+        query: getQueryForRelayers(relayerIds, prevDateFrom, prevDateTo),
+      },
+    }),
+    getActiveTraderStats(relayerIds, prevDateFrom, prevDateTo),
+  ]);
+
+  const { buckets } = response.body.aggregations.relayers;
+
+  return relayerIds.map(relayerId => {
+    const bucket = buckets.find(b => b.key === relayerId);
+    const activeTraders = _.get(
+      activeTraderStats.find(x => x.relayerId === relayerId),
+      'traderCount',
+      0,
+    );
+
+    return {
       fillCount: _.get(bucket, 'doc_count', 0),
       fillVolume: _.get(bucket, 'fillVolume.value', 0),
       tradeCount: _.get(bucket, 'tradeCount.value', 0),
       tradeVolume: _.get(bucket, 'tradeVolume.value', 0),
-      traderCount: _.get(bucket, 'traderCount.value', 0),
+      traderCount: activeTraders,
       relayerId,
     };
   });
@@ -136,9 +178,6 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
           aggs: {
             fillVolume: {
               sum: { field: 'value' },
-            },
-            traderCount: {
-              cardinality: { field: 'traders' },
             },
             tradeCount: {
               sum: {
@@ -179,14 +218,21 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
   const relayerCount = response.body.aggregations.relayerCount.value;
   const relayerBuckets = response.body.aggregations.relayers.buckets;
   const relayerIds = relayerBuckets.map(bucket => bucket.key);
-  const [relayers, previousStats] = await Promise.all([
+  const [relayers, previousStats, activeTraderStats] = await Promise.all([
     Relayer.find({ lookupId: { $in: relayerIds } }).lean(),
     getStatsForPreviousPeriod(relayerIds, dateFrom, dateTo),
+    getActiveTraderStats(relayerIds, dateFrom, dateTo),
   ]);
 
   const relayersWithStats = relayerBuckets.map(bucket => {
-    const relayer = relayers.find(r => r.lookupId === bucket.key);
+    const relayerId = bucket.key;
+    const relayer = relayers.find(r => r.lookupId === relayerId);
     const prev = previousStats.find(s => s.relayerId === bucket.key);
+    const activeTraders = _.get(
+      activeTraderStats.find(x => x.relayerId === relayerId),
+      'traderCount',
+      0,
+    );
 
     return {
       id: _.get(relayer, 'id', 'unknown'),
@@ -211,11 +257,8 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
           prev.tradeVolume,
           bucket.tradeVolume.value,
         ),
-        traderCount: bucket.traderCount.value,
-        traderCountChange: getPercentageChange(
-          prev.traderCount,
-          bucket.traderCount.value,
-        ),
+        traderCount: activeTraders,
+        traderCountChange: getPercentageChange(prev.traderCount, activeTraders),
       },
       url: _.get(relayer, 'url', null),
     };
