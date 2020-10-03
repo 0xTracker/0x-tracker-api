@@ -13,6 +13,9 @@ const transformFill = fill => {
   const assets = getAssetsForFill(fill);
   const fees = getFeesForFill(fill);
   const conversions = _.get(fill, `conversions.USD`);
+  const taker = _.get(fill, 'takerMetadata.isContract', false)
+    ? _.get(fill, 'transaction.from', fill.taker)
+    : fill.taker;
 
   const protocolFee =
     fill.protocolFee !== undefined
@@ -42,7 +45,7 @@ const transformFill = fill => {
     relayer: formatRelayer(fill.relayer),
     senderAddress: fill.senderAddress,
     status: formatFillStatus(fill.status),
-    takerAddress: fill.taker,
+    takerAddress: taker,
     transactionHash: fill.transactionHash,
     value: _.has(conversions, 'amount')
       ? {
