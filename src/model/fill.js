@@ -4,6 +4,8 @@ const { FILL_STATUS } = require('../constants');
 
 const { Schema } = mongoose;
 
+require('./transaction');
+
 const schema = Schema({
   affiliateAddress: String,
   assets: [
@@ -74,6 +76,20 @@ schema.virtual('affiliate', {
   ref: 'AddressMetadata',
   localField: 'affiliateAddress',
   foreignField: 'address',
+  justOne: true,
+});
+
+schema.virtual('takerMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'taker',
+  foreignField: 'address',
+  justOne: true,
+});
+
+schema.virtual('transaction', {
+  ref: 'Transaction',
+  localField: 'transactionHash',
+  foreignField: 'hash',
   justOne: true,
 });
 

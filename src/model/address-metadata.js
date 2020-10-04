@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const schema = mongoose.Schema({
   address: String,
   imageUrl: String,
+  isContract: Boolean,
   name: String,
 });
 

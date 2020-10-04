@@ -21,7 +21,8 @@ const searchFills = async (params, options) => {
     .populate([
       { path: 'relayer', select: 'imageUrl name slug' },
       { path: 'assets.token', select: 'decimals name symbol type imageUrl' },
-      { path: 'fees.token', select: 'decimals name symbol type' },
+      { path: 'transaction', select: 'from' },
+      { path: 'takerMetadata', select: 'isContract' },
     ])
     .sort({ date: -1 });
 

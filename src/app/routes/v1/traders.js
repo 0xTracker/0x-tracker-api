@@ -4,28 +4,9 @@ const Router = require('koa-router');
 const { TIME_PERIOD } = require('../../../constants');
 const AddressMetadata = require('../../../model/address-metadata');
 const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getTradersWith24HourStats = require('../../../traders/get-traders-with-24-hour-stats');
 const getTradersWithStatsForDates = require('../../../traders/get-traders-with-stats-for-dates');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const middleware = require('../../middleware');
-
-const parseBooleanString = value => {
-  if (value === 'true') {
-    return true;
-  }
-
-  if (value === 'false') {
-    return false;
-  }
-
-  return undefined;
-};
-
-const VALID_SORT_VALUES = [
-  'fillVolume.maker',
-  'fillVolume.taker',
-  'fillVolume.total',
-];
 
 const createRouter = () => {
   const router = new Router();
@@ -39,7 +20,7 @@ const createRouter = () => {
     }),
     middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
     async ({ pagination, params, request, response }, next) => {
-      const { excludeRelayers, sortBy, type } = request.query;
+      const { excludeRelayers, type } = request.query;
 
       if (type !== undefined && type !== 'maker' && type !== 'taker') {
         throw new InvalidParameterError(
@@ -59,32 +40,19 @@ const createRouter = () => {
         );
       }
 
-      if (sortBy !== undefined && !VALID_SORT_VALUES.includes(sortBy)) {
-        throw new InvalidParameterError(
-          `Must be one of: ${VALID_SORT_VALUES.join(', ')}`,
-          'Invalid query parameter: sortBy',
-        );
-      }
-
       const { limit, page } = pagination;
       const { statsPeriod } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
-      const { traders, resultCount } =
-        statsPeriod === TIME_PERIOD.DAY
-          ? await getTradersWith24HourStats({
-              excludeRelayers: parseBooleanString(excludeRelayers),
-              page,
-              limit,
-              sortBy,
-              type,
-            })
-          : await getTradersWithStatsForDates(dateFrom, dateTo, {
-              excludeRelayers,
-              page,
-              limit,
-              sortBy,
-              type,
-            });
+      const { traders, resultCount } = await getTradersWithStatsForDates(
+        dateFrom,
+        dateTo,
+        {
+          excludeRelayers,
+          page,
+          limit,
+          type,
+        },
+      );
 
       const addresses = traders.map(trader => trader.address);
 
