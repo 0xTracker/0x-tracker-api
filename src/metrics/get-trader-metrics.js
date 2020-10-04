@@ -1,17 +1,11 @@
-const _ = require('lodash');
-
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForMetrics = require('../util/get-dates-for-metrics');
 
-const aggregateMetrics = async (
-  type,
-  address,
-  dateFrom,
-  dateTo,
-  granularity,
-) => {
+const getTraderMetrics = async (address, period, granularity) => {
+  const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
+
   const results = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: 'trader_fills',
     body: {
       aggs: {
         metrics: {
@@ -24,14 +18,63 @@ const aggregateMetrics = async (
             },
           },
           aggs: {
+            maker: {
+              filter: {
+                range: {
+                  makerFillCount: {
+                    gt: 0,
+                  },
+                },
+              },
+              aggs: {
+                fillCount: {
+                  sum: { field: 'totalFillCount' },
+                },
+                fillVolume: {
+                  sum: { field: 'totalFillValue' },
+                },
+                tradeCount: {
+                  sum: { field: 'totalTradeCount' },
+                },
+                tradeVolume: {
+                  sum: { field: 'totalTradeValue' },
+                },
+              },
+            },
+            taker: {
+              filter: {
+                range: {
+                  takerFillCount: {
+                    gt: 0,
+                  },
+                },
+              },
+              aggs: {
+                fillCount: {
+                  sum: { field: 'totalFillCount' },
+                },
+                fillVolume: {
+                  sum: { field: 'totalFillValue' },
+                },
+                tradeCount: {
+                  sum: { field: 'totalTradeCount' },
+                },
+                tradeVolume: {
+                  sum: { field: 'totalTradeValue' },
+                },
+              },
+            },
+            fillCount: {
+              sum: { field: 'totalFillCount' },
+            },
             fillVolume: {
-              sum: { field: 'value' },
+              sum: { field: 'totalFillValue' },
             },
             tradeCount: {
-              sum: { field: 'tradeCountContribution' },
+              sum: { field: 'totalTradeCount' },
             },
             tradeVolume: {
-              sum: { field: 'tradeVolume' },
+              sum: { field: 'totalTradeValue' },
             },
           },
         },
@@ -50,7 +93,7 @@ const aggregateMetrics = async (
             },
             {
               term: {
-                [type]: address,
+                address,
               },
             },
           ],
@@ -59,61 +102,29 @@ const aggregateMetrics = async (
     },
   });
 
-  return results.body.aggregations.metrics.buckets.map(x => ({
-    date: new Date(x.key_as_string),
-    fillCount: x.doc_count,
-    fillVolume: x.fillVolume.value,
-    tradeCount: x.tradeCount.value,
-    tradeVolume: x.tradeVolume.value,
+  return results.body.aggregations.metrics.buckets.map(bucket => ({
+    date: new Date(bucket.key_as_string),
+    fillCount: {
+      maker: bucket.maker.fillCount.value,
+      taker: bucket.taker.fillCount.value,
+      total: bucket.fillCount.value,
+    },
+    fillVolume: {
+      maker: bucket.maker.fillVolume.value,
+      taker: bucket.taker.fillVolume.value,
+      total: bucket.fillVolume.value,
+    },
+    tradeCount: {
+      maker: bucket.maker.tradeCount.value,
+      taker: bucket.taker.tradeCount.value,
+      total: bucket.tradeCount.value,
+    },
+    tradeVolume: {
+      maker: bucket.maker.tradeVolume.value,
+      taker: bucket.taker.tradeVolume.value,
+      total: bucket.tradeVolume.value,
+    },
   }));
-};
-
-const reduceMetrics = (makerMetrics, takerMetrics) => {
-  const dates = _(makerMetrics)
-    .concat(takerMetrics)
-    .map(metric => metric.date.toString())
-    .uniq()
-    .value();
-
-  return dates.map(date => {
-    const takerMetric = takerMetrics.find(
-      metric => metric.date.toString() === date,
-    );
-
-    const makerMetric = makerMetrics.find(
-      metric => metric.date.toString() === date,
-    );
-
-    const getMetricValue = key => {
-      const makerValue = _.get(makerMetric, key, 0);
-      const takerValue = _.get(takerMetric, key, 0);
-
-      return {
-        maker: makerValue,
-        taker: takerValue,
-        total: makerValue + takerValue,
-      };
-    };
-
-    return {
-      date: new Date(date),
-      fillCount: getMetricValue('fillCount'),
-      fillVolume: getMetricValue('fillVolume'),
-      tradeCount: getMetricValue('tradeCount'),
-      tradeVolume: getMetricValue('tradeVolume'),
-    };
-  });
-};
-
-const getTraderMetrics = async (address, period, granularity) => {
-  const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
-
-  const [makerMetrics, takerMetrics] = await Promise.all([
-    aggregateMetrics('maker', address, dateFrom, dateTo, granularity),
-    aggregateMetrics('taker', address, dateFrom, dateTo, granularity),
-  ]);
-
-  return reduceMetrics(makerMetrics, takerMetrics);
 };
 
 module.exports = getTraderMetrics;

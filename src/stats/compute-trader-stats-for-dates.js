@@ -5,25 +5,44 @@ const elasticsearch = require('../util/elasticsearch');
 
 const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
   const response = await elasticsearch.getClient().search({
-    index: `fills`,
+    index: 'trader_fills',
     body: {
       aggs: {
-        makerCount: {
-          cardinality: {
-            field: 'maker',
-            precision_threshold: 10000,
-          },
-        },
-        takerCount: {
-          cardinality: {
-            field: 'taker',
-            precision_threshold: 10000,
-          },
-        },
         traderCount: {
           cardinality: {
-            field: 'traders',
-            precision_threshold: 10000,
+            field: 'address',
+          },
+        },
+        makers: {
+          filter: {
+            range: {
+              makerFillCount: {
+                gt: 0,
+              },
+            },
+          },
+          aggs: {
+            makerCount: {
+              cardinality: {
+                field: 'address',
+              },
+            },
+          },
+        },
+        takers: {
+          filter: {
+            range: {
+              takerFillCount: {
+                gt: 0,
+              },
+            },
+          },
+          aggs: {
+            takerCount: {
+              cardinality: {
+                field: 'address',
+              },
+            },
           },
         },
       },
@@ -33,11 +52,11 @@ const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
   });
 
   const { aggregations } = response.body;
-  const { makerCount, takerCount, traderCount } = aggregations;
+  const { makers, takers, traderCount } = aggregations;
 
   return {
-    makerCount: makerCount.value,
-    takerCount: takerCount.value,
+    makerCount: makers.makerCount.value,
+    takerCount: takers.takerCount.value,
     traderCount: traderCount.value,
   };
 };
