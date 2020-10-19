@@ -1,18 +1,21 @@
 const _ = require('lodash');
+const { FILL_ATTRIBUTION_TYPE } = require('../constants');
 
-const App = require('../model/app');
+const AttributionEntity = require('../model/attribution-entity');
 const elasticsearch = require('../util/elasticsearch');
 
-const getFilteredAppIds = async category => {
+const getFilteredAttributionEntityIds = async category => {
   if (category === undefined) {
     return undefined;
   }
 
-  const apps = await App.find({ categories: category })
+  const attributionEntities = await AttributionEntity.find({
+    categories: category,
+  })
     .select('_id')
     .lean();
 
-  return apps.map(app => app._id);
+  return attributionEntities.map(entity => entity._id);
 };
 
 const getAppsWithStatsForDates = async (dateFrom, dateTo, options) => {
@@ -22,64 +25,94 @@ const getAppsWithStatsForDates = async (dateFrom, dateTo, options) => {
     limit: 20,
   });
 
-  const filteredAppIds = await getFilteredAppIds(category);
+  const filteredAppIds = await getFilteredAttributionEntityIds(category);
 
   const response = await elasticsearch.getClient().search({
-    index: 'app_fill_attributions',
+    index: 'fills',
     body: {
       aggs: {
-        apps: {
-          terms: {
-            field: 'appId',
-            order: { totalVolume: 'desc' },
-            size: limit * page,
+        attributions: {
+          nested: {
+            path: 'attributions',
           },
           aggs: {
-            relayedTrades: {
-              sum: {
-                field: 'relayedTrades',
+            apps: {
+              filter: {
+                terms: {
+                  'attributions.type': [0, 1],
+                },
+              },
+              aggs: {
+                appCount: {
+                  cardinality: {
+                    field: 'attributions.id',
+                  },
+                },
+                by_app: {
+                  terms: {
+                    field: 'attributions.id',
+                    size: limit * page,
+                    order: {
+                      'totals>tradeVolume': 'desc',
+                    },
+                  },
+                  aggs: {
+                    totals: {
+                      reverse_nested: {},
+                      aggs: {
+                        tradeCount: {
+                          sum: {
+                            field: 'tradeCountContribution',
+                          },
+                        },
+                        traderCount: {
+                          cardinality: {
+                            field: 'traders',
+                          },
+                        },
+                        tradeVolume: {
+                          sum: {
+                            field: 'tradeVolume',
+                          },
+                        },
+                      },
+                    },
+                    by_type: {
+                      terms: {
+                        field: 'attributions.type',
+                        size: 10,
+                      },
+                      aggs: {
+                        attribution: {
+                          reverse_nested: {},
+                          aggs: {
+                            tradeCount: {
+                              sum: {
+                                field: 'tradeCountContribution',
+                              },
+                            },
+                            tradeVolume: {
+                              sum: {
+                                field: 'tradeVolume',
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                    bucket_truncate: {
+                      bucket_sort: {
+                        size: limit,
+                        from: (page - 1) * limit,
+                      },
+                    },
+                  },
+                },
               },
             },
-            relayedVolume: {
-              sum: {
-                field: 'relayedVolume',
-              },
-            },
-            sourcedTrades: {
-              sum: {
-                field: 'sourcedTrades',
-              },
-            },
-            sourcedVolume: {
-              sum: {
-                field: 'sourcedVolume',
-              },
-            },
-            totalTrades: {
-              sum: {
-                field: 'totalTrades',
-              },
-            },
-            totalVolume: {
-              sum: {
-                field: 'totalVolume',
-              },
-            },
-            bucket_truncate: {
-              bucket_sort: {
-                size: limit,
-                from: (page - 1) * limit,
-              },
-            },
-          },
-        },
-        appCount: {
-          cardinality: {
-            field: 'appId',
           },
         },
       },
-      size: 0,
       query: {
         bool: {
           filter: [
@@ -94,37 +127,66 @@ const getAppsWithStatsForDates = async (dateFrom, dateTo, options) => {
                 },
               },
             },
+            {
+              nested: {
+                path: 'attributions',
+                query: {
+                  terms: {
+                    'attributions.type': [0, 1],
+                  },
+                },
+              },
+            },
           ].filter(f => f !== undefined),
         },
       },
+      size: 0,
     },
   });
 
-  const appCount = response.body.aggregations.appCount.value;
-  const appBuckets = response.body.aggregations.apps.buckets;
-  const appIds = appBuckets.map(bucket => bucket.key);
-  const apps = await App.find({ _id: { $in: appIds } }).lean();
+  const { buckets } = response.body.aggregations.attributions.apps.by_app;
+  const appCount = response.body.aggregations.attributions.apps.appCount.value;
 
-  const appsWithStats = appBuckets.map(bucket => {
-    const appId = bucket.key;
-    const app = apps.find(r => r._id === appId);
+  const attributionEntityIds = buckets.map(bucket => bucket.key);
+  const attributionEntities = await AttributionEntity.find({
+    _id: { $in: attributionEntityIds },
+  }).lean();
+
+  const appsWithStats = buckets.map(bucket => {
+    const attributionEntityId = bucket.key;
+    const attributionEntity = attributionEntities.find(
+      r => r._id === attributionEntityId,
+    );
+
+    const getStatByType = (type, stat) => {
+      const typeBucket = bucket.by_type.buckets.find(b => b.key === type);
+
+      if (typeBucket === undefined) {
+        return 0;
+      }
+
+      return typeBucket.attribution[stat].value;
+    };
 
     return {
-      categories: app.categories,
-      description: _.get(app, 'description', null),
-      id: app.id,
-      logoUrl: _.get(app, 'logoUrl', null),
-      name: app.name,
+      categories: attributionEntity.categories,
+      description: _.get(attributionEntity, 'description', null),
+      id: attributionEntity.id,
+      logoUrl: _.get(attributionEntity, 'logoUrl', null),
+      name: attributionEntity.name,
       stats: {
-        relayedTrades: bucket.relayedTrades.value,
-        relayedVolume: bucket.relayedVolume.value,
-        sourcedTrades: bucket.sourcedTrades.value,
-        sourcedVolume: bucket.sourcedVolume.value,
-        totalVolume: bucket.totalVolume.value,
-        totalTrades: bucket.totalTrades.value,
+        activeTraders: bucket.totals.traderCount.value,
+        tradeCount: {
+          relayed: getStatByType(FILL_ATTRIBUTION_TYPE.RELAYER, 'tradeCount'),
+          total: bucket.totals.tradeCount.value,
+        },
+        tradeVolume: {
+          relayed: getStatByType(FILL_ATTRIBUTION_TYPE.RELAYER, 'tradeVolume'),
+          total: bucket.totals.tradeVolume.value,
+        },
       },
-      urlSlug: app.urlSlug,
-      websiteUrl: _.get(app, 'websiteUrl', null),
+      urlSlug: attributionEntity.urlSlug,
+      websiteUrl: _.get(attributionEntity, 'websiteUrl', null),
     };
   });
 
