@@ -1,20 +1,9 @@
 const _ = require('lodash');
-const moment = require('moment');
 
 const elasticsearch = require('../util/elasticsearch');
 const Relayer = require('../model/relayer');
-
-const getPreviousPeriod = (dateFrom, dateTo) => {
-  const diff = moment(dateTo).diff(dateFrom);
-  const prevDateTo = moment(dateFrom)
-    .subtract('millisecond', 1)
-    .toDate();
-  const prevDateFrom = moment(prevDateTo)
-    .subtract('millisecond', diff)
-    .toDate();
-
-  return { prevDateFrom, prevDateTo };
-};
+const getPreviousPeriod = require('../util/get-previous-period');
+const getPercentageChange = require('../util/get-percentage-change');
 
 const getQueryForRelayers = (relayerIds, dateFrom, dateTo) => ({
   bool: {
@@ -146,14 +135,6 @@ const getStatsForPreviousPeriod = async (relayerIds, dateFrom, dateTo) => {
       relayerId,
     };
   });
-};
-
-const getPercentageChange = (valueA, valueB) => {
-  if (valueA === 0) {
-    return null;
-  }
-
-  return ((valueB - valueA) / valueA) * 100;
 };
 
 const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {

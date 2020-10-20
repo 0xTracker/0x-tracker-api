@@ -1,7 +1,7 @@
-const moment = require('moment');
-
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
+const getPercentageChange = require('../util/get-percentage-change');
+const getPreviousPeriod = require('../util/get-previous-period');
 
 const getTraderCount = async (relayerId, dateFrom, dateTo) => {
   const res = await elasticsearch.getClient().search({
@@ -103,26 +103,6 @@ const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
     traderCount,
     tradeVolume: tradeVolume.value,
   };
-};
-
-const getPreviousPeriod = (dateFrom, dateTo) => {
-  const diff = moment(dateTo).diff(dateFrom);
-  const prevDateTo = moment(dateFrom)
-    .subtract('millisecond', 1)
-    .toDate();
-  const prevDateFrom = moment(prevDateTo)
-    .subtract('millisecond', diff)
-    .toDate();
-
-  return { prevDateFrom, prevDateTo };
-};
-
-const getPercentageChange = (valueA, valueB) => {
-  if (valueA === 0) {
-    return null;
-  }
-
-  return ((valueB - valueA) / valueA) * 100;
 };
 
 const getRelayerStatsForPeriod = async (relayerId, period) => {

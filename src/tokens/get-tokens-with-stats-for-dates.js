@@ -1,23 +1,12 @@
 const _ = require('lodash');
-const moment = require('moment');
 
 const { TOKEN_TYPE } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 const getCdnTokenImageUrl = require('./get-cdn-token-image-url');
+const getPercentageChange = require('../util/get-percentage-change');
+const getPreviousPeriod = require('../util/get-previous-period');
 const getTokenPrices = require('./get-token-prices');
 const Token = require('../model/token');
-
-const getPreviousPeriod = (dateFrom, dateTo) => {
-  const diff = moment(dateTo).diff(dateFrom);
-  const prevDateTo = moment(dateFrom)
-    .subtract('millisecond', 1)
-    .toDate();
-  const prevDateFrom = moment(prevDateTo)
-    .subtract('millisecond', diff)
-    .toDate();
-
-  return { prevDateFrom, prevDateTo };
-};
 
 const getStatsForPreviousPeriod = async (tokenAddresses, dateFrom, dateTo) => {
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
@@ -95,14 +84,6 @@ const getStatsForPreviousPeriod = async (tokenAddresses, dateFrom, dateTo) => {
       tokenAddress,
     };
   });
-};
-
-const getPercentageChange = (valueA, valueB) => {
-  if (valueA === 0) {
-    return null;
-  }
-
-  return ((valueB - valueA) / valueA) * 100;
 };
 
 const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
