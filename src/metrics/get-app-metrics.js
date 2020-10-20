@@ -13,7 +13,7 @@ const getAppMetrics = async (appId, period, granularity) => {
         by_date: {
           date_histogram: {
             field: 'date',
-            interval: granularity,
+            calendar_interval: granularity,
             extended_bounds: {
               min: dateFrom,
               max: dateTo,
