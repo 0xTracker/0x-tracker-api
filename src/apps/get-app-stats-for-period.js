@@ -11,6 +11,11 @@ const getStatsForDates = async (appId, dateFrom, dateTo) => {
     index: 'fills',
     body: {
       aggs: {
+        avgTradeSize: {
+          avg: {
+            field: 'tradeVolume',
+          },
+        },
         traderCount: {
           cardinality: {
             field: 'traders',
@@ -154,6 +159,7 @@ const getStatsForDates = async (appId, dateFrom, dateTo) => {
 
   return {
     activeTraders: res.body.aggregations.traderCount.value,
+    avgTradeSize: res.body.aggregations.avgTradeSize.value,
     tradeCount: {
       relayed: _.get(relayerStats, 'attribution.tradeCount.value', 0),
       total: res.body.aggregations.tradeCount.value,
@@ -176,9 +182,10 @@ const getRelayerStatsForPeriod = async (appId, period) => {
       : await getStatsForDates(appId, prevDateFrom, prevDateTo),
   ]);
 
-  const { activeTraders, tradeCount, tradeVolume } = stats;
+  const { activeTraders, avgTradeSize, tradeCount, tradeVolume } = stats;
 
   const prevActiveTraders = _.get(prevStats, 'activeTraders', null);
+  const prevAvgTradeSize = _.get(prevStats, 'avgTradeSize', null);
   const prevTradeCountRelayed = _.get(prevStats, 'tradeCount.relayed', null);
   const prevTradeCountTotal = _.get(prevStats, 'tradeCount.total', null);
   const prevTradeVolumeRelayed = _.get(prevStats, 'tradeVolume.relayed', null);
@@ -187,6 +194,8 @@ const getRelayerStatsForPeriod = async (appId, period) => {
   return {
     activeTraders,
     activeTradersChange: getPercentageChange(prevActiveTraders, activeTraders),
+    avgTradeSize,
+    avgTradeSizeChange: getPercentageChange(prevAvgTradeSize, avgTradeSize),
     tradeCount,
     tradeCountChange: {
       relayed: getPercentageChange(prevTradeCountRelayed, tradeCount.relayed),
