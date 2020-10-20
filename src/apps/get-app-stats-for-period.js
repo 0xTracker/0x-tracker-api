@@ -1,8 +1,10 @@
 const _ = require('lodash');
 
-const { FILL_ATTRIBUTION_TYPE } = require('../constants');
+const { FILL_ATTRIBUTION_TYPE, TIME_PERIOD } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
+const getPercentageChange = require('../util/get-percentage-change');
+const getPreviousPeriod = require('../util/get-previous-period');
 
 const getStatsForDates = async (appId, dateFrom, dateTo) => {
   const res = await elasticsearch.getClient().search({
@@ -165,9 +167,37 @@ const getStatsForDates = async (appId, dateFrom, dateTo) => {
 
 const getRelayerStatsForPeriod = async (appId, period) => {
   const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-  const stats = await getStatsForDates(appId, dateFrom, dateTo);
+  const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
 
-  return stats;
+  const [stats, prevStats] = await Promise.all([
+    getStatsForDates(appId, dateFrom, dateTo),
+    period === TIME_PERIOD.ALL
+      ? undefined
+      : await getStatsForDates(appId, prevDateFrom, prevDateTo),
+  ]);
+
+  const { activeTraders, tradeCount, tradeVolume } = stats;
+
+  const prevActiveTraders = _.get(prevStats, 'activeTraders', null);
+  const prevTradeCountRelayed = _.get(prevStats, 'tradeCount.relayed', null);
+  const prevTradeCountTotal = _.get(prevStats, 'tradeCount.total', null);
+  const prevTradeVolumeRelayed = _.get(prevStats, 'tradeVolume.relayed', null);
+  const prevTradeVolumeTotal = _.get(prevStats, 'tradeVolume.total', null);
+
+  return {
+    activeTraders,
+    activeTradersChange: getPercentageChange(prevActiveTraders, activeTraders),
+    tradeCount,
+    tradeCountChange: {
+      relayed: getPercentageChange(prevTradeCountRelayed, tradeCount.relayed),
+      total: getPercentageChange(prevTradeCountTotal, tradeCount.total),
+    },
+    tradeVolume: stats.tradeVolume,
+    tradeVolumeChange: {
+      relayed: getPercentageChange(prevTradeVolumeRelayed, tradeVolume.relayed),
+      total: getPercentageChange(prevTradeVolumeTotal, tradeVolume.total),
+    },
+  };
 };
 
 module.exports = getRelayerStatsForPeriod;
