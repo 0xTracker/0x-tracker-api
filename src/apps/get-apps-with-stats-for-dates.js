@@ -171,7 +171,7 @@ const getAppsWithStatsForDates = async (dateFrom, dateTo, options) => {
     return {
       categories: attributionEntity.categories,
       description: _.get(attributionEntity, 'description', null),
-      id: attributionEntity.id,
+      id: attributionEntity._id,
       logoUrl: _.get(attributionEntity, 'logoUrl', null),
       name: attributionEntity.name,
       stats: {

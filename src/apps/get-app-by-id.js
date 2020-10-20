@@ -1,11 +1,14 @@
 const { FILL_ATTRIBUTION_TYPE } = require('../constants');
 const AttributionEntity = require('../model/attribution-entity');
 
-const getAppBySlug = async slug => {
-  const attributionEntity = await AttributionEntity.findOne({
-    urlSlug: slug,
-  }).lean();
+const getAppById = async id => {
+  const attributionEntity = await AttributionEntity.findById(id).lean();
 
+  if (attributionEntity === null) {
+    return null;
+  }
+
+  // If the attribution entity is not an "app" then return null
   if (
     !attributionEntity.mappings.some(
       m =>
@@ -13,10 +16,10 @@ const getAppBySlug = async slug => {
         m.type === FILL_ATTRIBUTION_TYPE.RELAYER,
     )
   ) {
-    return undefined;
+    return null;
   }
 
   return attributionEntity;
 };
 
-module.exports = getAppBySlug;
+module.exports = getAppById;

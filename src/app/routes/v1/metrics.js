@@ -4,7 +4,7 @@ const Router = require('koa-router');
 const { TIME_PERIOD } = require('../../../constants');
 const checkTraderExists = require('../../../traders/check-trader-exists');
 const getActiveRelayerMetrics = require('../../../metrics/get-active-relayer-metrics');
-const getAppBySlug = require('../../../apps/get-app-by-slug');
+const getAppById = require('../../../apps/get-app-by-id');
 const getAppMetrics = require('../../../metrics/get-app-metrics');
 const getTradedTokenMetrics = require('../../../metrics/get-traded-token-metrics');
 const getActiveTraderMetrics = require('../../../metrics/get-active-trader-metrics');
@@ -283,13 +283,13 @@ const createRouter = () => {
       granularity: 'granularity',
     }),
     async ({ params, request, response }, next) => {
-      const appSlug = request.query.app;
+      const appId = request.query.app;
 
-      if (appSlug === undefined) {
+      if (appId === undefined) {
         throw new MissingParameterError('app');
       }
 
-      const app = await getAppBySlug(appSlug);
+      const app = await getAppById(appId);
 
       if (app === null) {
         throw new InvalidParameterError(
