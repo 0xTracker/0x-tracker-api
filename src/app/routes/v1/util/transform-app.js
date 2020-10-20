@@ -5,6 +5,7 @@ const transformApp = (app, stats) => {
     {
       categories: app.categories,
       description: _.get(app, 'description', null),
+      id: app._id,
       logoUrl: _.get(app, 'logoUrl', null),
       name: app.name,
       stats,
