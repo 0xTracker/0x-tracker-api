@@ -24,6 +24,10 @@ module.exports = {
     MAKER: 0,
     TAKER: 1,
   },
+  FILL_ATTRIBUTION_TYPE: {
+    RELAYER: 0,
+    CONSUMER: 1,
+  },
   FILL_STATUS: {
     FAILED: 2,
     PENDING: 0,

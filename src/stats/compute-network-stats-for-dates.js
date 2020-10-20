@@ -1,10 +1,11 @@
 const _ = require('lodash');
-const moment = require('moment');
 
 const { ETH_TOKEN_DECIMALS } = require('../constants');
 const buildFillsQuery = require('../fills/build-fills-query');
 const elasticsearch = require('../util/elasticsearch');
 const formatTokenAmount = require('../tokens/format-token-amount');
+const getPreviousPeriod = require('../util/get-previous-period');
+const getPercentageChange = require('../util/get-percentage-change');
 
 const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
   const results = await elasticsearch.getClient().search({
@@ -47,26 +48,6 @@ const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
     tradeCount: getValue('tradeCount'),
     tradeVolume: getValue('tradeVolume'),
   };
-};
-
-const getPreviousPeriod = (dateFrom, dateTo) => {
-  const diff = moment(dateTo).diff(dateFrom);
-  const prevDateTo = moment(dateFrom)
-    .subtract('millisecond', 1)
-    .toDate();
-  const prevDateFrom = moment(prevDateTo)
-    .subtract('millisecond', diff)
-    .toDate();
-
-  return { prevDateFrom, prevDateTo };
-};
-
-const getPercentageChange = (valueA, valueB) => {
-  if (valueA === 0) {
-    return null;
-  }
-
-  return ((valueB - valueA) / valueA) * 100;
 };
 
 const computeNetworkStatsForDates = async (dateFrom, dateTo, filters = {}) => {
