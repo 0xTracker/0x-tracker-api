@@ -389,6 +389,7 @@ const getAppsWithStatsForDates = async (dateFrom, dateTo, options) => {
           ),
           total: getPercentageChange(prevTradeCountTotal, tradeCount.total),
         },
+        tradeVolume,
         tradeVolumeChange: {
           relayed: getPercentageChange(
             prevTradeVolumeRelayed,
