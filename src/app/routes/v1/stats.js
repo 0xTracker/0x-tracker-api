@@ -20,10 +20,12 @@ const createRouter = () => {
     middleware.token('token'),
     middleware.fillStatus('status'),
     middleware.trader('trader'),
+    middleware.apps('apps'),
     async ({ params, response }, next) => {
       const { dateFrom, dateTo } = getDatesForTimePeriod(params.period);
 
       const stats = await computeNetworkStatsForDates(dateFrom, dateTo, {
+        apps: params.apps,
         protocolVersion: params.protocolVersion,
         relayerId: params.relayer,
         status: params.status,
@@ -53,6 +55,7 @@ const createRouter = () => {
       const { dateFrom, dateTo } = getDatesForTimePeriod(params.period);
 
       const stats = await computeTraderStatsForDates(dateFrom, dateTo, {
+        apps: params.apps,
         protocolVersion: params.protocolVersion,
         relayerId: params.relayer,
         status: params.status,

@@ -1,3 +1,4 @@
+const apps = require('./apps');
 const cacheControl = require('./cache-control');
 const cors = require('./cors');
 const enumMiddleware = require('./enum');
@@ -14,6 +15,7 @@ const token = require('./token');
 const trader = require('./trader');
 
 module.exports = {
+  apps,
   cacheControl,
   cors,
   enum: enumMiddleware,
