@@ -11,6 +11,7 @@ const _ = require('lodash');
 const buildFillsQuery = params => {
   const {
     address,
+    apps,
     bridgeAddress,
     bridged,
     dateFrom,
@@ -129,6 +130,23 @@ const buildFillsQuery = params => {
         },
       });
     }
+  }
+
+  if (Array.isArray(apps) && apps.length > 0) {
+    filters.push({
+      nested: {
+        path: 'attributions',
+        query: {
+          bool: {
+            filter: apps.map(appId => ({
+              term: {
+                'attributions.id': appId,
+              },
+            })),
+          },
+        },
+      },
+    });
   }
 
   return filters.length === 0 && exclusions.length === 0

@@ -63,11 +63,13 @@ const createRouter = () => {
     middleware.token('token'),
     middleware.fillStatus('status'),
     middleware.trader('trader'),
+    middleware.apps('apps'),
     async ({ pagination, params, request, response }, next) => {
       const { query } = request;
       const { limit, page } = pagination;
 
       const {
+        apps,
         protocolVersion,
         relayer,
         status,
@@ -111,6 +113,7 @@ const createRouter = () => {
         searchFills(
           {
             address,
+            apps,
             bridgeAddress,
             bridged,
             dateFrom,

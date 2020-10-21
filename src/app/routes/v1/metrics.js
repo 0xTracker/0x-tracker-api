@@ -38,8 +38,10 @@ const createRouter = () => {
     middleware.token('token'),
     middleware.fillStatus('status'),
     middleware.trader('trader'),
+    middleware.apps('apps'),
     async ({ params, response }, next) => {
       const {
+        apps,
         granularity,
         period,
         protocolVersion,
@@ -52,6 +54,7 @@ const createRouter = () => {
       } = params;
 
       const metrics = await getNetworkMetrics(period, granularity, {
+        apps,
         protocolVersion,
         relayerId: relayer,
         status,
