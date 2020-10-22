@@ -5,44 +5,22 @@ const getPreviousPeriod = require('../util/get-previous-period');
 
 const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
   const response = await elasticsearch.getClient().search({
-    index: 'trader_fills',
+    index: 'fills',
     body: {
       aggs: {
         traderCount: {
           cardinality: {
-            field: 'address',
+            field: 'traders',
           },
         },
-        makers: {
-          filter: {
-            range: {
-              makerFillCount: {
-                gt: 0,
-              },
-            },
-          },
-          aggs: {
-            makerCount: {
-              cardinality: {
-                field: 'address',
-              },
-            },
+        makerCount: {
+          cardinality: {
+            field: 'maker',
           },
         },
-        takers: {
-          filter: {
-            range: {
-              takerFillCount: {
-                gt: 0,
-              },
-            },
-          },
-          aggs: {
-            takerCount: {
-              cardinality: {
-                field: 'address',
-              },
-            },
+        takerCount: {
+          cardinality: {
+            field: 'taker',
           },
         },
       },
@@ -52,11 +30,11 @@ const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
   });
 
   const { aggregations } = response.body;
-  const { makers, takers, traderCount } = aggregations;
+  const { makerCount, takerCount, traderCount } = aggregations;
 
   return {
-    makerCount: makers.makerCount.value,
-    takerCount: takers.takerCount.value,
+    makerCount: makerCount.value,
+    takerCount: takerCount.value,
     traderCount: traderCount.value,
   };
 };
