@@ -51,6 +51,7 @@ const createRouter = () => {
     middleware.token('token'),
     middleware.fillStatus('status'),
     middleware.trader('trader'),
+    middleware.apps('apps'),
     async ({ params, response }, next) => {
       const { dateFrom, dateTo } = getDatesForTimePeriod(params.period);
 
