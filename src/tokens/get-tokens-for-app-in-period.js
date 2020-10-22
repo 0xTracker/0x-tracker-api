@@ -5,14 +5,6 @@ const getCdnTokenImageUrl = require('./get-cdn-token-image-url');
 const getDatesForPeriod = require('../util/get-dates-for-time-period');
 const Token = require('../model/token');
 
-const getElasticsearchOrderByKey = sortBy => {
-  if (sortBy === 'fillCount') {
-    return '_count';
-  }
-
-  return sortBy;
-};
-
 const getTokensForAppInPeriod = async (appId, period, options) => {
   const { limit, page, sortBy } = options;
   const { dateFrom, dateTo } = getDatesForPeriod(period);
@@ -50,21 +42,10 @@ const getTokensForAppInPeriod = async (appId, period, options) => {
         stats_by_token: {
           terms: {
             field: 'tokenAddress',
-            missing: -1,
             size: limit * page,
-            order: { [getElasticsearchOrderByKey(sortBy)]: 'desc' },
+            order: { [sortBy]: 'desc' },
           },
           aggs: {
-            fillVolume: {
-              sum: {
-                field: 'filledAmount',
-              },
-            },
-            fillVolumeUSD: {
-              sum: {
-                field: 'filledAmountUSD',
-              },
-            },
             tradeCount: {
               sum: {
                 field: 'tradeCountContribution',
