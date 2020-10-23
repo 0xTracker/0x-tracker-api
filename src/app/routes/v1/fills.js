@@ -151,12 +151,12 @@ const createRouter = () => {
     const fill = mongoose.Types.ObjectId.isValid(fillId)
       ? await Fill.findById(fillId, undefined, {
           populate: [
-            { path: 'relayer', select: 'imageUrl name slug' },
             { path: 'assets.token', select: 'decimals name symbol type' },
             { path: 'fees.token', select: 'decimals name symbol type' },
             { path: 'affiliate', select: 'name imageUrl' },
             { path: 'takerMetadata', select: 'isContract' },
             { path: 'transaction', select: 'from' },
+            { path: 'attributions.entity', select: 'id logoUrl name urlSlug' },
           ],
         })
       : null;

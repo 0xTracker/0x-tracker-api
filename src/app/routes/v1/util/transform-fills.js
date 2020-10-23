@@ -41,13 +41,20 @@ const transformFill = fill => {
       : undefined;
 
   return {
-    apps: fill.attributions.map(a => ({
-      id: a.entity.id,
-      logoUrl: a.entity.logoUrl,
-      name: a.entity.name,
-      type: formatFillAttributionType(a.type),
-      urlSlug: a.entity.urlSlug,
-    })),
+    apps: fill.attributions
+      .filter(a =>
+        [
+          FILL_ATTRIBUTION_TYPE.CONSUMER,
+          FILL_ATTRIBUTION_TYPE.RELAYER,
+        ].includes(a.type),
+      )
+      .map(a => ({
+        id: a.entity.id,
+        logoUrl: a.entity.logoUrl,
+        name: a.entity.name,
+        type: formatFillAttributionType(a.type),
+        urlSlug: a.entity.urlSlug,
+      })),
     assets,
     date: fill.date,
     feeRecipient: fill.feeRecipient,

@@ -1,13 +1,30 @@
 const _ = require('lodash');
 
-const { ETH_TOKEN_DECIMALS } = require('../../../../constants');
+const {
+  ETH_TOKEN_DECIMALS,
+  FILL_ATTRIBUTION_TYPE,
+} = require('../../../../constants');
+const formatFillAttributionType = require('../../../../fills/format-fill-attribution-type');
 const formatFillStatus = require('../../../../fills/format-fill-status');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
 const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
 const getFeesForFill = require('../../../../fills/get-fees-for-fill');
 
-const formatRelayer = relayer =>
-  relayer === null ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
+const getRelayer = fill => {
+  const relayerAttribution = fill.attributions.find(
+    a => a.type === FILL_ATTRIBUTION_TYPE.RELAYER,
+  );
+
+  if (relayerAttribution === undefined) {
+    return null;
+  }
+
+  return {
+    imageUrl: relayerAttribution.entity.logoUrl,
+    name: relayerAttribution.entity.name,
+    slug: relayerAttribution.entity.urlSlug,
+  };
+};
 
 const transformFill = fill => {
   const assets = getAssetsForFill(fill);
@@ -33,6 +50,20 @@ const transformFill = fill => {
           imageUrl: _.get(fill, 'affiliate.imageUrl', null),
           name: _.get(fill, 'affiliate.name', null),
         },
+    apps: fill.attributions
+      .filter(a =>
+        [
+          FILL_ATTRIBUTION_TYPE.CONSUMER,
+          FILL_ATTRIBUTION_TYPE.RELAYER,
+        ].includes(a.type),
+      )
+      .map(attribution => ({
+        id: attribution.entityId,
+        logoUrl: attribution.entity.logoUrl,
+        name: attribution.entity.name,
+        type: formatFillAttributionType(attribution.type),
+        urlSlug: attribution.entity.urlSlug,
+      })),
     assets,
     date: fill.date,
     fees,
@@ -42,7 +73,7 @@ const transformFill = fill => {
     orderHash: fill.orderHash,
     protocolFee,
     protocolVersion: fill.protocolVersion,
-    relayer: formatRelayer(fill.relayer),
+    relayer: getRelayer(fill),
     senderAddress: fill.senderAddress,
     status: formatFillStatus(fill.status),
     takerAddress: taker,

@@ -19,7 +19,6 @@ const searchFills = async (params, options) => {
   const fillIds = results.body.hits.hits.map(hit => hit._id);
   const fills = await Fill.find({ _id: { $in: fillIds } })
     .populate([
-      { path: 'relayer', select: 'imageUrl name slug' },
       { path: 'assets.token', select: 'decimals name symbol type imageUrl' },
       { path: 'transaction', select: 'from' },
       { path: 'takerMetadata', select: 'isContract' },
