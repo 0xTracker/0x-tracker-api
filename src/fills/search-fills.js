@@ -23,6 +23,7 @@ const searchFills = async (params, options) => {
       { path: 'assets.token', select: 'decimals name symbol type imageUrl' },
       { path: 'transaction', select: 'from' },
       { path: 'takerMetadata', select: 'isContract' },
+      { path: 'attributions.entity', select: 'logoUrl name urlSlug' },
     ])
     .sort({ date: -1 });
 
