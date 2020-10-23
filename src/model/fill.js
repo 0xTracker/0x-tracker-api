@@ -4,6 +4,7 @@ const { FILL_STATUS } = require('../constants');
 
 const { Schema } = mongoose;
 
+require('./attribution-entity');
 require('./transaction');
 
 const schema = Schema({
@@ -18,6 +19,14 @@ const schema = Schema({
       },
       tokenAddress: String,
       tokenId: Number,
+    },
+  ],
+  attributions: [
+    {
+      entityId: String,
+      type: {
+        type: Number,
+      },
     },
   ],
   conversions: {
@@ -90,6 +99,13 @@ schema.virtual('transaction', {
   ref: 'Transaction',
   localField: 'transactionHash',
   foreignField: 'hash',
+  justOne: true,
+});
+
+schema.virtual('attributions.entity', {
+  ref: 'AttributionEntity',
+  localField: 'attributions.entityId',
+  foreignField: '_id',
   justOne: true,
 });
 

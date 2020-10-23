@@ -1,12 +1,29 @@
 const _ = require('lodash');
 
-const { ETH_TOKEN_DECIMALS } = require('../../../../constants');
+const {
+  ETH_TOKEN_DECIMALS,
+  FILL_ATTRIBUTION_TYPE,
+} = require('../../../../constants');
+const formatFillAttributionType = require('../../../../fills/format-fill-attribution-type');
 const formatFillStatus = require('../../../../fills/format-fill-status');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
 const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
 
-const transformRelayer = relayer =>
-  relayer === null ? null : _.pick(relayer, 'slug', 'name', 'imageUrl');
+const getRelayer = fill => {
+  const relayerAttribution = fill.attributions.find(
+    a => a.type === FILL_ATTRIBUTION_TYPE.RELAYER,
+  );
+
+  if (relayerAttribution === undefined) {
+    return null;
+  }
+
+  return {
+    imageUrl: relayerAttribution.entity.logoUrl,
+    name: relayerAttribution.entity.name,
+    slug: relayerAttribution.entity.urlSlug,
+  };
+};
 
 const transformFill = fill => {
   const assets = getAssetsForFill(fill);
@@ -24,6 +41,20 @@ const transformFill = fill => {
       : undefined;
 
   return {
+    apps: fill.attributions
+      .filter(a =>
+        [
+          FILL_ATTRIBUTION_TYPE.CONSUMER,
+          FILL_ATTRIBUTION_TYPE.RELAYER,
+        ].includes(a.type),
+      )
+      .map(a => ({
+        id: a.entity.id,
+        logoUrl: a.entity.logoUrl,
+        name: a.entity.name,
+        type: formatFillAttributionType(a.type),
+        urlSlug: a.entity.urlSlug,
+      })),
     assets,
     date: fill.date,
     feeRecipient: fill.feeRecipient,
@@ -31,7 +62,7 @@ const transformFill = fill => {
     makerAddress: fill.maker,
     protocolFee,
     protocolVersion: fill.protocolVersion,
-    relayer: transformRelayer(fill.relayer),
+    relayer: getRelayer(fill),
     status: formatFillStatus(fill.status),
     takerAddress: taker,
     value: _.has(conversions, 'amount')
