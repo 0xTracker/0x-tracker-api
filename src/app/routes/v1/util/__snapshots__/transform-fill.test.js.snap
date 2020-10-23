@@ -39,6 +39,7 @@ Object {
 exports[`transformFill should transform V1 fill 1`] = `
 Object {
   "affiliate": null,
+  "apps": Array [],
   "assets": Array [
     Object {
       "amount": "7.1373405",
@@ -108,11 +109,7 @@ Object {
   "orderHash": "0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5",
   "protocolFee": undefined,
   "protocolVersion": 1,
-  "relayer": Object {
-    "imageUrl": "https://resources.0xtracker.com/logos/ethfinex.png",
-    "name": "Ethfinex",
-    "slug": "ethfinex",
-  },
+  "relayer": null,
   "senderAddress": undefined,
   "status": "successful",
   "takerAddress": "0xe269e891a2ec8585a378882ffa531141205e92e9",
@@ -162,6 +159,7 @@ Object {
 exports[`transformFill should transform V2 fill 1`] = `
 Object {
   "affiliate": null,
+  "apps": Array [],
   "assets": Array [
     Object {
       "amount": "1",
@@ -231,11 +229,7 @@ Object {
   "orderHash": "0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5",
   "protocolFee": undefined,
   "protocolVersion": 2,
-  "relayer": Object {
-    "imageUrl": "https://resources.0xtracker.com/logos/ethfinex.png",
-    "name": "Ethfinex",
-    "slug": "ethfinex",
-  },
+  "relayer": null,
   "senderAddress": undefined,
   "status": "successful",
   "takerAddress": "0xe269e891a2ec8585a378882ffa531141205e92e9",

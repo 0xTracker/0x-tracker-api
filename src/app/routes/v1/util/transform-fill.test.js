@@ -4,7 +4,6 @@ const { BigNumber } = require('@0xproject/utils');
 const { FILL_ACTOR } = require('../../../../constants');
 const AXIE_FIXTURE = require('../../../../fixtures/tokens/axie');
 const BRAHMA_FIXTURE = require('../../../../fixtures/tokens/brahma');
-const ETHFINEX_FIXTURE = require('../../../../fixtures/relayers/ethfinex');
 const WETH_FIXTURE = require('../../../../fixtures/tokens/weth');
 
 const transformFill = require('./transform-fill');
@@ -50,6 +49,7 @@ const wethMaker = {
 
 const simpleFill = {
   assets: [axieMaker, wethTaker],
+  attributions: [],
   id: '5b9107e00d05f400042e3494',
   conversions: {
     USD: {
@@ -66,8 +66,6 @@ const simpleFill = {
   orderHash:
     '0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5',
   protocolVersion: 2,
-  relayerId: 21,
-  relayer: ETHFINEX_FIXTURE,
   status: 1,
   taker: '0xe269e891a2ec8585a378882ffa531141205e92e9',
   takerFee: 5000000000000000000,
