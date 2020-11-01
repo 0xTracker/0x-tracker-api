@@ -64,6 +64,8 @@ const createRouter = () => {
     middleware.fillStatus('status'),
     middleware.trader('trader'),
     middleware.apps('apps'),
+    middleware.enum('sortBy', ['date', 'value'], 'date'),
+    middleware.enum('sortDirection', ['asc', 'desc'], 'asc'),
     async ({ pagination, params, request, response }, next) => {
       const { query } = request;
       const { limit, page } = pagination;
@@ -72,6 +74,8 @@ const createRouter = () => {
         apps,
         protocolVersion,
         relayer,
+        sortBy,
+        sortDirection,
         status,
         token,
         trader,
@@ -127,7 +131,7 @@ const createRouter = () => {
             valueFrom,
             valueTo,
           },
-          { limit, page },
+          { limit, page, sortBy, sortDirection },
         ),
         searchTerm !== undefined
           ? logSearch(searchTerm, new Date())

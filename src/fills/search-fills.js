@@ -10,24 +10,22 @@ const searchFills = async (params, options) => {
       from: (options.page - 1) * options.limit,
       query: buildFillsQuery(params),
       size: options.limit,
-      sort: [{ date: 'desc' }],
+      sort: [{ [options.sortBy]: options.sortDirection }],
       track_total_hits: true,
     },
   });
 
   const resultCount = results.body.hits.total.value;
   const fillIds = results.body.hits.hits.map(hit => hit._id);
-  const fills = await Fill.find({ _id: { $in: fillIds } })
-    .populate([
-      { path: 'assets.token', select: 'decimals name symbol type imageUrl' },
-      { path: 'transaction', select: 'from' },
-      { path: 'takerMetadata', select: 'isContract' },
-      { path: 'attributions.entity', select: 'logoUrl name urlSlug' },
-    ])
-    .sort({ date: -1 });
+  const fills = await Fill.find({ _id: { $in: fillIds } }).populate([
+    { path: 'assets.token', select: 'decimals name symbol type imageUrl' },
+    { path: 'transaction', select: 'from' },
+    { path: 'takerMetadata', select: 'isContract' },
+    { path: 'attributions.entity', select: 'logoUrl name urlSlug' },
+  ]);
 
   return {
-    docs: fills,
+    docs: fillIds.map(fillId => fills.find(fill => fill.id === fillId)),
     pages: Math.ceil(resultCount / options.limit),
     total: resultCount,
   };
