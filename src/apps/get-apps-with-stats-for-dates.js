@@ -42,7 +42,7 @@ const getPreviousStats = async (appIds, dateFrom, dateTo) => {
                             field: 'tradeCountContribution',
                           },
                         },
-                        traderCount: {
+                        activeTraders: {
                           cardinality: {
                             field: 'traders',
                           },
@@ -134,7 +134,7 @@ const getPreviousStats = async (appIds, dateFrom, dateTo) => {
       };
 
       return {
-        activeTraders: bucket.totals.traderCount.value,
+        activeTraders: bucket.totals.activeTraders.value,
         appId,
         tradeCount: {
           relayed: getStatByType(FILL_ATTRIBUTION_TYPE.RELAYER, 'tradeCount'),
@@ -173,7 +173,7 @@ const getAppsByIds = async appIds => {
 
 const getStatsForDates = async (dateFrom, dateTo, options) => {
   const { category } = options;
-  const { page, limit } = _.defaults({}, options, {
+  const { page, limit, sortBy, sortDirection } = _.defaults({}, options, {
     page: 1,
     limit: 20,
   });
@@ -215,7 +215,7 @@ const getStatsForDates = async (dateFrom, dateTo, options) => {
                     field: 'attributions.id',
                     size: limit * page,
                     order: {
-                      'totals>tradeVolume': 'desc',
+                      [`totals>${sortBy}`]: sortDirection,
                     },
                   },
                   aggs: {
@@ -227,7 +227,7 @@ const getStatsForDates = async (dateFrom, dateTo, options) => {
                             field: 'tradeCountContribution',
                           },
                         },
-                        traderCount: {
+                        activeTraders: {
                           cardinality: {
                             field: 'traders',
                           },
@@ -330,7 +330,7 @@ const getStatsForDates = async (dateFrom, dateTo, options) => {
     };
 
     return {
-      activeTraders: bucket.totals.traderCount.value,
+      activeTraders: bucket.totals.activeTraders.value,
       appId,
       tradeCount: {
         relayed: getStatByType(FILL_ATTRIBUTION_TYPE.RELAYER, 'tradeCount'),

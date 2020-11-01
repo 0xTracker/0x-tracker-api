@@ -17,10 +17,16 @@ const createRouter = () => {
       maxPage: Infinity,
     }),
     middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    middleware.enum(
+      'sortBy',
+      ['activeTraders', 'tradeCount', 'tradeVolume'],
+      'tradeVolume',
+    ),
+    middleware.enum('sortDirection', ['asc', 'desc'], 'desc'),
     async ({ pagination, params, request, response }, next) => {
       const { category } = request.query;
       const { limit, page } = pagination;
-      const { statsPeriod } = params;
+      const { sortBy, sortDirection, statsPeriod } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
       const { apps, resultCount } = await getAppsWithStatsForDates(
         dateFrom,
@@ -29,6 +35,8 @@ const createRouter = () => {
           category: _.isEmpty(category) ? undefined : category,
           page,
           limit,
+          sortBy,
+          sortDirection,
         },
       );
 
