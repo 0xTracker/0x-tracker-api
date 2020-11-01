@@ -65,7 +65,7 @@ const createRouter = () => {
     middleware.trader('trader'),
     middleware.apps('apps'),
     middleware.enum('sortBy', ['date', 'value'], 'date'),
-    middleware.enum('sortDirection', ['asc', 'desc'], 'asc'),
+    middleware.enum('sortDirection', ['asc', 'desc'], 'desc'),
     async ({ pagination, params, request, response }, next) => {
       const { query } = request;
       const { limit, page } = pagination;
