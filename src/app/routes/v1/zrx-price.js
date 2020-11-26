@@ -8,13 +8,13 @@ const createRouter = () => {
   const router = new Router({ prefix: '/zrx-price' });
 
   router.get('/', async ({ response, request }, next) => {
-    const currency = request.query.currency || 'USD';
+    const currency = _.toLower(request.query.currency || 'USD');
 
     let data;
 
     try {
       const apiResponse = await axios.get(
-        `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ZRX&tsyms=${currency}&tryConversion=true`,
+        `https://api.coingecko.com/api/v3/simple/price?ids=0x&vs_currencies=${currency}&include_24hr_change=true`,
       );
       data = apiResponse.data;
     } catch (error) {
@@ -23,8 +23,8 @@ const createRouter = () => {
       throw error;
     }
 
-    const price = _.get(data, `RAW.ZRX.${currency}.PRICE`);
-    const priceChange = _.get(data, `RAW.ZRX.${currency}.CHANGEPCT24HOUR`);
+    const price = _.get(data, `0x.${currency}`);
+    const priceChange = _.get(data, `0x.${currency}_24h_change`);
 
     if (!_.isNumber(price) || !_.isNumber(priceChange)) {
       logError('Invalid ZRX price response', { responseData: data });
