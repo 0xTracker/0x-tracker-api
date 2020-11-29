@@ -11,7 +11,7 @@ const getRates = async () => {
   const stale =
     lastRates === undefined ||
     moment(lastUpdated)
-      .add('1', 'minutes')
+      .add('1', 'hour')
       .toDate() < new Date();
 
   if (!stale) {
@@ -20,7 +20,7 @@ const getRates = async () => {
 
   const logger = getLogger('rates');
   const { data } = await axios.get(
-    'https://min-api.cryptocompare.com/data/pricemulti?fsyms=USD&tsyms=AUD,BTC,GBP,CNY,ETH,EUR,JPY,KRW,USD',
+    `https://min-api.cryptocompare.com/data/pricemulti?fsyms=USD&tsyms=AUD,BTC,GBP,CNY,ETH,EUR,JPY,KRW,USD&api_key=${process.env.CRYPTOCOMPARE_API_KEY}`,
   );
 
   lastUpdated = new Date();
