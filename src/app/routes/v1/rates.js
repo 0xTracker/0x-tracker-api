@@ -1,21 +1,17 @@
 const axios = require('axios');
-const moment = require('moment');
+const memoryCache = require('memory-cache');
+const ms = require('ms');
 const Router = require('koa-router');
 
 const { getLogger } = require('../../../util/logging');
 
-let lastRates;
-let lastUpdated;
+const CACHE_KEY = 'rates';
 
 const getRates = async () => {
-  const stale =
-    lastRates === undefined ||
-    moment(lastUpdated)
-      .add('1', 'hour')
-      .toDate() < new Date();
+  const cached = memoryCache.get(CACHE_KEY);
 
-  if (!stale) {
-    return lastRates;
+  if (cached !== null) {
+    return cached;
   }
 
   const logger = getLogger('rates');
@@ -23,12 +19,12 @@ const getRates = async () => {
     `https://min-api.cryptocompare.com/data/pricemulti?fsyms=USD&tsyms=AUD,BTC,GBP,CNY,ETH,EUR,JPY,KRW,USD&api_key=${process.env.CRYPTOCOMPARE_API_KEY}`,
   );
 
-  lastUpdated = new Date();
-  lastRates = data;
+  const dataWithLastUpdated = { ...data, lastUpdated: new Date() };
 
+  memoryCache.put(CACHE_KEY, dataWithLastUpdated, ms('1 hour'));
   logger.info('refreshed rates');
 
-  return lastRates;
+  return dataWithLastUpdated;
 };
 
 const createRouter = () => {
