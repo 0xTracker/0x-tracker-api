@@ -95,6 +95,7 @@ const buildFillsQuery = params => {
     filters.push({
       multi_match: {
         fields: [
+          'affiliateAddress',
           'feeRecipient',
           'maker',
           'orderHash',
