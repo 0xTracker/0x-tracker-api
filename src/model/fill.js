@@ -88,6 +88,13 @@ schema.virtual('affiliate', {
   justOne: true,
 });
 
+schema.virtual('makerMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'maker',
+  foreignField: 'address',
+  justOne: true,
+});
+
 schema.virtual('takerMetadata', {
   ref: 'AddressMetadata',
   localField: 'taker',
@@ -106,6 +113,13 @@ schema.virtual('attributions.entity', {
   ref: 'AttributionEntity',
   localField: 'attributions.entityId',
   foreignField: '_id',
+  justOne: true,
+});
+
+schema.virtual('senderMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'senderAddress',
+  foreignField: 'address',
   justOne: true,
 });
 
