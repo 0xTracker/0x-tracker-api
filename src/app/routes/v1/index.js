@@ -11,7 +11,6 @@ const createFillsRouter = require('./fills');
 const createMetricsRouter = require('./metrics');
 const createProtocolsRouter = require('./protocols');
 const createRatesRouter = require('./rates');
-const createRelayerLookupRouter = require('./relayer-lookup');
 const createRelayerRouter = require('./relayer');
 const createRelayersRouter = require('./relayers');
 const createStatsRouter = require('./stats');
@@ -37,7 +36,6 @@ const createRouter = () => {
     createMetricsRouter().routes(),
     createProtocolsRouter().routes(),
     createRatesRouter().routes(),
-    createRelayerLookupRouter().routes(),
     createRelayerRouter().routes(),
     createRelayersRouter().routes(),
     createStatsRouter().routes(),

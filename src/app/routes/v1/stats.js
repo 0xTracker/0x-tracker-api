@@ -16,7 +16,6 @@ const createRouter = () => {
     middleware.number('protocolVersion'),
     middleware.number('valueFrom'),
     middleware.number('valueTo'),
-    middleware.relayer('relayer'),
     middleware.token('token'),
     middleware.fillStatus('status'),
     middleware.trader('trader'),
@@ -27,7 +26,6 @@ const createRouter = () => {
       const stats = await computeNetworkStatsForDates(dateFrom, dateTo, {
         apps: params.apps,
         protocolVersion: params.protocolVersion,
-        relayerId: params.relayer,
         status: params.status,
         token: params.token,
         trader: params.trader,
@@ -47,7 +45,6 @@ const createRouter = () => {
     middleware.number('protocolVersion'),
     middleware.number('valueFrom'),
     middleware.number('valueTo'),
-    middleware.relayer('relayer'),
     middleware.token('token'),
     middleware.fillStatus('status'),
     middleware.trader('trader'),
@@ -58,7 +55,6 @@ const createRouter = () => {
       const stats = await computeTraderStatsForDates(dateFrom, dateTo, {
         apps: params.apps,
         protocolVersion: params.protocolVersion,
-        relayerId: params.relayer,
         status: params.status,
         token: params.token,
         trader: params.trader,

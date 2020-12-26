@@ -3,7 +3,6 @@ const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
 const checkTraderExists = require('../../../traders/check-trader-exists');
-const getActiveRelayerMetrics = require('../../../metrics/get-active-relayer-metrics');
 const getAppById = require('../../../apps/get-app-by-id');
 const getAppMetrics = require('../../../metrics/get-app-metrics');
 const getTradedTokenMetrics = require('../../../metrics/get-traded-token-metrics');
@@ -237,23 +236,6 @@ const createRouter = () => {
     async ({ params, response }, next) => {
       const { granularity, period } = params;
       const metrics = await getAssetBridgingMetrics(period, granularity);
-
-      response.body = metrics;
-
-      await next();
-    },
-  );
-
-  router.get(
-    '/active-relayer',
-    middleware.timePeriod('period', TIME_PERIOD.MONTH),
-    middleware.metricGranularity({
-      period: 'period',
-      granularity: 'granularity',
-    }),
-    async ({ params, response }, next) => {
-      const { granularity, period } = params;
-      const metrics = await getActiveRelayerMetrics(period, granularity);
 
       response.body = metrics;
 
