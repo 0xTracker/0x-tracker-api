@@ -186,13 +186,11 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
         type,
       } = token;
 
-      const supply = _.isNil(circulatingSupply)
-        ? totalSupply
-        : circulatingSupply;
-
       const closePrice = _.get(price, 'priceUSD', null);
       const marketCap =
-        supply === null || closePrice === null ? null : supply * closePrice;
+        totalSupply === null || closePrice === null
+          ? null
+          : totalSupply * closePrice;
 
       return {
         address,
