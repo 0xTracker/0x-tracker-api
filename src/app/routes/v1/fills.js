@@ -160,11 +160,22 @@ const createRouter = () => {
               select: 'decimals imageUrl name symbol type',
             },
             { path: 'fees.token', select: 'decimals name symbol type' },
-            { path: 'affiliate', select: 'name imageUrl' },
+            { path: 'affiliate', select: 'name imageUrl isContract' },
             { path: 'makerMetadata', select: 'name imageUrl isContract' },
             { path: 'takerMetadata', select: 'name imageUrl isContract' },
             { path: 'senderMetadata', select: 'name imageUrl isContract' },
-            { path: 'transaction', select: 'from' },
+            {
+              path: 'feeRecipientMetadata',
+              select: 'name imageUrl isContract',
+            },
+            {
+              path: 'transaction',
+              populate: [
+                { path: 'toMetadata', select: 'name imageUrl isContract' },
+                { path: 'fromMetadata', select: 'name imageUrl isContract' },
+              ],
+              select: 'from to',
+            },
             { path: 'attributions.entity', select: 'id logoUrl name urlSlug' },
           ],
         })

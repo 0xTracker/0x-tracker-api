@@ -123,6 +123,13 @@ schema.virtual('senderMetadata', {
   justOne: true,
 });
 
+schema.virtual('feeRecipientMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'feeRecipient',
+  foreignField: 'address',
+  justOne: true,
+});
+
 const Model = mongoose.model('Fill', schema);
 
 module.exports = Model;

@@ -20,6 +20,20 @@ const schema = Schema({
   value: String,
 });
 
+schema.virtual('toMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'to',
+  foreignField: 'address',
+  justOne: true,
+});
+
+schema.virtual('fromMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'from',
+  foreignField: 'address',
+  justOne: true,
+});
+
 const Transaction = mongoose.model('Transaction', schema);
 
 module.exports = Transaction;
