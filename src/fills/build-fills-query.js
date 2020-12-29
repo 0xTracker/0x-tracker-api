@@ -83,6 +83,8 @@ const buildFillsQuery = params => {
       multi_match: {
         fields: [
           'affiliateAddress',
+          'assets.bridgeAddress',
+          'assets.tokenAddress',
           'feeRecipient',
           'maker',
           'orderHash',
