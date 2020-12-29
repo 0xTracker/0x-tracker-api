@@ -83,7 +83,6 @@ const createRouter = () => {
         valueTo,
       } = params;
 
-      const address = normalizeQueryParam(query.address);
       const bridged = parseBoolean(query.bridged);
       const bridgeAddress = normalizeQueryParam(query.bridgeAddress);
       const dateFrom = parseDate(query.dateFrom);
@@ -116,7 +115,6 @@ const createRouter = () => {
       const [{ docs, pages, total }] = await Promise.all([
         searchFills(
           {
-            address,
             apps,
             bridgeAddress,
             bridged,
@@ -155,6 +153,10 @@ const createRouter = () => {
     const fill = mongoose.Types.ObjectId.isValid(fillId)
       ? await Fill.findById(fillId, undefined, {
           populate: [
+            {
+              path: 'assets.bridgeMetadata',
+              select: 'imageUrl isContract name',
+            },
             {
               path: 'assets.token',
               select: 'decimals imageUrl name symbol type',

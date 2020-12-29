@@ -74,6 +74,13 @@ schema.virtual('assets.token', {
   justOne: true,
 });
 
+schema.virtual('assets.bridgeMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'assets.bridgeAddress',
+  foreignField: 'address',
+  justOne: true,
+});
+
 schema.virtual('fees.token', {
   ref: 'Token',
   localField: 'fees.tokenAddress',
