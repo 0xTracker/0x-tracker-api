@@ -10,7 +10,6 @@ const _ = require('lodash');
  */
 const buildFillsQuery = params => {
   const {
-    address,
     apps,
     bridgeAddress,
     bridged,
@@ -71,22 +70,10 @@ const buildFillsQuery = params => {
     filters.push({ match_phrase: { 'assets.tokenAddress': token } });
   }
 
-  if (_.isString(address)) {
-    filters.push({
-      multi_match: {
-        fields: ['maker', 'taker'],
-        query: address,
-        type: 'phrase',
-      },
-    });
-  }
-
   if (_.isString(trader)) {
     filters.push({
-      multi_match: {
-        fields: ['maker', 'taker'],
-        query: trader,
-        type: 'phrase',
+      term: {
+        traders: trader,
       },
     });
   }
@@ -102,6 +89,8 @@ const buildFillsQuery = params => {
           'senderAddress',
           'taker',
           'transactionHash',
+          'transactionFrom',
+          'transactionTo',
         ],
         query,
         type: 'phrase',
