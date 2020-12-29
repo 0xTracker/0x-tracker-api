@@ -74,6 +74,13 @@ schema.virtual('assets.token', {
   justOne: true,
 });
 
+schema.virtual('assets.bridgeMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'assets.bridgeAddress',
+  foreignField: 'address',
+  justOne: true,
+});
+
 schema.virtual('fees.token', {
   ref: 'Token',
   localField: 'fees.tokenAddress',
@@ -84,6 +91,13 @@ schema.virtual('fees.token', {
 schema.virtual('affiliate', {
   ref: 'AddressMetadata',
   localField: 'affiliateAddress',
+  foreignField: 'address',
+  justOne: true,
+});
+
+schema.virtual('makerMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'maker',
   foreignField: 'address',
   justOne: true,
 });
@@ -106,6 +120,20 @@ schema.virtual('attributions.entity', {
   ref: 'AttributionEntity',
   localField: 'attributions.entityId',
   foreignField: '_id',
+  justOne: true,
+});
+
+schema.virtual('senderMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'senderAddress',
+  foreignField: 'address',
+  justOne: true,
+});
+
+schema.virtual('feeRecipientMetadata', {
+  ref: 'AddressMetadata',
+  localField: 'feeRecipient',
+  foreignField: 'address',
   justOne: true,
 });
 

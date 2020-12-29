@@ -245,6 +245,7 @@ describe('transformFill', () => {
     expect(viewModel.affiliate).toEqual({
       address: '0xa258b39954cef5cb142fd567a46cddb31a670124',
       imageUrl: null,
+      isContract: null,
       name: null,
     });
   });
@@ -265,6 +266,7 @@ describe('transformFill', () => {
     expect(viewModel.affiliate).toEqual({
       address: '0xa258b39954cef5cb142fd567a46cddb31a670124',
       imageUrl: 'https://resources.0xtracker.com/logos/swarm.png',
+      isContract: null,
       name: 'Swarm',
     });
   });

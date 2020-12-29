@@ -83,7 +83,6 @@ const createRouter = () => {
         valueTo,
       } = params;
 
-      const address = normalizeQueryParam(query.address);
       const bridged = parseBoolean(query.bridged);
       const bridgeAddress = normalizeQueryParam(query.bridgeAddress);
       const dateFrom = parseDate(query.dateFrom);
@@ -116,7 +115,6 @@ const createRouter = () => {
       const [{ docs, pages, total }] = await Promise.all([
         searchFills(
           {
-            address,
             apps,
             bridgeAddress,
             bridged,
@@ -156,13 +154,30 @@ const createRouter = () => {
       ? await Fill.findById(fillId, undefined, {
           populate: [
             {
+              path: 'assets.bridgeMetadata',
+              select: 'imageUrl isContract name',
+            },
+            {
               path: 'assets.token',
               select: 'decimals imageUrl name symbol type',
             },
             { path: 'fees.token', select: 'decimals name symbol type' },
-            { path: 'affiliate', select: 'name imageUrl' },
-            { path: 'takerMetadata', select: 'isContract' },
-            { path: 'transaction', select: 'from' },
+            { path: 'affiliate', select: 'name imageUrl isContract' },
+            { path: 'makerMetadata', select: 'name imageUrl isContract' },
+            { path: 'takerMetadata', select: 'name imageUrl isContract' },
+            { path: 'senderMetadata', select: 'name imageUrl isContract' },
+            {
+              path: 'feeRecipientMetadata',
+              select: 'name imageUrl isContract',
+            },
+            {
+              path: 'transaction',
+              populate: [
+                { path: 'toMetadata', select: 'name imageUrl isContract' },
+                { path: 'fromMetadata', select: 'name imageUrl isContract' },
+              ],
+              select: 'from to',
+            },
             { path: 'attributions.entity', select: 'id logoUrl name urlSlug' },
           ],
         })

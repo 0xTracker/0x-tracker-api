@@ -26,13 +26,20 @@ const getRelayer = fill => {
   };
 };
 
+const normalizeMetadata = (metadata, address) =>
+  !address
+    ? null
+    : {
+        address: _.get(metadata, 'address', address),
+        imageUrl: _.get(metadata, 'imageUrl', null),
+        isContract: _.get(metadata, 'isContract', null),
+        name: _.get(metadata, 'name', null),
+      };
+
 const transformFill = fill => {
   const assets = getAssetsForFill(fill);
   const fees = getFeesForFill(fill);
   const conversions = _.get(fill, `conversions.USD`);
-  const taker = _.get(fill, 'takerMetadata.isContract', false)
-    ? _.get(fill, 'transaction.from', fill.taker)
-    : fill.taker;
 
   const protocolFee =
     fill.protocolFee !== undefined
@@ -43,13 +50,7 @@ const transformFill = fill => {
       : undefined;
 
   return {
-    affiliate: _.isNil(fill.affiliateAddress)
-      ? null
-      : {
-          address: fill.affiliateAddress,
-          imageUrl: _.get(fill, 'affiliate.imageUrl', null),
-          name: _.get(fill, 'affiliate.name', null),
-        },
+    affiliate: normalizeMetadata(fill.affiliate, fill.affiliateAddress),
     apps: fill.attributions
       .filter(a =>
         [
@@ -68,16 +69,31 @@ const transformFill = fill => {
     date: fill.date,
     fees,
     feeRecipient: fill.feeRecipient,
+    feeRecipientMetadata: normalizeMetadata(
+      fill.feeRecipientMetadata,
+      fill.feeRecipient,
+    ),
     id: fill.id,
     makerAddress: fill.maker,
+    maker: normalizeMetadata(fill.makerMetadata, fill.maker),
     orderHash: fill.orderHash,
     protocolFee,
     protocolVersion: fill.protocolVersion,
     relayer: getRelayer(fill),
     senderAddress: fill.senderAddress,
+    sender: normalizeMetadata(fill.senderMetadata, fill.senderAddress),
     status: formatFillStatus(fill.status),
-    takerAddress: taker,
+    takerAddress: fill.taker,
+    taker: normalizeMetadata(fill.takerMetadata, fill.taker),
     transactionHash: fill.transactionHash,
+    transactionFrom: normalizeMetadata(
+      _.get(fill, 'transaction.fromMetadata'),
+      _.get(fill, 'transaction.from'),
+    ),
+    transactionTo: normalizeMetadata(
+      _.get(fill, 'transaction.toMetadata'),
+      _.get(fill, 'transaction.to'),
+    ),
     value: _.has(conversions, 'amount')
       ? {
           USD: _.get(conversions, 'amount'),

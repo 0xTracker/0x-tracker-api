@@ -3,8 +3,8 @@
 exports[`transformFill should transform ERC20 asset 1`] = `
 Object {
   "amount": "0.275",
+  "bridge": null,
   "bridgeAddress": undefined,
-  "bridgeName": undefined,
   "price": Object {
     "USD": 137.36999999999998,
   },
@@ -21,8 +21,8 @@ Object {
 exports[`transformFill should transform ERC721 asset 1`] = `
 Object {
   "amount": "1",
+  "bridge": null,
   "bridgeAddress": undefined,
-  "bridgeName": undefined,
   "price": Object {
     "USD": 37.77675,
   },
@@ -43,8 +43,8 @@ Object {
   "assets": Array [
     Object {
       "amount": "7.1373405",
+      "bridge": null,
       "bridgeAddress": undefined,
-      "bridgeName": undefined,
       "price": Object {
         "USD": 224.42000000000002,
       },
@@ -58,8 +58,8 @@ Object {
     },
     Object {
       "amount": "300000",
+      "bridge": null,
       "bridgeAddress": undefined,
-      "bridgeName": undefined,
       "price": Object {
         "USD": 0.0053392065167000005,
       },
@@ -74,6 +74,12 @@ Object {
   ],
   "date": "2018-09-06T10:47:38.000Z",
   "feeRecipient": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+  "feeRecipientMetadata": Object {
+    "address": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+    "imageUrl": null,
+    "isContract": null,
+    "name": null,
+  },
   "fees": Array [
     Object {
       "amount": Object {
@@ -105,15 +111,30 @@ Object {
     },
   ],
   "id": "5b9107e00d05f400042e3494",
+  "maker": Object {
+    "address": "0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb",
+    "imageUrl": null,
+    "isContract": null,
+    "name": null,
+  },
   "makerAddress": "0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb",
   "orderHash": "0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5",
   "protocolFee": undefined,
   "protocolVersion": 1,
   "relayer": null,
+  "sender": null,
   "senderAddress": undefined,
   "status": "successful",
+  "taker": Object {
+    "address": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+    "imageUrl": null,
+    "isContract": null,
+    "name": null,
+  },
   "takerAddress": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+  "transactionFrom": null,
   "transactionHash": "0x4c69e925be055eec7bc49cc681fd5267d1aca7e1db21f687ab19ab9d75b7447c",
+  "transactionTo": null,
   "value": Object {
     "USD": 1601.76195501,
   },
@@ -123,8 +144,8 @@ Object {
 exports[`transformFill should transform V1 fill with unrecognised maker asset 1`] = `
 Object {
   "amount": undefined,
+  "bridge": null,
   "bridgeAddress": undefined,
-  "bridgeName": undefined,
   "price": Object {
     "USD": 224.42000000000002,
   },
@@ -141,8 +162,8 @@ Object {
 exports[`transformFill should transform V1 fill with unrecognised taker asset 1`] = `
 Object {
   "amount": undefined,
+  "bridge": null,
   "bridgeAddress": undefined,
-  "bridgeName": undefined,
   "price": Object {
     "USD": 0.0053392065167000005,
   },
@@ -163,8 +184,8 @@ Object {
   "assets": Array [
     Object {
       "amount": "1",
+      "bridge": null,
       "bridgeAddress": undefined,
-      "bridgeName": undefined,
       "price": Object {
         "USD": 37.77675,
       },
@@ -178,8 +199,8 @@ Object {
     },
     Object {
       "amount": "0.275",
+      "bridge": null,
       "bridgeAddress": undefined,
-      "bridgeName": undefined,
       "price": Object {
         "USD": 137.36999999999998,
       },
@@ -194,6 +215,12 @@ Object {
   ],
   "date": "2018-09-06T10:47:38.000Z",
   "feeRecipient": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+  "feeRecipientMetadata": Object {
+    "address": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+    "imageUrl": null,
+    "isContract": null,
+    "name": null,
+  },
   "fees": Array [
     Object {
       "amount": Object {
@@ -225,15 +252,30 @@ Object {
     },
   ],
   "id": "5b9107e00d05f400042e3494",
+  "maker": Object {
+    "address": "0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb",
+    "imageUrl": null,
+    "isContract": null,
+    "name": null,
+  },
   "makerAddress": "0x8dd688660ec0babd0b8a2f2de3232645f73cc5eb",
   "orderHash": "0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5",
   "protocolFee": undefined,
   "protocolVersion": 2,
   "relayer": null,
+  "sender": null,
   "senderAddress": undefined,
   "status": "successful",
+  "taker": Object {
+    "address": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+    "imageUrl": null,
+    "isContract": null,
+    "name": null,
+  },
   "takerAddress": "0xe269e891a2ec8585a378882ffa531141205e92e9",
+  "transactionFrom": null,
   "transactionHash": "0x4c69e925be055eec7bc49cc681fd5267d1aca7e1db21f687ab19ab9d75b7447c",
+  "transactionTo": null,
   "value": Object {
     "USD": 37.77675,
   },
