@@ -23,8 +23,15 @@ const getPreviousStats = async (appIds, dateFrom, dateTo) => {
           aggs: {
             apps: {
               filter: {
-                terms: {
-                  'attributions.type': [0, 1],
+                bool: {
+                  filter: [
+                    { terms: { 'attributions.id': appIds } },
+                    {
+                      terms: {
+                        'attributions.type': [0, 1],
+                      },
+                    },
+                  ],
                 },
               },
               aggs: {
