@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const Router = require('koa-router');
 
-const { ARTICLE_SOURCES } = require('../../../constants');
 const Article = require('../../../model/article');
 const ArticleFeed = require('../../../model/article-feed');
 const middleware = require('../../middleware');
@@ -61,24 +60,12 @@ const createRouter = () => {
 
       const sourceFeed =
         source === undefined ? undefined : await getArticleFeedBySlug(source);
-      const sourceConstant = _.values(ARTICLE_SOURCES).find(
-        x => x.slug === source,
-      );
-
-      console.log(sourceFeed, sourceConstant);
 
       const editorsChoice = parseBoolean(request.query.editorsChoice);
 
       const query = _.pickBy(
         {
-          feed: sourceFeed
-            ? {
-                $in: [
-                  sourceFeed.id,
-                  _.findKey(ARTICLE_SOURCES, x => x === sourceConstant),
-                ],
-              }
-            : undefined,
+          feed: sourceFeed ? sourceFeed.id : undefined,
           editorsChoice:
             editorsChoice === true || editorsChoice === undefined
               ? editorsChoice
@@ -110,9 +97,8 @@ const createRouter = () => {
     const { feedSlug, articleSlug } = params;
 
     const feed = await getArticleFeedBySlug(feedSlug);
-    const source = _.values(ARTICLE_SOURCES).find(x => x.slug === feedSlug);
     const article = await Article.findOne({
-      feed: { $in: [feed.id, _.findKey(ARTICLE_SOURCES, x => x === source)] },
+      feed: feed.id,
       slug: articleSlug,
     });
 
