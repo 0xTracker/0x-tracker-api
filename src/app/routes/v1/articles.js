@@ -1,10 +1,12 @@
 const _ = require('lodash');
 const Router = require('koa-router');
 
+const { ARTICLE_SOURCES } = require('../../../constants');
 const Article = require('../../../model/article');
-const getArticleSources = require('../../../articles/get-article-sources');
+const ArticleFeed = require('../../../model/article-feed');
 const middleware = require('../../middleware');
 const transformArticle = require('./util/transform-article');
+const AttributionEntity = require('../../../model/attribution-entity');
 
 const parseBoolean = booleanString => {
   if (
@@ -18,6 +20,32 @@ const parseBoolean = booleanString => {
   return booleanString === 'true';
 };
 
+const getArticleFeedBySlug = async slug => {
+  const slugFeed = await ArticleFeed.findOne({ urlSlug: slug }).populate({
+    path: 'attributionEntity',
+  });
+
+  if (slugFeed !== null) {
+    return slugFeed;
+  }
+
+  const slugAttributionEntity = await AttributionEntity.findOne({
+    urlSlug: slug,
+  });
+
+  if (slugAttributionEntity === null) {
+    return null;
+  }
+
+  const attributionFeed = await ArticleFeed.findOne({
+    attributionEntityId: slugAttributionEntity.id,
+  }).populate({
+    path: 'attributionEntity',
+  });
+
+  return attributionFeed;
+};
+
 const createRouter = () => {
   const router = new Router({ prefix: '/articles' });
 
@@ -29,17 +57,28 @@ const createRouter = () => {
       maxPage: Infinity,
     }),
     async ({ pagination, response, request }, next) => {
-      const sources = await getArticleSources();
-      const editorsChoice = parseBoolean(request.query.editorsChoice);
+      const { source } = request.query;
 
-      const feed = _.findKey(
-        sources,
-        source => source.slug === request.query.source,
+      const sourceFeed =
+        source === undefined ? undefined : await getArticleFeedBySlug(source);
+      const sourceConstant = _.values(ARTICLE_SOURCES).find(
+        x => x.slug === source,
       );
+
+      console.log(sourceFeed, sourceConstant);
+
+      const editorsChoice = parseBoolean(request.query.editorsChoice);
 
       const query = _.pickBy(
         {
-          feed: request.query.source ? feed : undefined,
+          feed: sourceFeed
+            ? {
+                $in: [
+                  sourceFeed.id,
+                  _.findKey(ARTICLE_SOURCES, x => x === sourceConstant),
+                ],
+              }
+            : undefined,
           editorsChoice:
             editorsChoice === true || editorsChoice === undefined
               ? editorsChoice
@@ -50,13 +89,13 @@ const createRouter = () => {
 
       const articles = await Article.paginate(query, {
         sort: { date: -1 },
-        lean: true,
         limit: pagination.limit,
         page: pagination.page,
+        populate: { path: 'feedMetadata', populate: 'attributionEntity' },
       });
 
       response.body = {
-        articles: _(articles.docs).map(_.partial(transformArticle, sources)),
+        articles: _(articles.docs).map(transformArticle),
         limit: articles.limit,
         page: parseInt(articles.page, 10),
         pageCount: articles.pages,
@@ -69,9 +108,13 @@ const createRouter = () => {
 
   router.get('/:feedSlug/:articleSlug', async ({ response, params }, next) => {
     const { feedSlug, articleSlug } = params;
-    const sources = await getArticleSources();
-    const feed = _.findKey(sources, s => s.slug === feedSlug);
-    const article = await Article.findOne({ feed, slug: articleSlug }).lean();
+
+    const feed = await getArticleFeedBySlug(feedSlug);
+    const source = _.values(ARTICLE_SOURCES).find(x => x.slug === feedSlug);
+    const article = await Article.findOne({
+      feed: { $in: [feed.id, _.findKey(ARTICLE_SOURCES, x => x === source)] },
+      slug: articleSlug,
+    });
 
     if (article === null) {
       response.status = 404;
@@ -79,7 +122,6 @@ const createRouter = () => {
       return;
     }
 
-    const source = _.find(sources, s => s.slug === feedSlug);
     const { author, content, date, slug, summary, title, url } = article;
 
     response.body = {
@@ -87,7 +129,14 @@ const createRouter = () => {
       content,
       date,
       slug,
-      source,
+      source: {
+        imageUrl:
+          feed.imageUrl || _.get(feed, 'attributionEntity.logoUrl', null),
+        name: feed.name || _.get(feed, 'attributionEntity.name', null),
+        slug: feed.urlSlug || _.get(feed, 'attributionEntity.urlSlug', null),
+        url:
+          feed.websiteUrl || _.get(feed, 'attributionEntity.websiteUrl', null),
+      },
       summary,
       title,
       url,

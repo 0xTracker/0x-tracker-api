@@ -16,6 +16,13 @@ const schema = mongoose.Schema({
 
 schema.plugin(mongoosePaginate);
 
+schema.virtual('feedMetadata', {
+  ref: 'ArticleFeed',
+  localField: 'feed',
+  foreignField: '_id',
+  justOne: true,
+});
+
 const Model = mongoose.model('Article', schema);
 
 module.exports = Model;

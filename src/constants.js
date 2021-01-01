@@ -51,16 +51,16 @@ module.exports = {
   ZRX_TOKEN_DECIMALS: 18,
   ARTICLE_SOURCES: {
     '0xproject': {
-      name: '0x Team',
+      name: '0x Labs',
       url: 'https://0x.org',
       imageUrl: 'https://resources.0xtracker.com/logos/0x.png',
-      slug: '0x',
+      slug: '0x-labs',
     },
     '0xvideos': {
-      name: '0x YouTube',
+      name: '0x Labs YouTube',
       url: 'https://www.youtube.com/channel/UCFrSpPi9WUW9wYTa0Q1sdnA',
       imageUrl: 'https://resources.0xtracker.com/logos/0x.png',
-      slug: '0x-youtube',
+      slug: '0x-labs-youtube',
     },
     '0xtracker': {
       name: '0x Tracker',
@@ -69,10 +69,16 @@ module.exports = {
       slug: '0x-tracker',
     },
     bambooRelay: {
-      relayer: 'bambooRelay',
+      imageUrl: 'https://resources.0xtracker.com/logos/bamboo-relay.png',
+      name: 'Bamboo Relay',
+      slug: 'bamboo-relay',
+      url: '',
     },
     boxSwap: {
-      relayer: 'boxSwap',
+      imageUrl: 'https://resources.0xtracker.com/logos/boxswap.png',
+      name: 'Box Swap',
+      slug: 'box-swap',
+      url: '',
     },
     dYdX: {
       name: 'dYdX',
@@ -81,9 +87,17 @@ module.exports = {
       slug: 'dydx',
     },
     emoon: {
-      relayer: 'emoon',
+      imageUrl: 'https://resources.0xtracker.com/logos/emoon.png',
+      name: 'Emoon',
+      slug: 'emoon',
+      url: '',
     },
-    ercdex: { relayer: 'ercDex' },
+    ercdex: {
+      imageUrl: 'https://resources.0xtracker.com/logos/erc-dex.png',
+      name: 'ERC dEX',
+      slug: 'erc-dex',
+      url: '',
+    },
     ethfinex: {
       name: 'Ethfinex',
       url: 'https://www.ethfinex.com/',
@@ -91,25 +105,46 @@ module.exports = {
       slug: 'ethfinex',
     },
     ledgerDex: {
-      relayer: 'ledgerDex',
+      imageUrl: 'https://resources.0xtracker.com/logos/ledger-dex.png',
+      name: 'Ledger DEX',
+      slug: 'ledger-dex',
+      url: '',
     },
     oc2Dex: {
-      relayer: 'oc2Dex',
+      imageUrl: 'https://resources.0xtracker.com/logos/oc2-dex.png',
+      name: 'oc2 DEX',
+      slug: 'oc2-dex',
+      url: '',
     },
     openRelay: {
-      relayer: 'openRelay',
+      imageUrl: 'https://resources.0xtracker.com/logos/open-relay.png',
+      name: 'Open Relay',
+      slug: 'open-relay',
+      url: '',
     },
     paradex: {
-      relayer: 'paradex',
+      imageUrl: 'https://resources.0xtracker.com/logos/paradex.png',
+      name: 'Paradex',
+      slug: 'paradex',
+      url: '',
     },
     radarrelay: {
-      relayer: 'radarRelay',
+      imageUrl: 'https://resources.0xtracker.com/logos/radar-relay.png',
+      name: 'RADAR Relay',
+      slug: 'radar-relay',
+      url: '',
     },
     theOcean: {
-      relayer: 'theOcean',
+      imageUrl: 'https://resources.0xtracker.com/logos/the-ocean.png',
+      name: 'The Ocean',
+      slug: 'the-ocean',
+      url: '',
     },
     tokenlon: {
-      relayer: 'tokenlon',
+      imageUrl: 'https://resources.0xtracker.com/logos/tokenlon.png',
+      name: 'Tokenlon',
+      slug: 'tokenlon',
+      url: '',
     },
     veil: {
       name: 'Veil',
