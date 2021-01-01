@@ -1,22 +1,18 @@
 const _ = require('lodash');
 
-const { ARTICLE_SOURCES } = require('../constants');
-const getRelayers = require('../relayers/get-relayers');
+const ArticleFeed = require('../model/article-feed');
 
 const getArticleSources = async () => {
-  const relayers = await getRelayers();
+  const feeds = await ArticleFeed.find({ isActive: true }).populate(
+    'attributionEntity',
+  );
 
-  return _.mapValues(ARTICLE_SOURCES, source => {
-    const sourceRelayer = source.relayer
-      ? _.find(relayers, relayer => relayer.id === source.relayer)
-      : undefined;
-
-    return sourceRelayer
-      ? {
-          ..._.pick(sourceRelayer, 'name', 'imageUrl', 'url', 'slug'),
-        }
-      : source;
-  });
+  return feeds.map(x => ({
+    imageUrl: x.imageUrl || _.get(x, 'attributionEntity.logoUrl', null),
+    name: x.name || _.get(x, 'attributionEntity.name', null),
+    slug: x.urlSlug || _.get(x, 'attributionEntity.urlSlug', null),
+    url: x.websiteUrl || _.get(x, 'attributionEntity.websiteUrl', null),
+  }));
 };
 
 module.exports = getArticleSources;

@@ -8,7 +8,7 @@ const createRouter = () => {
   router.get('/', async ({ response }, next) => {
     const sources = await getArticleSources();
 
-    response.body = Object.values(sources);
+    response.body = sources;
 
     await next();
   });
