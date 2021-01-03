@@ -19,6 +19,7 @@ const createRouter = () => {
       maxPage: Infinity,
     }),
     middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    middleware.apps('apps'),
     async ({ pagination, params, request, response }, next) => {
       const { excludeRelayers, type } = request.query;
 
@@ -41,12 +42,13 @@ const createRouter = () => {
       }
 
       const { limit, page } = pagination;
-      const { statsPeriod } = params;
+      const { apps, statsPeriod } = params;
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
       const { traders, resultCount } = await getTradersWithStatsForDates(
         dateFrom,
         dateTo,
         {
+          appIds: apps,
           excludeRelayers,
           page,
           limit,

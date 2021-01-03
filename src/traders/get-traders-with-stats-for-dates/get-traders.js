@@ -1,16 +1,25 @@
 const elasticsearch = require('../../util/elasticsearch');
 
-const getQuery = (dateFrom, dateTo, exclude) => {
+const getQuery = (dateFrom, dateTo, exclude, appIds) => {
   return {
     bool: {
-      must: {
-        range: {
-          date: {
-            gte: dateFrom,
-            lte: dateTo,
+      filter: [
+        {
+          range: {
+            date: {
+              gte: dateFrom,
+              lte: dateTo,
+            },
           },
         },
-      },
+        appIds === undefined
+          ? undefined
+          : {
+              terms: {
+                appIds,
+              },
+            },
+      ].filter(x => x !== undefined),
       must_not: {
         terms: {
           address: exclude,
@@ -20,7 +29,11 @@ const getQuery = (dateFrom, dateTo, exclude) => {
   };
 };
 
-const getTraders = async (dateFrom, dateTo, { exclude, limit, page }) => {
+const getTraders = async (
+  dateFrom,
+  dateTo,
+  { appIds, exclude, limit, page },
+) => {
   const startIndex = (page - 1) * limit;
   const response = await elasticsearch.getClient().search({
     index: 'trader_fills',
@@ -84,7 +97,7 @@ const getTraders = async (dateFrom, dateTo, { exclude, limit, page }) => {
         },
       },
       size: 0,
-      query: getQuery(dateFrom, dateTo, exclude),
+      query: getQuery(dateFrom, dateTo, exclude, appIds),
     },
   });
 
