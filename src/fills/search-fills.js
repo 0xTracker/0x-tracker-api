@@ -23,7 +23,9 @@ const searchFills = async (params, options) => {
   ]);
 
   return {
-    docs: fillIds.map(fillId => fills.find(fill => fill.id === fillId)),
+    docs: fillIds
+      .map(fillId => fills.find(fill => fill.id === fillId))
+      .filter(x => x !== null && x !== undefined),
     pages: Math.ceil(resultCount / options.limit),
     total: resultCount,
   };
