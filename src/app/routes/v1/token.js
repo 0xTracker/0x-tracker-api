@@ -14,7 +14,9 @@ const createRouter = () => {
 
   router.get(
     '/',
-    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY, {
+      allowCustom: true,
+    }),
     async ({ params, response }, next) => {
       const { statsPeriod, tokenAddress } = params;
 
@@ -41,7 +43,9 @@ const createRouter = () => {
 
   router.get(
     '/apps',
-    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY, {
+      allowCustom: true,
+    }),
     middleware.enum(
       'sortBy',
       ['tradeCount', 'tradeVolumeUSD'],

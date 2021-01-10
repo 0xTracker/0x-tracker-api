@@ -13,7 +13,9 @@ const createRouter = () => {
 
   router.get(
     '/',
-    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY, {
+      allowCustom: true,
+    }),
     async ({ params, response }, next) => {
       const { slug, statsPeriod } = params;
       const app = await getAppBySlug(slug);
@@ -35,7 +37,9 @@ const createRouter = () => {
 
   router.get(
     '/tokens',
-    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY, {
+      allowCustom: true,
+    }),
     middleware.enum(
       'sortBy',
       ['tradeCount', 'tradeVolumeUSD'],
@@ -84,7 +88,9 @@ const createRouter = () => {
 
   router.get(
     '/related-apps',
-    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY, {
+      allowCustom: true,
+    }),
     middleware.enum('sortBy', ['tradeCount', 'tradeVolume'], 'tradeVolume'),
     middleware.pagination({
       defaultLimit: 20,

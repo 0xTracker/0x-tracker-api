@@ -15,7 +15,9 @@ const createRouter = () => {
       maxLimit: 50,
       maxPage: Infinity,
     }),
-    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY),
+    middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY, {
+      allowCustom: true,
+    }),
     middleware.apps('apps'),
     middleware.enum('sortBy', ['tradeCount', 'tradeVolume'], 'tradeVolume'),
     middleware.enum('sortDirection', ['asc', 'desc'], 'desc'),
