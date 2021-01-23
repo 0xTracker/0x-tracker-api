@@ -4,33 +4,32 @@ const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 const getTokenStatsForPeriod = async (token, period) => {
   const { dateFrom, dateTo } = getDatesForTimePeriod(period);
   const res = await elasticsearch.getClient().search({
-    index: 'traded_tokens',
+    index: period === 'day' ? 'traded_tokens' : 'token_metrics_daily',
     body: {
       aggs: {
-        fillCount: {
-          value_count: { field: 'fillId' },
-        },
-        fillVolume: {
-          sum: { field: 'filledAmount' },
-        },
-        fillVolumeUSD: {
-          sum: { field: 'filledAmountUSD' },
-        },
         tradeCount: {
-          sum: { field: 'tradeCountContribution' },
+          sum: {
+            field: period === 'day' ? 'tradeCountContribution' : 'tradeCount',
+          },
         },
         tradeVolume: {
-          sum: { field: 'tradedAmount' },
+          sum: { field: period === 'day' ? 'tradedAmount' : 'tradeVolume' },
         },
         tradeVolumeUSD: {
-          sum: { field: 'tradedAmountUSD' },
+          sum: {
+            field: period === 'day' ? 'tradedAmountUSD' : 'tradeVolumeUsd',
+          },
         },
       },
       size: 0,
       query: {
         bool: {
           filter: [
-            { term: { tokenAddress: token.address } },
+            {
+              term: {
+                [period === 'day' ? 'tokenAddress' : 'address']: token.address,
+              },
+            },
             {
               range: {
                 date: {
@@ -45,21 +44,9 @@ const getTokenStatsForPeriod = async (token, period) => {
     },
   });
 
-  const {
-    fillCount,
-    fillVolume,
-    fillVolumeUSD,
-    tradeCount,
-    tradeVolume,
-    tradeVolumeUSD,
-  } = res.body.aggregations;
+  const { tradeCount, tradeVolume, tradeVolumeUSD } = res.body.aggregations;
 
   return {
-    fillCount: fillCount.value,
-    fillVolume: {
-      token: fillVolume.value,
-      USD: fillVolumeUSD.value,
-    },
     tradeCount: tradeCount.value,
     tradeVolume: {
       token: tradeVolume.value,

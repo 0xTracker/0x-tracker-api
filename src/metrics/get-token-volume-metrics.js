@@ -5,7 +5,7 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const results = await elasticsearch.getClient().search({
-    index: 'traded_tokens',
+    index: granularity === 'hour' ? 'traded_tokens' : 'token_metrics_daily',
     body: {
       aggs: {
         token_metrics: {
@@ -18,20 +18,24 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
             },
           },
           aggs: {
-            fillVolume: {
-              sum: { field: 'filledAmount' },
-            },
-            fillVolumeUSD: {
-              sum: { field: 'filledAmountUSD' },
-            },
             tradeCount: {
-              sum: { field: 'tradeCountContribution' },
+              sum: {
+                field:
+                  granularity === 'hour'
+                    ? 'tradeCountContribution'
+                    : 'tradeCount',
+              },
             },
             tradeVolume: {
-              sum: { field: 'tradedAmount' },
+              sum: {
+                field: granularity === 'hour' ? 'tradedAmount' : 'tradeVolume',
+              },
             },
             tradeVolumeUSD: {
-              sum: { field: 'tradedAmountUSD' },
+              sum: {
+                field:
+                  granularity === 'hour' ? 'tradedAmountUSD' : 'tradeVolumeUsd',
+              },
             },
           },
         },
@@ -42,7 +46,9 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
           filter: [
             {
               term: {
-                tokenAddress,
+                [granularity === 'hour'
+                  ? 'tokenAddress'
+                  : 'address']: tokenAddress,
               },
             },
             {
@@ -61,8 +67,6 @@ const getTokenMetrics = async (tokenAddress, period, granularity) => {
 
   const metrics = results.body.aggregations.token_metrics.buckets.map(x => ({
     date: new Date(x.key_as_string),
-    fillCount: x.doc_count,
-    fillVolume: { token: x.fillVolume.value, USD: x.fillVolumeUSD.value },
     tradeCount: x.tradeCount.value,
     tradeVolume: { token: x.tradeVolume.value, USD: x.tradeVolumeUSD.value },
   }));
