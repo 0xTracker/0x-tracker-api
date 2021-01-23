@@ -1,9 +1,8 @@
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
-const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
 const computeNetworkStatsForPeriod = require('../../../stats/compute-network-stats-for-period');
-const computeTraderStatsForDates = require('../../../stats/compute-trader-stats-for-dates');
+const computeTraderStatsForPeriod = require('../../../stats/compute-trader-stats-for-period');
 const getAssetBridgingStatsForPeriod = require('../../../asset-bridges/get-asset-bridging-stats-for-period');
 const middleware = require('../../middleware');
 
@@ -25,25 +24,8 @@ const createRouter = () => {
   router.get(
     '/trader',
     middleware.timePeriod('period', TIME_PERIOD.DAY, { allowCustom: true }),
-    middleware.number('protocolVersion'),
-    middleware.number('valueFrom'),
-    middleware.number('valueTo'),
-    middleware.token('token'),
-    middleware.fillStatus('status'),
-    middleware.trader('trader'),
-    middleware.apps('apps'),
     async ({ params, response }, next) => {
-      const { dateFrom, dateTo } = getDatesForTimePeriod(params.period);
-
-      const stats = await computeTraderStatsForDates(dateFrom, dateTo, {
-        apps: params.apps,
-        protocolVersion: params.protocolVersion,
-        status: params.status,
-        token: params.token,
-        trader: params.trader,
-        valueFrom: params.valueFrom,
-        valueTo: params.valueTo,
-      });
+      const stats = await computeTraderStatsForPeriod(params.period);
 
       response.body = stats;
 
