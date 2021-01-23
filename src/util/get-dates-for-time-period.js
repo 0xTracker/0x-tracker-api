@@ -11,8 +11,6 @@ const getStartDate = (timePeriod, endDate) => {
   const endMoment = moment.utc(endDate);
 
   switch (timePeriod) {
-    case TIME_PERIOD.DAY:
-      return endMoment.subtract(24, 'hours').toDate();
     case TIME_PERIOD.WEEK:
       return endMoment
         .subtract(6, 'days')
@@ -46,13 +44,30 @@ const getDatesForTimePeriod = period => {
     };
   }
 
-  const endDate = moment
+  if (period === 'day') {
+    const dateTo = moment.utc().toDate();
+    const dateFrom = moment
+      .utc(dateTo)
+      .subtract(24, 'hours')
+      .toDate();
+
+    return {
+      dateFrom,
+      dateTo,
+    };
+  }
+
+  const dateTo = moment
     .utc()
     .endOf('day')
     .toDate();
-  const startDate = getStartDate(period, endDate);
 
-  return { dateFrom: startDate, dateTo: endDate };
+  const dateFrom = getStartDate(period, dateTo);
+
+  return {
+    dateFrom,
+    dateTo,
+  };
 };
 
 module.exports = getDatesForTimePeriod;
