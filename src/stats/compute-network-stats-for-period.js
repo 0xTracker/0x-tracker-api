@@ -1,46 +1,47 @@
 const _ = require('lodash');
 
 const { ETH_TOKEN_DECIMALS } = require('../constants');
-const buildFillsQuery = require('../fills/build-fills-query');
 const elasticsearch = require('../util/elasticsearch');
 const formatTokenAmount = require('../tokens/format-token-amount');
 const getPreviousPeriod = require('../util/get-previous-period');
 const getPercentageChange = require('../util/get-percentage-change');
+const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 
-const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
+const getBasicStatsForDates = async (dateFrom, dateTo, usePrecomputed) => {
   const results = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: usePrecomputed ? 'network_metrics_daily' : 'fills',
     body: {
       aggs: {
-        fillCount: {
-          value_count: { field: '_id' },
-        },
-        fillVolume: {
-          sum: { field: 'value' },
-        },
         protocolFeesETH: {
-          sum: { field: 'protocolFeeETH' },
+          sum: { field: usePrecomputed ? 'protocolFeesETH' : 'protocolFeeETH' },
         },
         protocolFeesUSD: {
-          sum: { field: 'protocolFeeUSD' },
+          sum: { field: usePrecomputed ? 'protocolFeesUSD' : 'protocolFeeUSD' },
         },
         tradeCount: {
-          sum: { field: 'tradeCountContribution' },
+          sum: {
+            field: usePrecomputed ? 'tradeCount' : 'tradeCountContribution',
+          },
         },
         tradeVolume: {
           sum: { field: 'tradeVolume' },
         },
       },
       size: 0,
-      query: buildFillsQuery({ ...filters, dateFrom, dateTo }),
+      query: {
+        range: {
+          date: {
+            gte: dateFrom.toISOString(),
+            lte: dateTo.toISOString(),
+          },
+        },
+      },
     },
   });
 
   const getValue = key => _.get(results.body.aggregations, `${key}.value`);
 
   return {
-    fillCount: getValue('fillCount'),
-    fillVolume: getValue('fillVolume'),
     protocolFees: {
       ETH: formatTokenAmount(getValue('protocolFeesETH'), ETH_TOKEN_DECIMALS),
       USD: getValue('protocolFeesUSD'),
@@ -50,32 +51,25 @@ const getBasicStatsForDates = async (dateFrom, dateTo, filters) => {
   };
 };
 
-const computeNetworkStatsForDates = async (dateFrom, dateTo, filters = {}) => {
+const computeNetworkStatsForDates = async (period, filters = {}) => {
+  const { dateFrom, dateTo } = getDatesForTimePeriod(period);
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
 
   const specifiedPeriodStats = await getBasicStatsForDates(
     dateFrom,
     dateTo,
     filters,
+    period !== 'day',
   );
 
   const previousPeriodStats = await getBasicStatsForDates(
     prevDateFrom,
     prevDateTo,
     filters,
+    period !== 'day',
   );
 
   return {
-    fillCount: specifiedPeriodStats.fillCount,
-    fillCountChange: getPercentageChange(
-      previousPeriodStats.fillCount,
-      specifiedPeriodStats.fillCount,
-    ),
-    fillVolume: specifiedPeriodStats.fillVolume,
-    fillVolumeChange: getPercentageChange(
-      previousPeriodStats.fillVolume,
-      specifiedPeriodStats.fillVolume,
-    ),
     protocolFees: specifiedPeriodStats.protocolFees,
     protocolFeesChange: getPercentageChange(
       previousPeriodStats.protocolFees.USD,

@@ -1,30 +1,19 @@
 const _ = require('lodash');
 
-const computeNetworkStatsForDates = require('../stats/compute-network-stats-for-dates');
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 const getPercentageChange = require('../util/get-percentage-change');
 const getPreviousPeriod = require('../util/get-previous-period');
 
-const getStatsForDates = async (dateFrom, dateTo) => {
-  const networkStats = await computeNetworkStatsForDates(dateFrom, dateTo);
-  const response = await elasticsearch.getClient().search({
+const computeNetworkStatsForDates = async (dateFrom, dateTo) => {
+  const results = await elasticsearch.getClient().search({
     index: 'fills',
     body: {
       aggs: {
-        bridgeCount: {
-          cardinality: {
-            field: 'assets.bridgeAddress',
-          },
-        },
-        fillCount: {
-          value_count: { field: '_id' },
-        },
-        fillVolume: {
-          sum: { field: 'value' },
-        },
         tradeCount: {
-          sum: { field: 'tradeCountContribution' },
+          sum: {
+            field: 'tradeCountContribution',
+          },
         },
         tradeVolume: {
           sum: { field: 'tradeVolume' },
@@ -32,41 +21,75 @@ const getStatsForDates = async (dateFrom, dateTo) => {
       },
       size: 0,
       query: {
-        bool: {
-          filter: [
-            {
-              range: {
-                date: {
-                  gte: dateFrom,
-                  lte: dateTo,
-                },
-              },
-            },
-            {
-              exists: {
-                field: 'assets.bridgeAddress',
-              },
-            },
-          ],
+        range: {
+          date: {
+            gte: dateFrom.toISOString(),
+            lte: dateTo.toISOString(),
+          },
         },
       },
     },
   });
 
+  const getValue = key => _.get(results.body.aggregations, `${key}.value`);
+
+  return {
+    tradeCount: getValue('tradeCount'),
+    tradeVolume: getValue('tradeVolume'),
+  };
+};
+
+const getStatsForDates = async (dateFrom, dateTo) => {
+  const [networkStats, response] = await Promise.all([
+    computeNetworkStatsForDates(dateFrom, dateTo),
+    elasticsearch.getClient().search({
+      index: 'fills',
+      body: {
+        aggs: {
+          bridgeCount: {
+            cardinality: {
+              field: 'assets.bridgeAddress',
+            },
+          },
+          tradeCount: {
+            sum: { field: 'tradeCountContribution' },
+          },
+          tradeVolume: {
+            sum: { field: 'tradeVolume' },
+          },
+        },
+        size: 0,
+        query: {
+          bool: {
+            filter: [
+              {
+                range: {
+                  date: {
+                    gte: dateFrom,
+                    lte: dateTo,
+                  },
+                },
+              },
+              {
+                exists: {
+                  field: 'assets.bridgeAddress',
+                },
+              },
+            ],
+          },
+        },
+      },
+    }),
+  ]);
+
   const getValue = key => _.get(response.body.aggregations, `${key}.value`);
 
   const bridgeCount = getValue('bridgeCount');
-  const fillCount = getValue('fillCount');
-  const fillVolume = getValue('fillVolume');
   const tradeCount = getValue('tradeCount');
   const tradeVolume = getValue('tradeVolume');
 
   return {
     bridgeCount,
-    fillCount,
-    fillCountShare: (fillCount / networkStats.fillCount) * 100,
-    fillVolume,
-    fillVolumeShare: (fillVolume / networkStats.fillVolume) * 100,
     tradeCount,
     tradeCountShare: (tradeCount / networkStats.tradeCount) * 100,
     tradeVolume,
@@ -90,26 +113,6 @@ const getAssetBridgingStatsForPeriod = async period => {
     bridgeCountChange: getPercentageChange(
       previousPeriodStats.bridgeCount,
       specifiedPeriodStats.bridgeCount,
-    ),
-    fillCount: specifiedPeriodStats.fillCount,
-    fillCountChange: getPercentageChange(
-      previousPeriodStats.fillCount,
-      specifiedPeriodStats.fillCount,
-    ),
-    fillCountShare: specifiedPeriodStats.fillCountShare,
-    fillCountShareChange: getPercentageChange(
-      previousPeriodStats.fillCountShare,
-      specifiedPeriodStats.fillCountShare,
-    ),
-    fillVolume: specifiedPeriodStats.fillVolume,
-    fillVolumeChange: getPercentageChange(
-      previousPeriodStats.fillVolume,
-      specifiedPeriodStats.fillVolume,
-    ),
-    fillVolumeShare: specifiedPeriodStats.fillVolumeShare,
-    fillVolumeShareChange: getPercentageChange(
-      previousPeriodStats.fillVolumeShare,
-      specifiedPeriodStats.fillVolumeShare,
     ),
     tradeCount: specifiedPeriodStats.tradeCount,
     tradeCountChange: getPercentageChange(

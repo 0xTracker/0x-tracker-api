@@ -12,13 +12,22 @@ const getStartDate = (timePeriod, endDate) => {
 
   switch (timePeriod) {
     case TIME_PERIOD.DAY:
-      return endMoment.subtract(1, 'days').toDate();
+      return endMoment.subtract(24, 'hours').toDate();
     case TIME_PERIOD.WEEK:
-      return endMoment.subtract(1, 'weeks').toDate();
+      return endMoment
+        .subtract(6, 'days')
+        .startOf('day')
+        .toDate();
     case TIME_PERIOD.MONTH:
-      return endMoment.subtract(1, 'months').toDate();
+      return endMoment
+        .subtract(29, 'days')
+        .startOf('day')
+        .toDate();
     case TIME_PERIOD.YEAR:
-      return endMoment.subtract(1, 'years').toDate();
+      return endMoment
+        .subtract(364, 'days')
+        .startOf('day')
+        .toDate();
     default:
       throw new Error(`Invalid time period: ${timePeriod}`);
   }
@@ -37,7 +46,10 @@ const getDatesForTimePeriod = period => {
     };
   }
 
-  const endDate = moment.utc().toDate();
+  const endDate = moment
+    .utc()
+    .endOf('day')
+    .toDate();
   const startDate = getStartDate(period, endDate);
 
   return { dateFrom: startDate, dateTo: endDate };
