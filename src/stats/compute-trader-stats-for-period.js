@@ -17,7 +17,7 @@ const getBasicStatsForDates = async (dateFrom, dateTo, usePrecomputed) => {
           makers: {
             filter: {
               range: {
-                makerTradeVolume: {
+                makerTrades: {
                   gt: 0,
                 },
               },
@@ -33,7 +33,7 @@ const getBasicStatsForDates = async (dateFrom, dateTo, usePrecomputed) => {
           takers: {
             filter: {
               range: {
-                takerTradeVolume: {
+                takerTrades: {
                   gt: 0,
                 },
               },
