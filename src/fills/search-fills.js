@@ -11,7 +11,6 @@ const searchFills = async (params, options) => {
       query: buildFillsQuery(params),
       size: options.limit,
       sort: [{ [options.sortBy]: options.sortDirection }],
-      track_total_hits: true,
     },
   });
 
