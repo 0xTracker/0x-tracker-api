@@ -30,38 +30,9 @@ const createRouter = () => {
       period: 'period',
       granularity: 'granularity',
     }),
-    middleware.number('protocolVersion'),
-    middleware.number('valueFrom'),
-    middleware.number('valueTo'),
-    middleware.relayer('relayer'),
-    middleware.token('token'),
-    middleware.fillStatus('status'),
-    middleware.trader('trader'),
-    middleware.apps('apps'),
     async ({ params, response }, next) => {
-      const {
-        apps,
-        granularity,
-        period,
-        protocolVersion,
-        relayer,
-        status,
-        token,
-        trader,
-        valueFrom,
-        valueTo,
-      } = params;
-
-      const metrics = await getNetworkMetrics(period, granularity, {
-        apps,
-        protocolVersion,
-        relayerId: relayer,
-        status,
-        token,
-        trader,
-        valueFrom,
-        valueTo,
-      });
+      const { granularity, period } = params;
+      const metrics = await getNetworkMetrics(period, granularity);
 
       response.body = metrics;
 
