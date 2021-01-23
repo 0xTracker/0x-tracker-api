@@ -51,21 +51,19 @@ const getBasicStatsForDates = async (dateFrom, dateTo, usePrecomputed) => {
   };
 };
 
-const computeNetworkStatsForDates = async (period, filters = {}) => {
+const computeNetworkStatsForDates = async period => {
   const { dateFrom, dateTo } = getDatesForTimePeriod(period);
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
 
   const specifiedPeriodStats = await getBasicStatsForDates(
     dateFrom,
     dateTo,
-    filters,
     period !== 'day',
   );
 
   const previousPeriodStats = await getBasicStatsForDates(
     prevDateFrom,
     prevDateTo,
-    filters,
     period !== 'day',
   );
 
