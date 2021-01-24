@@ -74,7 +74,7 @@ const transformFill = fill => {
       fill.feeRecipient,
     ),
     id: fill.id,
-    makerAddress: fill.maker,
+    makerAddress: fill.maker || null,
     maker: normalizeMetadata(fill.makerMetadata, fill.maker),
     orderHash: fill.orderHash,
     protocolFee,

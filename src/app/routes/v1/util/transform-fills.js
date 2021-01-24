@@ -56,7 +56,7 @@ const transformFill = fill => {
     date: fill.date,
     feeRecipient: fill.feeRecipient,
     id: fill.id,
-    makerAddress: fill.maker,
+    makerAddress: fill.maker || null,
     protocolFee,
     protocolVersion: fill.protocolVersion,
     relayer: getRelayer(fill),
