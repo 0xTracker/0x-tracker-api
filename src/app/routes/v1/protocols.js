@@ -1,8 +1,7 @@
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
-const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getProtocolsWithStatsForDates = require('../../../protocols/get-protocols-with-stats-for-dates');
+const getProtocolsWithStatsForPeriod = require('../../../protocols/get-protocols-with-stats-for-period');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const middleware = require('../../middleware');
 
@@ -23,22 +22,20 @@ const createRouter = () => {
       const { limit, page } = pagination;
       const { sortBy } = request.query;
       const { statsPeriod } = params;
-      const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
 
       if (
         sortBy !== undefined &&
-        sortBy !== 'fillVolume' &&
-        sortBy !== 'fillCount'
+        sortBy !== 'tradeVolume' &&
+        sortBy !== 'tradeCount'
       ) {
         throw new InvalidParameterError(
-          'Must be one of: fillCount, fillVolume',
+          'Must be one of: tradeCount, tradeVolume',
           'Invalid query parameter: sortBy',
         );
       }
 
-      const { protocols, resultCount } = await getProtocolsWithStatsForDates(
-        dateFrom,
-        dateTo,
+      const { protocols, resultCount } = await getProtocolsWithStatsForPeriod(
+        statsPeriod,
         {
           page,
           limit,
