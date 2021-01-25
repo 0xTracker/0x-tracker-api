@@ -28,10 +28,12 @@ const createRouter = () => {
       if (
         sortBy !== undefined &&
         sortBy !== 'fillVolume' &&
-        sortBy !== 'fillCount'
+        sortBy !== 'fillCount' &&
+        sortBy !== 'tradeVolume' &&
+        sortBy !== 'tradeCount'
       ) {
         throw new InvalidParameterError(
-          'Must be one of: fillCount, fillVolume',
+          'Must be one of: fillCount, fillVolume, tradeCount, tradeVolume',
           'Invalid query parameter: sortBy',
         );
       }
