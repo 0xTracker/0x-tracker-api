@@ -1,30 +1,32 @@
 const _ = require('lodash');
 
 const elasticsearch = require('../util/elasticsearch');
+const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 
-const getProtocolsWithStatsForDates = async (dateFrom, dateTo, options) => {
+const getProtocolsWithStatsForPeriod = async (period, options) => {
+  const { dateFrom, dateTo } = getDatesForTimePeriod(period);
   const { page, limit, sortBy } = _.defaults({}, options, {
     page: 1,
     limit: 20,
-    sortBy: 'fillVolume',
+    sortBy: 'tradeVolume',
   });
 
   const response = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: period === 'day' ? 'fills' : 'protocol_metrics_daily',
     body: {
       aggs: {
         stats_by_protocol: {
           terms: {
             field: 'protocolVersion',
-            order: sortBy === 'fillCount' ? undefined : { [sortBy]: 'desc' },
-            size: 10,
+            order: { [sortBy]: 'desc' },
+            size: page * limit,
           },
           aggs: {
-            fillVolume: {
-              sum: { field: 'value' },
-            },
             tradeCount: {
-              sum: { field: 'tradeCountContribution' },
+              sum: {
+                field:
+                  period === 'day' ? 'tradeCountContribution' : 'tradeCount',
+              },
             },
             tradeVolume: {
               sum: { field: 'tradeVolume' },
@@ -50,8 +52,6 @@ const getProtocolsWithStatsForDates = async (dateFrom, dateTo, options) => {
     .take(limit)
     .map(x => ({
       stats: {
-        fillCount: x.doc_count,
-        fillVolume: x.fillVolume.value,
         tradeCount: x.tradeCount.value,
         tradeVolume: x.tradeVolume.value,
       },
@@ -65,4 +65,4 @@ const getProtocolsWithStatsForDates = async (dateFrom, dateTo, options) => {
   };
 };
 
-module.exports = getProtocolsWithStatsForDates;
+module.exports = getProtocolsWithStatsForPeriod;

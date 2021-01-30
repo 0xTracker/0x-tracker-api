@@ -1,14 +1,13 @@
 const { ETH_TOKEN_DECIMALS } = require('../constants');
-const buildFillsQuery = require('../fills/build-fills-query');
 const elasticsearch = require('../util/elasticsearch');
 const formatTokenAmount = require('../tokens/format-token-amount');
 const getDatesForMetrics = require('../util/get-dates-for-metrics');
 
-const getNetworkMetrics = async (period, granularity, filters) => {
+const getNetworkMetrics = async (period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const results = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: granularity === 'hour' ? 'fills' : 'network_metrics_daily',
     body: {
       aggs: {
         network_metrics: {
@@ -21,17 +20,25 @@ const getNetworkMetrics = async (period, granularity, filters) => {
             },
           },
           aggs: {
-            fillVolume: {
-              sum: { field: 'value' },
-            },
             protocolFeesETH: {
-              sum: { field: 'protocolFeeETH' },
+              sum: {
+                field:
+                  granularity === 'hour' ? 'protocolFeeETH' : 'protocolFeesETH',
+              },
             },
             protocolFeesUSD: {
-              sum: { field: 'protocolFeeUSD' },
+              sum: {
+                field:
+                  granularity === 'hour' ? 'protocolFeeUSD' : 'protocolFeesUSD',
+              },
             },
             tradeCount: {
-              sum: { field: 'tradeCountContribution' },
+              sum: {
+                field:
+                  granularity === 'hour'
+                    ? 'tradeCountContribution'
+                    : 'tradeCount',
+              },
             },
             tradeVolume: {
               sum: { field: 'tradeVolume' },
@@ -40,15 +47,20 @@ const getNetworkMetrics = async (period, granularity, filters) => {
         },
       },
       size: 0,
-      query: buildFillsQuery({ ...filters, dateFrom, dateTo }),
+      query: {
+        range: {
+          date: {
+            gte: dateFrom.toISOString(),
+            lte: dateTo.toISOString(),
+          },
+        },
+      },
     },
   });
 
   return results.body.aggregations.network_metrics.buckets.map(x => {
     return {
       date: new Date(x.key_as_string),
-      fillCount: x.doc_count,
-      fillVolume: x.fillVolume.value,
       protocolFees: {
         ETH: formatTokenAmount(x.protocolFeesETH.value, ETH_TOKEN_DECIMALS),
         USD: x.protocolFeesUSD.value,

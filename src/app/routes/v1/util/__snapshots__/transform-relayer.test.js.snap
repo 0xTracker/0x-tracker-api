@@ -7,8 +7,6 @@ Object {
   "name": "STAR BIT",
   "slug": "star-bit",
   "stats": Object {
-    "fillCount": 687,
-    "fillVolume": 18907,
     "tradeCount": 512,
     "tradeVolume": 150567.87,
   },
@@ -23,8 +21,6 @@ Object {
   "name": "STAR BIT",
   "slug": "star-bit",
   "stats": Object {
-    "fillCount": 687,
-    "fillVolume": 18907,
     "tradeCount": 512,
     "tradeVolume": 150567.87,
   },

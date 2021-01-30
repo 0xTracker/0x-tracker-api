@@ -7,7 +7,7 @@ const getProtocolMetrics = async (period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const results = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: granularity === 'hour' ? 'fills' : 'protocol_metrics_daily',
     body: {
       aggs: {
         stats_by_protocol: {
@@ -25,11 +25,13 @@ const getProtocolMetrics = async (period, granularity) => {
                 },
               },
               aggs: {
-                fillVolume: {
-                  sum: { field: 'value' },
-                },
                 tradeCount: {
-                  sum: { field: 'tradeCountContribution' },
+                  sum: {
+                    field:
+                      granularity === 'hour'
+                        ? 'tradeCountContribution'
+                        : 'tradeCount',
+                  },
                 },
                 tradeVolume: {
                   sum: { field: 'tradeVolume' },
@@ -63,8 +65,6 @@ const getProtocolMetrics = async (period, granularity) => {
       const stats = x.stats_by_date.buckets.map(y => ({
         protocolVersion,
         date: y.key_as_string,
-        fillCount: y.doc_count,
-        fillVolume: y.fillVolume.value,
         tradeCount: y.tradeCount.value,
         tradeVolume: y.tradeVolume.value,
       }));
@@ -76,8 +76,6 @@ const getProtocolMetrics = async (period, granularity) => {
     .map((stats, date) => ({
       date: new Date(date).toISOString(),
       stats: stats.map(stat => ({
-        fillCount: stat.fillCount,
-        fillVolume: stat.fillVolume,
         protocolVersion: stat.protocolVersion,
         tradeCount: stat.tradeCount,
         tradeVolume: stat.tradeVolume,

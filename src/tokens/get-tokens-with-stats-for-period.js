@@ -7,37 +7,38 @@ const getPercentageChange = require('../util/get-percentage-change');
 const getPreviousPeriod = require('../util/get-previous-period');
 const getTokenPrices = require('./get-token-prices');
 const Token = require('../model/token');
+const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 
-const getStatsForPreviousPeriod = async (tokenAddresses, dateFrom, dateTo) => {
+const getStatsForPreviousPeriod = async (
+  tokenAddresses,
+  dateFrom,
+  dateTo,
+  usePrecomputed,
+) => {
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
 
   const res = await elasticsearch.getClient().search({
-    index: 'traded_tokens',
+    index: usePrecomputed ? 'token_metrics_daily' : 'traded_tokens',
     body: {
       aggs: {
         tokenStats: {
           terms: {
-            field: 'tokenAddress',
+            field: usePrecomputed ? 'address' : 'tokenAddress',
             size: tokenAddresses.length,
           },
           aggs: {
-            fillCount: {
-              value_count: { field: 'fillId' },
-            },
-            fillVolume: {
-              sum: { field: 'filledAmount' },
-            },
-            fillVolumeUSD: {
-              sum: { field: 'filledAmountUSD' },
-            },
             tradeCount: {
-              sum: { field: 'tradeCountContribution' },
+              sum: {
+                field: usePrecomputed ? 'tradeCount' : 'tradeCountContribution',
+              },
             },
             tradeVolume: {
-              sum: { field: 'tradedAmount' },
+              sum: { field: usePrecomputed ? 'tradeVolume' : 'tradedAmount' },
             },
             tradeVolumeUSD: {
-              sum: { field: 'tradedAmountUSD' },
+              sum: {
+                field: usePrecomputed ? 'tradeVolumeUsd' : 'tradedAmountUSD',
+              },
             },
           },
         },
@@ -48,7 +49,7 @@ const getStatsForPreviousPeriod = async (tokenAddresses, dateFrom, dateTo) => {
           filter: [
             {
               terms: {
-                tokenAddress: tokenAddresses,
+                [usePrecomputed ? 'address' : 'tokenAddress']: tokenAddresses,
               },
             },
             {
@@ -59,7 +60,7 @@ const getStatsForPreviousPeriod = async (tokenAddresses, dateFrom, dateTo) => {
                 },
               },
             },
-          ].filter(f => f !== undefined),
+          ],
         },
       },
     },
@@ -71,11 +72,6 @@ const getStatsForPreviousPeriod = async (tokenAddresses, dateFrom, dateTo) => {
     const bucket = buckets.find(b => b.key === tokenAddress);
 
     return {
-      fillCount: _.get(bucket, 'doc_count', 0),
-      fillVolume: {
-        token: _.get(bucket, 'fillVolume.value', 0),
-        USD: _.get(bucket, 'fillVolumeUSD.value', 0),
-      },
       tradeCount: _.get(bucket, 'tradeCount.value', 0),
       tradeVolume: {
         token: _.get(bucket, 'tradeVolume.value', 0),
@@ -86,42 +82,42 @@ const getStatsForPreviousPeriod = async (tokenAddresses, dateFrom, dateTo) => {
   });
 };
 
-const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
+const getTokensWithStatsForDates = async (period, options) => {
+  const { dateFrom, dateTo } = getDatesForTimePeriod(period);
+
   const opts = _.defaults({}, options, {
     page: 1,
     limit: 20,
   });
 
+  const usePrecomputed = !options.type && period !== 'day';
   const startIndex = (opts.page - 1) * opts.limit;
 
   const res = await elasticsearch.getClient().search({
-    index: 'traded_tokens',
+    index: !usePrecomputed ? 'traded_tokens' : 'token_metrics_daily',
     body: {
       aggs: {
         tokenStats: {
           terms: {
-            field: 'tokenAddress',
+            field: !usePrecomputed ? 'tokenAddress' : 'address',
             order: { tradeVolumeUSD: 'desc' },
             size: opts.page * opts.limit,
           },
           aggs: {
-            fillCount: {
-              value_count: { field: 'fillId' },
-            },
-            fillVolume: {
-              sum: { field: 'filledAmount' },
-            },
-            fillVolumeUSD: {
-              sum: { field: 'filledAmountUSD' },
-            },
             tradeCount: {
-              sum: { field: 'tradeCountContribution' },
+              sum: {
+                field: !usePrecomputed
+                  ? 'tradeCountContribution'
+                  : 'tradeCount',
+              },
             },
             tradeVolume: {
-              sum: { field: 'tradedAmount' },
+              sum: { field: !usePrecomputed ? 'tradedAmount' : 'tradeVolume' },
             },
             tradeVolumeUSD: {
-              sum: { field: 'tradedAmountUSD' },
+              sum: {
+                field: !usePrecomputed ? 'tradedAmountUSD' : 'tradeVolumeUsd',
+              },
             },
             bucket_truncate: {
               bucket_sort: {
@@ -133,7 +129,7 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
         },
         tokenCount: {
           cardinality: {
-            field: 'tokenAddress',
+            field: !usePrecomputed ? 'tokenAddress' : 'address',
           },
         },
       },
@@ -167,7 +163,7 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
       address: { $in: tokenAddresses },
     }).lean(),
     getTokenPrices(tokenAddresses, { from: dateFrom, to: dateTo }),
-    getStatsForPreviousPeriod(tokenAddresses, dateFrom, dateTo),
+    getStatsForPreviousPeriod(tokenAddresses, dateFrom, dateTo, usePrecomputed),
   ]);
 
   return {
@@ -225,25 +221,6 @@ const getTokensWithStatsForDates = async (dateFrom, dateTo, options) => {
                 open: null,
               },
         stats: {
-          fillCount: bucket.fillCount.value,
-          fillCountChange: getPercentageChange(
-            prev.fillCount,
-            bucket.fillCount.value,
-          ),
-          fillVolume: {
-            token: bucket.fillVolume.value,
-            USD: bucket.fillVolumeUSD.value,
-          },
-          fillVolumeChange: {
-            token: getPercentageChange(
-              prev.fillVolume.token,
-              bucket.fillVolume.value,
-            ),
-            USD: getPercentageChange(
-              prev.fillVolume.USD,
-              bucket.fillVolumeUSD.value,
-            ),
-          },
           tradeCount: bucket.tradeCount.value,
           tradeCountChange: getPercentageChange(
             prev.tradeCount,

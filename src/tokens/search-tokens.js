@@ -5,18 +5,18 @@ const Token = require('../model/token');
 
 const getSuggestedTokens = async limit => {
   const res = await elasticsearch.getClient().search({
-    index: 'traded_tokens',
+    index: 'token_metrics_daily',
     body: {
       aggs: {
         tokenStats: {
           terms: {
-            field: 'tokenAddress',
+            field: 'address',
             order: { tradeVolumeUSD: 'desc' },
             size: limit,
           },
           aggs: {
             tradeVolumeUSD: {
-              sum: { field: 'tradedAmountUSD' },
+              sum: { field: 'tradeVolumeUsd' },
             },
             bucket_truncate: {
               bucket_sort: {

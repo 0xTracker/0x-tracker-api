@@ -7,7 +7,7 @@ const getTrader = require('./get-trader');
 
 const getSuggestedTraders = async limit => {
   const response = await elasticsearch.getClient().search({
-    index: 'trader_fills',
+    index: 'trader_metrics_daily',
     body: {
       aggs: {
         traders: {
@@ -19,7 +19,7 @@ const getSuggestedTraders = async limit => {
           aggs: {
             tradeVolume: {
               sum: {
-                field: 'totalTradeValue',
+                field: 'totalTradeVolume',
               },
             },
             bucket_truncate: {
@@ -64,7 +64,7 @@ const getSuggestedTraders = async limit => {
 
 const getValidTraderAddresses = async (addresses, limit) => {
   const response = await elasticsearch.getClient().search({
-    index: 'trader_fills',
+    index: 'trader_metrics_daily',
     body: {
       query: {
         terms: {

@@ -4,8 +4,6 @@ const transformRelayer = require('./transform-relayer');
 const stats = {
   tradeVolume: 150567.87,
   tradeCount: 512,
-  fillVolume: 18907,
-  fillCount: 687,
 };
 
 describe('transformRelayer', () => {

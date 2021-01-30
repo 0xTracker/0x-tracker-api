@@ -3,8 +3,7 @@ const Router = require('koa-router');
 
 const { TIME_PERIOD, TOKEN_TYPE } = require('../../../constants');
 const formatTokenType = require('../../../tokens/format-token-type');
-const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getTokensWithStatsForDates = require('../../../tokens/get-tokens-with-stats-for-dates');
+const getTokensWithStatsForPeriod = require('../../../tokens/get-tokens-with-stats-for-period');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const middleware = require('../../middleware');
 
@@ -47,11 +46,9 @@ const createRouter = () => {
 
       const { limit, page } = pagination;
       const { statsPeriod } = params;
-      const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
 
-      const { tokens, resultCount } = await getTokensWithStatsForDates(
-        dateFrom,
-        dateTo,
+      const { tokens, resultCount } = await getTokensWithStatsForPeriod(
+        statsPeriod,
         {
           page,
           limit,

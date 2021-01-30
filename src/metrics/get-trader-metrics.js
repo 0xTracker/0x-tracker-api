@@ -5,7 +5,7 @@ const getTraderMetrics = async (address, period, granularity) => {
   const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
 
   const results = await elasticsearch.getClient().search({
-    index: 'trader_fills',
+    index: granularity === 'hour' ? 'trader_fills' : 'trader_metrics_daily',
     body: {
       aggs: {
         metrics: {
@@ -21,60 +21,74 @@ const getTraderMetrics = async (address, period, granularity) => {
             maker: {
               filter: {
                 range: {
-                  makerFillCount: {
+                  [granularity === 'hour'
+                    ? 'makerTradeCount'
+                    : 'makerTrades']: {
                     gt: 0,
                   },
                 },
               },
               aggs: {
-                fillCount: {
-                  sum: { field: 'totalFillCount' },
-                },
-                fillVolume: {
-                  sum: { field: 'totalFillValue' },
-                },
                 tradeCount: {
-                  sum: { field: 'totalTradeCount' },
+                  sum: {
+                    field:
+                      granularity === 'hour'
+                        ? 'totalTradeCount'
+                        : 'makerTrades',
+                  },
                 },
                 tradeVolume: {
-                  sum: { field: 'totalTradeValue' },
+                  sum: {
+                    field:
+                      granularity === 'hour'
+                        ? 'totalTradeValue'
+                        : 'makerTradeVolume',
+                  },
                 },
               },
             },
             taker: {
               filter: {
                 range: {
-                  takerFillCount: {
+                  [granularity === 'hour'
+                    ? 'takerTradeCount'
+                    : 'takerTrades']: {
                     gt: 0,
                   },
                 },
               },
               aggs: {
-                fillCount: {
-                  sum: { field: 'totalFillCount' },
-                },
-                fillVolume: {
-                  sum: { field: 'totalFillValue' },
-                },
                 tradeCount: {
-                  sum: { field: 'totalTradeCount' },
+                  sum: {
+                    field:
+                      granularity === 'hour'
+                        ? 'totalTradeCount'
+                        : 'takerTrades',
+                  },
                 },
                 tradeVolume: {
-                  sum: { field: 'totalTradeValue' },
+                  sum: {
+                    field:
+                      granularity === 'hour'
+                        ? 'totalTradeValue'
+                        : 'takerTradeVolume',
+                  },
                 },
               },
             },
-            fillCount: {
-              sum: { field: 'totalFillCount' },
-            },
-            fillVolume: {
-              sum: { field: 'totalFillValue' },
-            },
             tradeCount: {
-              sum: { field: 'totalTradeCount' },
+              sum: {
+                field:
+                  granularity === 'hour' ? 'totalTradeCount' : 'totalTrades',
+              },
             },
             tradeVolume: {
-              sum: { field: 'totalTradeValue' },
+              sum: {
+                field:
+                  granularity === 'hour'
+                    ? 'totalTradeValue'
+                    : 'totalTradeVolume',
+              },
             },
           },
         },
@@ -104,16 +118,6 @@ const getTraderMetrics = async (address, period, granularity) => {
 
   return results.body.aggregations.metrics.buckets.map(bucket => ({
     date: new Date(bucket.key_as_string),
-    fillCount: {
-      maker: bucket.maker.fillCount.value,
-      taker: bucket.taker.fillCount.value,
-      total: bucket.fillCount.value,
-    },
-    fillVolume: {
-      maker: bucket.maker.fillVolume.value,
-      taker: bucket.taker.fillVolume.value,
-      total: bucket.fillVolume.value,
-    },
     tradeCount: {
       maker: bucket.maker.tradeCount.value,
       taker: bucket.taker.tradeCount.value,

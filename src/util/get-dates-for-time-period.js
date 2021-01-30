@@ -11,14 +11,21 @@ const getStartDate = (timePeriod, endDate) => {
   const endMoment = moment.utc(endDate);
 
   switch (timePeriod) {
-    case TIME_PERIOD.DAY:
-      return endMoment.subtract(1, 'days').toDate();
     case TIME_PERIOD.WEEK:
-      return endMoment.subtract(1, 'weeks').toDate();
+      return endMoment
+        .subtract(6, 'days')
+        .startOf('day')
+        .toDate();
     case TIME_PERIOD.MONTH:
-      return endMoment.subtract(1, 'months').toDate();
+      return endMoment
+        .subtract(29, 'days')
+        .startOf('day')
+        .toDate();
     case TIME_PERIOD.YEAR:
-      return endMoment.subtract(1, 'years').toDate();
+      return endMoment
+        .subtract(364, 'days')
+        .startOf('day')
+        .toDate();
     default:
       throw new Error(`Invalid time period: ${timePeriod}`);
   }
@@ -37,10 +44,30 @@ const getDatesForTimePeriod = period => {
     };
   }
 
-  const endDate = moment.utc().toDate();
-  const startDate = getStartDate(period, endDate);
+  if (period === 'day') {
+    const dateTo = moment.utc().toDate();
+    const dateFrom = moment
+      .utc(dateTo)
+      .subtract(24, 'hours')
+      .toDate();
 
-  return { dateFrom: startDate, dateTo: endDate };
+    return {
+      dateFrom,
+      dateTo,
+    };
+  }
+
+  const dateTo = moment
+    .utc()
+    .endOf('day')
+    .toDate();
+
+  const dateFrom = getStartDate(period, dateTo);
+
+  return {
+    dateFrom,
+    dateTo,
+  };
 };
 
 module.exports = getDatesForTimePeriod;
