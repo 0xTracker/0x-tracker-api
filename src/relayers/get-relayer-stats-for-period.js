@@ -46,12 +46,6 @@ const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
       index: 'fills',
       body: {
         aggs: {
-          fillCount: {
-            value_count: { field: '_id' },
-          },
-          fillVolume: {
-            sum: { field: 'value' },
-          },
           tradeCount: {
             sum: { field: 'tradeCountContribution' },
           },
@@ -87,17 +81,9 @@ const getStatsForDates = async (relayerId, dateFrom, dateTo) => {
     getTraderCount(relayerId, dateFrom, dateTo),
   ]);
 
-  const {
-    fillCount,
-    fillVolume,
-    tokenCount,
-    tradeCount,
-    tradeVolume,
-  } = res.body.aggregations;
+  const { tokenCount, tradeCount, tradeVolume } = res.body.aggregations;
 
   return {
-    fillCount: fillCount.value,
-    fillVolume: fillVolume.value,
     tokenCount: tokenCount.value,
     tradeCount: tradeCount.value,
     traderCount,
@@ -116,13 +102,6 @@ const getRelayerStatsForPeriod = async (relayerId, period) => {
     activeTradersChange: getPercentageChange(
       prevStats.traderCount,
       stats.traderCount,
-    ),
-    fillCount: stats.fillCount,
-    fillCountChange: getPercentageChange(prevStats.fillCount, stats.fillCount),
-    fillVolume: stats.fillVolume,
-    fillVolumeChange: getPercentageChange(
-      prevStats.fillVolume,
-      stats.fillVolume,
     ),
     tradeCount: stats.tradeCount,
     tradeCountChange: getPercentageChange(

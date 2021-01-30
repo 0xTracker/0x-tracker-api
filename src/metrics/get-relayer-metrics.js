@@ -81,9 +81,6 @@ const getBasicMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
             },
           },
           aggs: {
-            fillVolume: {
-              sum: { field: 'value' },
-            },
             tradeCount: {
               sum: { field: 'tradeCountContribution' },
             },
@@ -100,8 +97,6 @@ const getBasicMetrics = async (relayerId, dateFrom, dateTo, granularity) => {
 
   return results.body.aggregations.metrics_by_date.buckets.map(x => ({
     date: new Date(x.key_as_string),
-    fillCount: x.doc_count,
-    fillVolume: x.fillVolume.value,
     tradeCount: relayerId === null ? x.doc_count : x.tradeCount.value,
     tradeVolume: relayerId === null ? x.fillVolume.value : x.tradeVolume.value,
   }));

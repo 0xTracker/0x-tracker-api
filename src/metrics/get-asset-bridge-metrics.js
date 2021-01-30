@@ -18,9 +18,6 @@ const getAssetBridgeMetrics = async (bridgeAddress, period, granularity) => {
             },
           },
           aggs: {
-            fillVolume: {
-              sum: { field: 'value' },
-            },
             tradeCount: {
               sum: { field: 'tradeCountContribution' },
             },
@@ -55,8 +52,6 @@ const getAssetBridgeMetrics = async (bridgeAddress, period, granularity) => {
 
   return results.body.aggregations.metrics_by_date.buckets.map(x => ({
     date: new Date(x.key_as_string),
-    fillCount: x.doc_count,
-    fillVolume: x.fillVolume.value,
     tradeCount: x.tradeCount.value,
     tradeVolume: x.tradeVolume.value,
   }));

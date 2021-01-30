@@ -19,9 +19,6 @@ const getBridgesForPeriod = async (period, options) => {
             size: limit * page,
           },
           aggs: {
-            fillVolume: {
-              sum: { field: 'value' },
-            },
             tradeCount: {
               sum: {
                 field: 'tradeCountContribution',
@@ -89,8 +86,6 @@ const getBridgesForPeriod = async (period, options) => {
       imageUrl: _.get(assetBridge, 'imageUrl', null),
       name: _.get(assetBridge, 'name', null),
       stats: {
-        fillCount: bucket.doc_count,
-        fillVolume: bucket.fillVolume.value,
         tradeCount: bucket.tradeCount.value,
         tradeVolume: bucket.tradeVolume.value,
       },

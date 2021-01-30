@@ -93,9 +93,6 @@ const getStatsForPreviousPeriod = async (relayerIds, dateFrom, dateTo) => {
               size: relayerIds.length,
             },
             aggs: {
-              fillVolume: {
-                sum: { field: 'value' },
-              },
               tradeCount: {
                 sum: {
                   field: 'tradeCountContribution',
@@ -127,8 +124,6 @@ const getStatsForPreviousPeriod = async (relayerIds, dateFrom, dateTo) => {
     );
 
     return {
-      fillCount: _.get(bucket, 'doc_count', 0),
-      fillVolume: _.get(bucket, 'fillVolume.value', 0),
       tradeCount: _.get(bucket, 'tradeCount.value', 0),
       tradeVolume: _.get(bucket, 'tradeVolume.value', 0),
       traderCount: activeTraders,
@@ -157,9 +152,6 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
             size: 500,
           },
           aggs: {
-            fillVolume: {
-              sum: { field: 'value' },
-            },
             tradeCount: {
               sum: {
                 field: 'tradeCountContribution',
@@ -221,13 +213,6 @@ const getRelayersWithStatsForDates = async (dateFrom, dateTo, options) => {
       name: _.get(relayer, 'name', 'Unknown'),
       slug: _.get(relayer, 'slug', 'unknown'),
       stats: {
-        fillCount: bucket.doc_count,
-        fillCountChange: getPercentageChange(prev.fillCount, bucket.doc_count),
-        fillVolume: bucket.fillVolume.value,
-        fillVolumeChange: getPercentageChange(
-          prev.fillVolume,
-          bucket.fillVolume.value,
-        ),
         tradeCount: bucket.tradeCount.value,
         tradeCountChange: getPercentageChange(
           prev.tradeCount,
