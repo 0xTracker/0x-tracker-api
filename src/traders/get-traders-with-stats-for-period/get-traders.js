@@ -1,6 +1,6 @@
 const elasticsearch = require('../../util/elasticsearch');
 
-const getQuery = (dateFrom, dateTo, exclude, appIds) => {
+const getQuery = (dateFrom, dateTo, appIds) => {
   return {
     bool: {
       filter: [
@@ -20,11 +20,6 @@ const getQuery = (dateFrom, dateTo, exclude, appIds) => {
               },
             },
       ].filter(x => x !== undefined),
-      must_not: {
-        terms: {
-          address: exclude,
-        },
-      },
     },
   };
 };
@@ -32,11 +27,11 @@ const getQuery = (dateFrom, dateTo, exclude, appIds) => {
 const getTraders = async (
   dateFrom,
   dateTo,
-  { appIds, exclude, limit, page },
+  { appIds, limit, page, usePrecomputed },
 ) => {
   const startIndex = (page - 1) * limit;
   const response = await elasticsearch.getClient().search({
-    index: 'trader_fills',
+    index: usePrecomputed ? 'trader_metrics_daily' : 'trader_fills',
     body: {
       aggs: {
         traders: {
@@ -46,41 +41,35 @@ const getTraders = async (
             size: page * limit,
           },
           aggs: {
-            makerFills: {
-              sum: { field: 'makerFillCount' },
-            },
-            makerFillVolume: {
-              sum: { field: 'makerFillValue' },
-            },
             makerTrades: {
-              sum: { field: 'makerTradeCount' },
+              sum: {
+                field: usePrecomputed ? 'makerTrades' : 'makerTradeCount',
+              },
             },
             makerTradeVolume: {
-              sum: { field: 'makerTradeValue' },
-            },
-            takerFills: {
-              sum: { field: 'takerFillCount' },
-            },
-            takerFillVolume: {
-              sum: { field: 'takerFillValue' },
+              sum: {
+                field: usePrecomputed ? 'makerTradeVolume' : 'makerTradeValue',
+              },
             },
             takerTrades: {
-              sum: { field: 'takerTradeCount' },
+              sum: {
+                field: usePrecomputed ? 'takerTrades' : 'takerTradeCount',
+              },
             },
             takerTradeVolume: {
-              sum: { field: 'takerTradeValue' },
-            },
-            totalFills: {
-              sum: { field: 'totalFillCount' },
-            },
-            totalFillVolume: {
-              sum: { field: 'totalFillValue' },
+              sum: {
+                field: usePrecomputed ? 'takerTradeVolume' : 'takerTradeValue',
+              },
             },
             totalTrades: {
-              sum: { field: 'totalTradeCount' },
+              sum: {
+                field: usePrecomputed ? 'totalTrades' : 'totalTradeCount',
+              },
             },
             totalTradeVolume: {
-              sum: { field: 'totalTradeValue' },
+              sum: {
+                field: usePrecomputed ? 'totalTradeVolume' : 'totalTradeValue',
+              },
             },
             bucket_truncate: {
               bucket_sort: {
@@ -97,7 +86,7 @@ const getTraders = async (
         },
       },
       size: 0,
-      query: getQuery(dateFrom, dateTo, exclude, appIds),
+      query: getQuery(dateFrom, dateTo, appIds),
     },
   });
 
@@ -108,16 +97,6 @@ const getTraders = async (
   const traders = buckets.map(bucket => ({
     address: bucket.key,
     stats: {
-      fillCount: {
-        maker: bucket.makerFills.value,
-        taker: bucket.takerFills.value,
-        total: bucket.totalFills.value,
-      },
-      fillVolume: {
-        maker: bucket.makerFillVolume.value,
-        taker: bucket.takerFillVolume.value,
-        total: bucket.totalFillVolume.value,
-      },
       tradeCount: {
         maker: bucket.makerTrades.value,
         taker: bucket.takerTrades.value,

@@ -1,8 +1,8 @@
 const elasticsearch = require('../../util/elasticsearch');
 
-const getSecondary = async (addresses, dateFrom, dateTo) => {
+const getSecondary = async (addresses, dateFrom, dateTo, usePrecomputed) => {
   const response = await elasticsearch.getClient().search({
-    index: 'trader_fills',
+    index: usePrecomputed ? 'trader_metrics_daily' : 'trader_fills',
     body: {
       aggs: {
         traders: {
@@ -11,29 +11,25 @@ const getSecondary = async (addresses, dateFrom, dateTo) => {
             size: addresses.length,
           },
           aggs: {
-            makerFills: {
-              sum: { field: 'makerFillCount' },
-            },
-            makerFillVolume: {
-              sum: { field: 'makerFillValue' },
-            },
             makerTrades: {
-              sum: { field: 'makerTradeCount' },
+              sum: {
+                field: usePrecomputed ? 'makerTrades' : 'makerTradeCount',
+              },
             },
             makerTradeVolume: {
-              sum: { field: 'makerTradeValue' },
-            },
-            totalFills: {
-              sum: { field: 'totalFillCount' },
-            },
-            totalFillVolume: {
-              sum: { field: 'totalFillValue' },
+              sum: {
+                field: usePrecomputed ? 'makerTradeVolume' : 'makerTradeValue',
+              },
             },
             totalTrades: {
-              sum: { field: 'totalTradeCount' },
+              sum: {
+                field: usePrecomputed ? 'totalTrades' : 'totalTradeCount',
+              },
             },
             totalTradeVolume: {
-              sum: { field: 'totalTradeValue' },
+              sum: {
+                field: usePrecomputed ? 'totalTradeVolume' : 'totalTradeValue',
+              },
             },
           },
         },
@@ -66,12 +62,8 @@ const getSecondary = async (addresses, dateFrom, dateTo) => {
 
   const traders = buckets.map(bucket => ({
     address: bucket.key,
-    makerFillCount: bucket.makerFills.value,
-    makerFillVolume: bucket.makerFillVolume.value,
     makerTradeCount: bucket.makerTrades.value,
     makerTradeVolume: bucket.makerTradeVolume.value,
-    totalFillCount: bucket.totalFills.value,
-    totalFillVolume: bucket.totalFillVolume.value,
     totalTradeCount: bucket.totalTrades.value,
     totalTradeVolume: bucket.totalTradeVolume.value,
   }));
@@ -79,10 +71,11 @@ const getSecondary = async (addresses, dateFrom, dateTo) => {
   return traders;
 };
 
-const getPrimary = async (dateFrom, dateTo, { exclude, limit, page }) => {
-  const startIndex = (page - 1) * limit;
+const getPrimary = async (dateFrom, dateTo, options) => {
+  const { limit, page, usePrecomputed } = options;
+
   const response = await elasticsearch.getClient().search({
-    index: 'trader_fills',
+    index: usePrecomputed ? 'trader_metrics_daily' : 'trader_fills',
     body: {
       aggs: {
         traders: {
@@ -92,22 +85,20 @@ const getPrimary = async (dateFrom, dateTo, { exclude, limit, page }) => {
             size: page * limit,
           },
           aggs: {
-            takerFills: {
-              sum: { field: 'takerFillCount' },
-            },
-            takerFillVolume: {
-              sum: { field: 'takerFillValue' },
-            },
             takerTrades: {
-              sum: { field: 'takerTradeCount' },
+              sum: {
+                field: usePrecomputed ? 'takerTrades' : 'takerTradeCount',
+              },
             },
             takerTradeVolume: {
-              sum: { field: 'takerTradeValue' },
+              sum: {
+                field: usePrecomputed ? 'takerTradeVolume' : 'takerTradeValue',
+              },
             },
             bucket_truncate: {
               bucket_sort: {
                 size: limit,
-                from: startIndex,
+                from: (page - 1) * limit,
               },
             },
           },
@@ -132,17 +123,12 @@ const getPrimary = async (dateFrom, dateTo, { exclude, limit, page }) => {
             },
             {
               range: {
-                takerFillCount: {
+                [usePrecomputed ? 'takerTrades' : 'takerTradeCount']: {
                   gt: 0,
                 },
               },
             },
           ],
-          must_not: {
-            terms: {
-              address: exclude,
-            },
-          },
         },
       },
     },
@@ -154,8 +140,6 @@ const getPrimary = async (dateFrom, dateTo, { exclude, limit, page }) => {
 
   const traders = buckets.map(bucket => ({
     address: bucket.key,
-    takerFillCount: bucket.takerFills.value,
-    takerFillVolume: bucket.takerFillVolume.value,
     takerTradeCount: bucket.takerTrades.value,
     takerTradeVolume: bucket.takerTradeVolume.value,
   }));
@@ -166,15 +150,22 @@ const getPrimary = async (dateFrom, dateTo, { exclude, limit, page }) => {
   };
 };
 
-const getTakers = async (dateFrom, dateTo, { exclude, limit, page }) => {
+const getTakers = async (dateFrom, dateTo, { limit, page, usePrecomputed }) => {
   const primaryData = await getPrimary(dateFrom, dateTo, {
-    exclude,
     limit,
     page,
+    usePrecomputed,
   });
 
   const takerAddresses = primaryData.traders.map(taker => taker.address);
-  const secondaryData = await getSecondary(takerAddresses, dateFrom, dateTo);
+
+  const secondaryData = await getSecondary(
+    takerAddresses,
+    dateFrom,
+    dateTo,
+    usePrecomputed,
+  );
+
   const takers = primaryData.traders.map(taker => {
     const secondaryStats = secondaryData.find(
       dataPoint => dataPoint.address === taker.address,
@@ -183,16 +174,6 @@ const getTakers = async (dateFrom, dateTo, { exclude, limit, page }) => {
     return {
       address: taker.address,
       stats: {
-        fillCount: {
-          maker: secondaryStats.makerFillCount,
-          taker: taker.takerFillCount,
-          total: secondaryStats.totalFillCount,
-        },
-        fillVolume: {
-          maker: secondaryStats.makerFillVolume,
-          taker: taker.takerFillVolume,
-          total: secondaryStats.totalFillVolume,
-        },
         tradeCount: {
           maker: secondaryStats.makerTradeCount,
           taker: taker.takerTradeCount,

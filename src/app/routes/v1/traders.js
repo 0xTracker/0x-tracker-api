@@ -3,8 +3,7 @@ const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
 const AddressMetadata = require('../../../model/address-metadata');
-const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
-const getTradersWithStatsForDates = require('../../../traders/get-traders-with-stats-for-dates');
+const getTradersWithStatsForPeriod = require('../../../traders/get-traders-with-stats-for-period');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
 const middleware = require('../../middleware');
 
@@ -23,7 +22,7 @@ const createRouter = () => {
     }),
     middleware.apps('apps'),
     async ({ pagination, params, request, response }, next) => {
-      const { excludeRelayers, type } = request.query;
+      const { type } = request.query;
 
       if (type !== undefined && type !== 'maker' && type !== 'taker') {
         throw new InvalidParameterError(
@@ -32,27 +31,13 @@ const createRouter = () => {
         );
       }
 
-      if (
-        excludeRelayers !== undefined &&
-        excludeRelayers !== 'true' &&
-        excludeRelayers !== 'false'
-      ) {
-        throw new InvalidParameterError(
-          'Must be one of: true, false',
-          'Invalid query parameter: excludeRelayers',
-        );
-      }
-
       const { limit, page } = pagination;
       const { apps, statsPeriod } = params;
-      const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
 
-      const { traders, resultCount } = await getTradersWithStatsForDates(
-        dateFrom,
-        dateTo,
+      const { traders, resultCount } = await getTradersWithStatsForPeriod(
+        statsPeriod,
         {
           appIds: apps,
-          excludeRelayers,
           page,
           limit,
           type,
