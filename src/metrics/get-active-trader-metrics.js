@@ -29,7 +29,7 @@ const getActiveTraderMetrics = async (period, granularity) => {
               makers: {
                 filter: {
                   range: {
-                    makerFillCount: {
+                    makerTradeCount: {
                       gt: 0,
                     },
                   },
@@ -45,7 +45,7 @@ const getActiveTraderMetrics = async (period, granularity) => {
               takers: {
                 filter: {
                   range: {
-                    takerFillCount: {
+                    takerTradeCount: {
                       gt: 0,
                     },
                   },
