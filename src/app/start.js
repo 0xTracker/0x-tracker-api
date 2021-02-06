@@ -2,6 +2,7 @@ const body = require('koa-body');
 const compress = require('koa-compress');
 const etag = require('koa-etag');
 const helmet = require('koa-helmet');
+const ratelimit = require('koa-ratelimit');
 const Koa = require('koa');
 
 const { getLogger } = require('../util/logging');
@@ -14,6 +15,25 @@ const start = port => {
   const app = new Koa();
 
   errorLogger.attachToApp(app);
+
+  const rateLimitDb = new Map();
+
+  app.use(
+    ratelimit({
+      driver: 'memory',
+      db: rateLimitDb,
+      duration: 60000,
+      errorMessage: 'Too many requests.',
+      id: ctx => ctx.ip,
+      headers: {
+        remaining: 'Rate-Limit-Remaining',
+        reset: 'Rate-Limit-Reset',
+        total: 'Rate-Limit-Total',
+      },
+      max: 50,
+      disableHeader: false,
+    }),
+  );
 
   app.use(middleware.error());
   app.use(helmet());

@@ -39,6 +39,7 @@
     "koa-compress": "3.0.0",
     "koa-etag": "3.0.0",
     "koa-helmet": "5.2.0",
+    "koa-ratelimit": "5.0.0",
     "koa-router": "7.4.0",
     "lodash": "4.17.15",
     "memory-cache": "0.2.0",
