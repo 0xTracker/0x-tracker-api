@@ -14,6 +14,8 @@ const start = port => {
   const logger = getLogger('application');
   const app = new Koa();
 
+  app.proxy = true;
+
   errorLogger.attachToApp(app);
 
   const rateLimitDb = new Map();
