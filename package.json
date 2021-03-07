@@ -47,7 +47,7 @@
     "mongoose": "5.8.1",
     "mongoose-paginate": "5.0.3",
     "ms": "2.1.2",
-    "pino": "6.0.0",
+    "pino": "6.7.0",
     "pino-elasticsearch": "4.4.0",
     "slugify": "1.4.0"
   },
