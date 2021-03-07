@@ -32,7 +32,7 @@
     "bignumber.js": "9.0.0",
     "config": "3.2.4",
     "dotenv-safe": "8.2.0",
-    "ethers": "4.0.47",
+    "ethers": "4.0.48",
     "koa": "2.11.0",
     "koa-body": "4.1.1",
     "koa-combine-routers": "4.0.2",
