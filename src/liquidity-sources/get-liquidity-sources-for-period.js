@@ -117,14 +117,10 @@ const getLiquiditySourcesWithStatsForDates = async (
       logoUrl: _.get(attributionEntity, 'logoUrl', null),
       name: _.get(attributionEntity, 'name', 'Unknown'),
       sparkline: bucket.metrics
-        ? {
-            granularity: sparklineGranularity,
-            metrics: bucket.metrics.buckets.map(metricsBucket => ({
-              date: metricsBucket.key_as_string,
-              value: metricsBucket.value.value,
-            })),
-            type: sparkline,
-          }
+        ? bucket.metrics.buckets.map(metricsBucket => ({
+            date: metricsBucket.key_as_string,
+            value: metricsBucket.value.value,
+          }))
         : null,
       stats: {
         tradeCount: bucket.tradeCount.value,

@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const { TIME_PERIOD } = require('../../../constants');
 const getLiquiditySourcesForPeriod = require('../../../liquidity-sources/get-liquidity-sources-for-period');
+const getGranularityForSparkline = require('../../../metrics/get-granularity-for-sparkline');
 const middleware = require('../../middleware');
 
 const createRouter = () => {
@@ -19,19 +20,9 @@ const createRouter = () => {
     middleware.enum('sortBy', ['tradeCount', 'tradeVolume'], 'tradeVolume'),
     middleware.enum('sortDirection', ['asc', 'desc'], 'desc'),
     middleware.enum('sparkline', ['none', 'tradeCount', 'tradeVolume'], 'none'),
-    middleware.metricGranularity({
-      granularity: 'sparklineGranularity',
-      period: 'statsPeriod',
-    }),
     async ({ pagination, params, response }, next) => {
       const { limit, page } = pagination;
-      const {
-        sortBy,
-        sortDirection,
-        sparkline,
-        sparklineGranularity,
-        statsPeriod,
-      } = params;
+      const { sortBy, sortDirection, sparkline, statsPeriod } = params;
 
       const {
         liquiditySources,
@@ -42,7 +33,7 @@ const createRouter = () => {
         sortBy,
         sortDirection,
         sparkline,
-        sparklineGranularity,
+        sparklineGranularity: getGranularityForSparkline(statsPeriod),
       });
 
       response.body = {
