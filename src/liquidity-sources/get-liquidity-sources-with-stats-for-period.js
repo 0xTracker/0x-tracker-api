@@ -6,7 +6,7 @@ const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 const getLiquiditySourcesWithStatsForDates = async (
   dateFrom,
   dateTo,
-  { limit, page, usePrecomputed },
+  { limit, page, sortBy, sortDirection, usePrecomputed },
 ) => {
   const startIndex = (page - 1) * limit;
   const response = await elasticsearch.getClient().search({
@@ -16,7 +16,7 @@ const getLiquiditySourcesWithStatsForDates = async (
         liquiditySources: {
           terms: {
             field: 'liquiditySourceId',
-            order: { tradeVolume: 'desc' },
+            order: { [sortBy]: sortDirection },
             size: page * limit,
           },
           aggs: {
@@ -96,14 +96,13 @@ const getLiquiditySourcesWithStatsForDates = async (
 
 const getLiquiditySourcesWithStatsForPeriod = async (period, options) => {
   const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-  const { page, limit } = _.defaults({}, options, {
-    page: 1,
-    limit: 20,
-  });
+  const { limit, page, sortBy, sortDirection } = options;
 
   const result = await getLiquiditySourcesWithStatsForDates(dateFrom, dateTo, {
     limit,
     page,
+    sortBy,
+    sortDirection,
     usePrecomputed: period !== 'day',
   });
 

@@ -16,16 +16,20 @@ const createRouter = () => {
     middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY, {
       allowCustom: true,
     }),
+    middleware.enum('sortBy', ['tradeCount', 'tradeVolume'], 'tradeVolume'),
+    middleware.enum('sortDirection', ['asc', 'desc'], 'desc'),
     async ({ pagination, params, response }, next) => {
       const { limit, page } = pagination;
-      const { statsPeriod } = params;
+      const { sortBy, sortDirection, statsPeriod } = params;
 
       const {
         liquiditySources,
         resultCount,
       } = await getLiquiditySourcesWithStatsForPeriod(statsPeriod, {
-        page,
         limit,
+        page,
+        sortBy,
+        sortDirection,
       });
 
       response.body = {
