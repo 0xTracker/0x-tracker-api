@@ -3,10 +3,26 @@ const AttributionEntity = require('../model/attribution-entity');
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 
+const getSparklineField = (sparkline, usePrecomputed) => {
+  if (sparkline === 'tradeCount') {
+    return usePrecomputed ? 'tradeCount' : 'tradeCountContribution';
+  }
+
+  return 'tradeVolume';
+};
+
 const getLiquiditySourcesWithStatsForDates = async (
   dateFrom,
   dateTo,
-  { limit, page, sortBy, sortDirection, usePrecomputed },
+  {
+    limit,
+    page,
+    sortBy,
+    sortDirection,
+    sparkline,
+    sparklineGranularity,
+    usePrecomputed,
+  },
 ) => {
   const startIndex = (page - 1) * limit;
   const response = await elasticsearch.getClient().search({
@@ -20,6 +36,26 @@ const getLiquiditySourcesWithStatsForDates = async (
             size: page * limit,
           },
           aggs: {
+            metrics:
+              sparkline !== 'none'
+                ? {
+                    date_histogram: {
+                      field: 'date',
+                      calendar_interval: sparklineGranularity,
+                      extended_bounds: {
+                        min: dateFrom,
+                        max: dateTo,
+                      },
+                    },
+                    aggs: {
+                      value: {
+                        sum: {
+                          field: getSparklineField(sparkline, usePrecomputed),
+                        },
+                      },
+                    },
+                  }
+                : undefined,
             tradeCount: {
               sum: {
                 field: usePrecomputed ? 'tradeCount' : 'tradeCountContribution',
@@ -80,6 +116,16 @@ const getLiquiditySourcesWithStatsForDates = async (
       id: bucket.key,
       logoUrl: _.get(attributionEntity, 'logoUrl', null),
       name: _.get(attributionEntity, 'name', 'Unknown'),
+      sparkline: bucket.metrics
+        ? {
+            granularity: sparklineGranularity,
+            metrics: bucket.metrics.buckets.map(metricsBucket => ({
+              date: metricsBucket.key_as_string,
+              value: metricsBucket.value.value,
+            })),
+            type: sparkline,
+          }
+        : null,
       stats: {
         tradeCount: bucket.tradeCount.value,
         tradeVolume: bucket.tradeVolume.value,
@@ -94,19 +140,15 @@ const getLiquiditySourcesWithStatsForDates = async (
   };
 };
 
-const getLiquiditySourcesWithStatsForPeriod = async (period, options) => {
+const getLiquiditySourcesForPeriod = async (period, options) => {
   const { dateFrom, dateTo } = getDatesForTimePeriod(period);
-  const { limit, page, sortBy, sortDirection } = options;
 
   const result = await getLiquiditySourcesWithStatsForDates(dateFrom, dateTo, {
-    limit,
-    page,
-    sortBy,
-    sortDirection,
+    ...options,
     usePrecomputed: period !== 'day',
   });
 
   return result;
 };
 
-module.exports = getLiquiditySourcesWithStatsForPeriod;
+module.exports = getLiquiditySourcesForPeriod;
