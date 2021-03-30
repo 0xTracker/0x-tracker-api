@@ -30,8 +30,6 @@ const createRouter = () => {
       const { limit, page } = pagination;
       const { sortBy, sortDirection, statsPeriod } = params;
 
-      throw new Error('Currently unavailable');
-
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
       const { apps, resultCount } = await getAppsWithStatsForDates(
         dateFrom,

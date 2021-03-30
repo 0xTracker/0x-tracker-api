@@ -56,8 +56,6 @@ const createRouter = () => {
       const { slug, sortBy, statsPeriod } = params;
       const { limit, page } = pagination;
 
-      throw new Error('Currently unavailable');
-
       const app = await getAppBySlug(slug);
 
       if (app === null) {
