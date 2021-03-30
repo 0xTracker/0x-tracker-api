@@ -20,6 +20,8 @@ const createRouter = () => {
       const { slug, statsPeriod } = params;
       const app = await getAppBySlug(slug);
 
+      throw new Error('Currently unavailable');
+
       if (app === null) {
         response.status = 404;
         await next();
@@ -53,6 +55,8 @@ const createRouter = () => {
     async ({ pagination, params, response }, next) => {
       const { slug, sortBy, statsPeriod } = params;
       const { limit, page } = pagination;
+
+      throw new Error('Currently unavailable');
 
       const app = await getAppBySlug(slug);
 
@@ -100,6 +104,8 @@ const createRouter = () => {
     async ({ pagination, params, response }, next) => {
       const { slug, sortBy, statsPeriod } = params;
       const { limit, page } = pagination;
+
+      throw new Error('Currently unavailable');
 
       const app = await getAppBySlug(slug);
 

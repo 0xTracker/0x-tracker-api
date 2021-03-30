@@ -37,6 +37,8 @@ const createRouter = () => {
     async ({ pagination, params, request, response }, next) => {
       const { type } = request.query;
 
+      throw new Error('Currently unavailable');
+
       if (type !== undefined && !validTokenTypes.includes(type)) {
         throw new InvalidParameterError(
           `Must be one of: ${validTokenTypes.join(', ')}`,

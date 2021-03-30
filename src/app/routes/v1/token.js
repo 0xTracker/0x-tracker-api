@@ -20,6 +20,8 @@ const createRouter = () => {
     async ({ params, response }, next) => {
       const { statsPeriod, tokenAddress } = params;
 
+      throw new Error('Currently unavailable');
+
       const token = await Token.findOne({
         address: tokenAddress,
       }).lean();
@@ -59,6 +61,8 @@ const createRouter = () => {
     async ({ pagination, params, response }, next) => {
       const { sortBy, statsPeriod, tokenAddress } = params;
       const { limit, page } = pagination;
+
+      throw new Error('Currently unavailable');
 
       const token = await Token.findOne({
         address: tokenAddress,
