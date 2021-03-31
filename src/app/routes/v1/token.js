@@ -60,6 +60,10 @@ const createRouter = () => {
       const { sortBy, statsPeriod, tokenAddress } = params;
       const { limit, page } = pagination;
 
+      if (statsPeriod === 'all' || statsPeriod === 'year') {
+        throw new Error('Temporarily unavailable');
+      }
+
       const token = await Token.findOne({
         address: tokenAddress,
       }).lean();

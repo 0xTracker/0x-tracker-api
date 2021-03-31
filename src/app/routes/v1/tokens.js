@@ -47,6 +47,10 @@ const createRouter = () => {
       const { limit, page } = pagination;
       const { statsPeriod } = params;
 
+      if (statsPeriod === 'all' || statsPeriod === 'year') {
+        throw new Error('Temporarily unavailable');
+      }
+
       const { tokens, resultCount } = await getTokensWithStatsForPeriod(
         statsPeriod,
         {
