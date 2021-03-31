@@ -20,6 +20,10 @@ const createRouter = () => {
       const { slug, statsPeriod } = params;
       const app = await getAppBySlug(slug);
 
+      if (statsPeriod === 'all' || statsPeriod === 'year') {
+        throw new Error('Temporarily unavailable');
+      }
+
       if (app === null) {
         response.status = 404;
         await next();
@@ -53,6 +57,10 @@ const createRouter = () => {
     async ({ pagination, params, response }, next) => {
       const { slug, sortBy, statsPeriod } = params;
       const { limit, page } = pagination;
+
+      if (statsPeriod === 'all' || statsPeriod === 'year') {
+        throw new Error('Temporarily unavailable');
+      }
 
       const app = await getAppBySlug(slug);
 
@@ -100,6 +108,11 @@ const createRouter = () => {
     async ({ pagination, params, response }, next) => {
       const { slug, sortBy, statsPeriod } = params;
       const { limit, page } = pagination;
+
+      if (statsPeriod === 'all' || statsPeriod === 'year') {
+        throw new Error('Temporarily unavailable');
+      }
+
       const app = await getAppBySlug(slug);
 
       if (app === null) {

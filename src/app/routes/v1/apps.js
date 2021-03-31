@@ -30,6 +30,10 @@ const createRouter = () => {
       const { limit, page } = pagination;
       const { sortBy, sortDirection, statsPeriod } = params;
 
+      if (statsPeriod === 'all' || statsPeriod === 'year') {
+        throw new Error('Temporarily unavailable');
+      }
+
       const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
       const { apps, resultCount } = await getAppsWithStatsForDates(
         dateFrom,
