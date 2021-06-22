@@ -17,7 +17,6 @@ const buildFillsQuery = params => {
     dateTo,
     protocolVersion,
     query,
-    relayerId,
     status,
     token,
     trader,
@@ -46,18 +45,6 @@ const buildFillsQuery = params => {
           gte: valueFrom !== undefined ? valueFrom : undefined,
           lte: valueTo !== undefined ? valueTo : undefined,
         },
-      },
-    });
-  }
-
-  if (_.isFinite(relayerId)) {
-    filters.push({ term: { relayerId } });
-  }
-
-  if (_.isNull(relayerId)) {
-    exclusions.push({
-      exists: {
-        field: 'relayerId',
       },
     });
   }

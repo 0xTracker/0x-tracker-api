@@ -9,7 +9,6 @@ const limit = require('./limit');
 const metricGranularity = require('./metric-granularity');
 const number = require('./number');
 const pagination = require('./pagination');
-const relayer = require('./relayer');
 const timePeriod = require('./time-period');
 const token = require('./token');
 const trader = require('./trader');
@@ -26,7 +25,6 @@ module.exports = {
   metricGranularity,
   number,
   pagination,
-  relayer,
   timePeriod,
   token,
   trader,

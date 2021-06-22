@@ -59,7 +59,6 @@ const createRouter = () => {
     middleware.number('protocolVersion'),
     middleware.number('valueFrom'),
     middleware.number('valueTo'),
-    middleware.relayer('relayer'),
     middleware.token('token'),
     middleware.fillStatus('status'),
     middleware.trader('trader'),
@@ -73,7 +72,6 @@ const createRouter = () => {
       const {
         apps,
         protocolVersion,
-        relayer,
         sortBy,
         sortDirection,
         status,
@@ -122,7 +120,6 @@ const createRouter = () => {
             dateTo,
             protocolVersion,
             query: searchTerm,
-            relayerId: relayer,
             status,
             token,
             trader,

@@ -11,8 +11,6 @@ const getAssetBridgeMetrics = require('../../../metrics/get-asset-bridge-metrics
 const getAssetBridgingMetrics = require('../../../asset-bridges/get-asset-bridging-metrics');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
-const getRelayerLookupId = require('../../../relayers/get-relayer-lookup-id');
-const getRelayerMetrics = require('../../../metrics/get-relayer-metrics');
 const getTokenMetrics = require('../../../metrics/get-token-metrics');
 const getTraderMetrics = require('../../../metrics/get-trader-metrics');
 const InvalidParameterError = require('../../errors/invalid-parameter-error');
@@ -97,42 +95,6 @@ const createRouter = () => {
 
       const { granularity, period } = params;
       const metrics = await getTraderMetrics(address, period, granularity);
-
-      response.body = metrics;
-
-      await next();
-    },
-  );
-
-  router.get(
-    '/relayer',
-    middleware.timePeriod('period', TIME_PERIOD.MONTH),
-    middleware.metricGranularity({
-      period: 'period',
-      granularity: 'granularity',
-    }),
-    async ({ params, request, response }, next) => {
-      const relayerId = request.query.relayer;
-
-      if (relayerId === undefined) {
-        throw new MissingParameterError('relayer');
-      }
-
-      const relayerLookupId = await getRelayerLookupId(relayerId);
-
-      if (relayerLookupId === undefined) {
-        throw new InvalidParameterError(
-          `No relayer exists with an ID of "${relayerId}"`,
-          `Invalid query parameter: relayer`,
-        );
-      }
-
-      const { granularity, period } = params;
-      const metrics = await getRelayerMetrics(
-        relayerLookupId,
-        period,
-        granularity,
-      );
 
       response.body = metrics;
 
