@@ -74,7 +74,6 @@ module.exports = {
         resolved: true,
         updatedAt: Date('2020-06-21T16:35:09.995Z'),
         createdAt: Date('2020-04-11T19:22:30.410Z'),
-        totalSupply: 2126895.60799883,
       },
       tokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
       traderType: 1,
@@ -87,7 +86,6 @@ module.exports = {
     '0x34621e3d3d201fab88e5fa28bbe275d43cb972c5a0300f41b2b10006351d2e45',
   protocolFee: 4500000000000000.0,
   protocolVersion: 3,
-  relayerId: 34,
   senderAddress: '0x4aa817c6f383c8e8ae77301d18ce48efb16fd2be',
   taker: '0x4aa817c6f383c8e8ae77301d18ce48efb16fd2be',
   transactionHash:

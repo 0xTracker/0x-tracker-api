@@ -50,18 +50,10 @@ const schema = Schema({
   orderHash: String,
   protocolFee: Number,
   protocolVersion: Number,
-  relayerId: Number,
   senderAddress: String,
   taker: String,
   takerFee: Number,
   transactionHash: String,
-});
-
-schema.virtual('relayer', {
-  ref: 'Relayer',
-  localField: 'relayerId',
-  foreignField: 'lookupId',
-  justOne: true,
 });
 
 schema.virtual('assets.token', {
