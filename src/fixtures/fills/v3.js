@@ -14,7 +14,6 @@ module.exports = {
   },
   hasValue: true,
   immeasurable: false,
-  status: 1,
   assets: [
     {
       tokenResolved: true,

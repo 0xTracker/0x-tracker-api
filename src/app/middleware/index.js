@@ -3,7 +3,6 @@ const cacheControl = require('./cache-control');
 const cors = require('./cors');
 const enumMiddleware = require('./enum');
 const error = require('./error');
-const fillStatus = require('./fill-status');
 const invalidUrl = require('./invalid-url');
 const limit = require('./limit');
 const metricGranularity = require('./metric-granularity');
@@ -19,7 +18,6 @@ module.exports = {
   cors,
   enum: enumMiddleware,
   error,
-  fillStatus,
   invalidUrl,
   limit,
   metricGranularity,

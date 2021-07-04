@@ -66,7 +66,6 @@ const simpleFill = {
   orderHash:
     '0xd7cbdddb68cfa6216e867227a4cb8ca281e0d82921000b4b977d6038535482f5',
   protocolVersion: 2,
-  status: 1,
   taker: '0xe269e891a2ec8585a378882ffa531141205e92e9',
   takerFee: 5000000000000000000,
   transactionHash:
@@ -130,26 +129,6 @@ describe('transformFill', () => {
     const viewModel = transformFill(fill);
 
     expect(viewModel.relayer).toBeNull();
-  });
-
-  it('should transform pending fill', () => {
-    const fill = { ...simpleFill, status: 0 };
-    const viewModel = transformFill(fill);
-
-    expect(viewModel.status).toBe('pending');
-  });
-
-  it('should transform successful fill', () => {
-    const viewModel = transformFill(simpleFill);
-
-    expect(viewModel.status).toBe('successful');
-  });
-
-  it('should transform failed fill', () => {
-    const fill = { ...simpleV1Fill, status: 2 };
-    const viewModel = transformFill(fill);
-
-    expect(viewModel.status).toBe('failed');
   });
 
   it('should transform V2 fill', () => {

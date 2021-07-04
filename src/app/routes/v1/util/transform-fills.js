@@ -5,7 +5,6 @@ const {
   FILL_ATTRIBUTION_TYPE,
 } = require('../../../../constants');
 const formatFillAttributionType = require('../../../../fills/format-fill-attribution-type');
-const formatFillStatus = require('../../../../fills/format-fill-status');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
 const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
 
@@ -60,7 +59,6 @@ const transformFill = fill => {
     protocolFee,
     protocolVersion: fill.protocolVersion,
     relayer: getRelayer(fill),
-    status: formatFillStatus(fill.status),
     takerAddress: fill.taker,
     value: _.has(conversions, 'amount')
       ? {

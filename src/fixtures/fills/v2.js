@@ -14,7 +14,6 @@ const V2_FILL = {
       },
     },
   },
-  status: 1,
   blockHash:
     '0xcfbb787812b61bf83a123d6f9c387745caf7838b9ea056796c794d556a808ec4',
   blockNumber: 127162120,

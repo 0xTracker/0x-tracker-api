@@ -7,21 +7,9 @@ const getCdnTokenImageUrl = require('../../../../tokens/get-cdn-token-image-url'
 const getOptionalTokenValue = (token, key) =>
   _.isNil(token[key]) ? null : token[key];
 
-const calculateMarketCap = (circulatingSupply, totalSupply, currentPrice) => {
-  const supply = circulatingSupply !== null ? circulatingSupply : totalSupply;
-
-  if (currentPrice === null || supply === null) {
-    return null;
-  }
-
-  return supply * currentPrice;
-};
-
 const transformToken = (token, tokenPrice, stats, statsPeriod) => {
-  const circulatingSupply = getOptionalTokenValue(token, 'circulatingSupply');
   const name = getOptionalTokenValue(token, 'name');
   const symbol = getOptionalTokenValue(token, 'symbol');
-  const totalSupply = getOptionalTokenValue(token, 'totalSupply');
   const type = formatTokenType(token.type);
 
   const price =
@@ -55,24 +43,15 @@ const transformToken = (token, tokenPrice, stats, statsPeriod) => {
         }
       : null;
 
-  const marketCap = calculateMarketCap(
-    circulatingSupply,
-    totalSupply,
-    price.close,
-  );
-
   return {
     address: token.address,
-    circulatingSupply,
     imageUrl,
     lastTrade,
-    marketCap,
     name,
     price,
     stats,
     statsPeriod,
     symbol,
-    totalSupply,
     type,
   };
 };

@@ -172,27 +172,10 @@ const getTokensWithStatsForDates = async (period, options) => {
       const price = prices.find(t => t.tokenAddress === bucket.key);
       const prev = previousStats.find(s => s.tokenAddress === bucket.key);
 
-      const {
-        address,
-        circulatingSupply,
-        imageUrl,
-        name,
-        symbol,
-        totalSupply,
-        type,
-      } = token;
-
-      const closePrice = _.get(price, 'priceUSD', null);
-      const marketCap =
-        totalSupply === null || closePrice === null
-          ? null
-          : totalSupply * closePrice;
+      const { address, imageUrl, name, symbol, type } = token;
 
       return {
         address,
-        circulatingSupply: _.isFinite(circulatingSupply)
-          ? circulatingSupply
-          : null,
         imageUrl: _.isString(imageUrl) ? getCdnTokenImageUrl(imageUrl) : null,
         lastTrade: _.has(price, 'fillId')
           ? {
@@ -200,7 +183,6 @@ const getTokensWithStatsForDates = async (period, options) => {
               id: price.fillId,
             }
           : null,
-        marketCap,
         name: _.isString(name) ? name : null,
         price:
           token.type === TOKEN_TYPE.ERC20
@@ -242,7 +224,6 @@ const getTokensWithStatsForDates = async (period, options) => {
           },
         },
         symbol: _.isString(symbol) ? symbol : null,
-        totalSupply: _.isFinite(totalSupply) ? totalSupply : null,
         type,
       };
     }),

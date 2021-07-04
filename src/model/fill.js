@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 
-const { FILL_STATUS } = require('../constants');
-
 const { Schema } = mongoose;
 
 require('./attribution-entity');
@@ -54,7 +52,6 @@ const schema = Schema({
   protocolVersion: Number,
   relayerId: Number,
   senderAddress: String,
-  status: { default: FILL_STATUS.PENDING, type: Number },
   taker: String,
   takerFee: Number,
   transactionHash: String,
