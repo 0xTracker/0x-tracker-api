@@ -5,7 +5,6 @@ const {
   FILL_ATTRIBUTION_TYPE,
 } = require('../../../../constants');
 const formatFillAttributionType = require('../../../../fills/format-fill-attribution-type');
-const formatFillStatus = require('../../../../fills/format-fill-status');
 const formatTokenAmount = require('../../../../tokens/format-token-amount');
 const getAssetsForFill = require('../../../../fills/get-assets-for-fill');
 const getFeesForFill = require('../../../../fills/get-fees-for-fill');
@@ -82,7 +81,6 @@ const transformFill = fill => {
     relayer: getRelayer(fill),
     senderAddress: fill.senderAddress,
     sender: normalizeMetadata(fill.senderMetadata, fill.senderAddress),
-    status: formatFillStatus(fill.status),
     takerAddress: fill.taker,
     taker: normalizeMetadata(fill.takerMetadata, fill.taker),
     transactionHash: fill.transactionHash,

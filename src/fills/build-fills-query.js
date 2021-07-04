@@ -17,7 +17,6 @@ const buildFillsQuery = params => {
     dateTo,
     protocolVersion,
     query,
-    status,
     token,
     trader,
     valueFrom,
@@ -85,10 +84,6 @@ const buildFillsQuery = params => {
         type: 'phrase',
       },
     });
-  }
-
-  if (_.isNumber(status)) {
-    filters.push({ term: { status } });
   }
 
   if (_.isString(bridgeAddress)) {

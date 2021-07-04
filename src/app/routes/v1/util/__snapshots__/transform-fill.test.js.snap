@@ -124,7 +124,6 @@ Object {
   "relayer": null,
   "sender": null,
   "senderAddress": undefined,
-  "status": "successful",
   "taker": Object {
     "address": "0xe269e891a2ec8585a378882ffa531141205e92e9",
     "imageUrl": null,
@@ -265,7 +264,6 @@ Object {
   "relayer": null,
   "sender": null,
   "senderAddress": undefined,
-  "status": "successful",
   "taker": Object {
     "address": "0xe269e891a2ec8585a378882ffa531141205e92e9",
     "imageUrl": null,

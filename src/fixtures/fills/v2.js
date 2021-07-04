@@ -14,7 +14,6 @@ const V2_FILL = {
       },
     },
   },
-  status: 1,
   blockHash:
     '0xcfbb787812b61bf83a123d6f9c387745caf7838b9ea056796c794d556a808ec4',
   blockNumber: 127162120,
@@ -26,7 +25,6 @@ const V2_FILL = {
   orderHash:
     '0x259aaa6227f23abd85c01b4e6ba4300195d60e970a07113560c7ab38739196f6',
   protocolVersion: 2,
-  relayerId: 22,
   senderAddress: '0x409b512e1cf94500877c5353b2a0c13b2d24914f',
   taker: '0x409b512e1cf94500877c5353b2a0c13b2d24914f',
   takerFee: 3299967000000000.0,
