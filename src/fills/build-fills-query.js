@@ -12,7 +12,6 @@ const buildFillsQuery = params => {
   const {
     apps,
     bridgeAddress,
-    bridged,
     dateFrom,
     dateTo,
     protocolVersion,
@@ -88,22 +87,6 @@ const buildFillsQuery = params => {
 
   if (_.isString(bridgeAddress)) {
     filters.push({ match_phrase: { 'assets.bridgeAddress': bridgeAddress } });
-  }
-
-  if (_.isBoolean(bridged)) {
-    if (bridged) {
-      filters.push({
-        exists: {
-          field: 'assets.bridgeAddress',
-        },
-      });
-    } else {
-      exclusions.push({
-        exists: {
-          field: 'assets.bridgeAddress',
-        },
-      });
-    }
   }
 
   if (Array.isArray(apps) && apps.length > 0) {
