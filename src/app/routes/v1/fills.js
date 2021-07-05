@@ -22,18 +22,6 @@ const parseDate = dateString => {
   return moment(dateString);
 };
 
-const parseBoolean = booleanString => {
-  if (
-    booleanString === undefined ||
-    booleanString === null ||
-    booleanString.trim().length === 0
-  ) {
-    return undefined;
-  }
-
-  return booleanString === 'true';
-};
-
 const normalizeQueryParam = param => {
   if (param === undefined || param === null) {
     return undefined;
@@ -79,7 +67,6 @@ const createRouter = () => {
         valueTo,
       } = params;
 
-      const bridged = parseBoolean(query.bridged);
       const bridgeAddress = normalizeQueryParam(query.bridgeAddress);
       const dateFrom = parseDate(query.dateFrom);
       const dateTo = parseDate(query.dateTo);
@@ -113,7 +100,6 @@ const createRouter = () => {
           {
             apps,
             bridgeAddress,
-            bridged,
             dateFrom,
             dateTo,
             protocolVersion,

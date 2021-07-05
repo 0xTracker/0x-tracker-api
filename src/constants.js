@@ -27,6 +27,7 @@ module.exports = {
   FILL_ATTRIBUTION_TYPE: {
     RELAYER: 0,
     CONSUMER: 1,
+    LIQUIDITY_SOURCE: 2,
   },
   FILL_STATUS: {
     FAILED: 2,

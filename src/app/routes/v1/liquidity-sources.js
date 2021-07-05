@@ -1,11 +1,11 @@
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
-const getAssetBridgesForPeriod = require('../../../asset-bridges/get-asset-bridges-for-period');
+const getLiquiditySourcesForPeriod = require('../../../liquidity-sources/get-liquidity-sources-for-period');
 const middleware = require('../../middleware');
 
 const createRouter = () => {
-  const router = new Router({ prefix: '/asset-bridges' });
+  const router = new Router({ prefix: '/liquidity-sources' });
 
   router.get(
     '/',
@@ -19,12 +19,12 @@ const createRouter = () => {
       const { limit, page } = pagination;
       const { statsPeriod } = params;
       const {
-        assetBridges,
+        liquiditySources,
         resultCount,
-      } = await getAssetBridgesForPeriod(statsPeriod, { limit, page });
+      } = await getLiquiditySourcesForPeriod(statsPeriod, { limit, page });
 
       response.body = {
-        assetBridges,
+        liquiditySources,
         page,
         pageCount: Math.ceil(resultCount / limit),
         limit,

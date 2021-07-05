@@ -7,8 +7,6 @@ const getAppById = require('../../../apps/get-app-by-id');
 const getAppMetrics = require('../../../metrics/get-app-metrics');
 const getTradedTokenMetrics = require('../../../metrics/get-traded-token-metrics');
 const getActiveTraderMetrics = require('../../../metrics/get-active-trader-metrics');
-const getAssetBridgeMetrics = require('../../../metrics/get-asset-bridge-metrics');
-const getAssetBridgingMetrics = require('../../../asset-bridges/get-asset-bridging-metrics');
 const getNetworkMetrics = require('../../../metrics/get-network-metrics');
 const getProtocolMetrics = require('../../../metrics/get-protocol-metrics');
 const getTokenMetrics = require('../../../metrics/get-token-metrics');
@@ -129,46 +127,6 @@ const createRouter = () => {
     async ({ params, response }, next) => {
       const { granularity, period } = params;
       const metrics = await getActiveTraderMetrics(period, granularity);
-
-      response.body = metrics;
-
-      await next();
-    },
-  );
-
-  router.get(
-    '/asset-bridge',
-    middleware.timePeriod('period', TIME_PERIOD.MONTH),
-    middleware.metricGranularity({
-      period: 'period',
-      granularity: 'granularity',
-    }),
-    async ({ params, request, response }, next) => {
-      const { address } = request.query;
-
-      if (address === undefined) {
-        throw new MissingParameterError('address');
-      }
-
-      const { granularity, period } = params;
-      const metrics = await getAssetBridgeMetrics(address, period, granularity);
-
-      response.body = metrics;
-
-      await next();
-    },
-  );
-
-  router.get(
-    '/asset-bridging',
-    middleware.timePeriod('period', TIME_PERIOD.MONTH),
-    middleware.metricGranularity({
-      period: 'period',
-      granularity: 'granularity',
-    }),
-    async ({ params, response }, next) => {
-      const { granularity, period } = params;
-      const metrics = await getAssetBridgingMetrics(period, granularity);
 
       response.body = metrics;
 

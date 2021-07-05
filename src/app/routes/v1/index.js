@@ -6,8 +6,9 @@ const createAppLookupRouter = require('./app-lookup');
 const createAppsRouter = require('./apps');
 const createArticlesRouter = require('./articles');
 const createArticleSourcesRouter = require('./article-sources');
-const createAssetBridgesRouter = require('./asset-bridges');
 const createFillsRouter = require('./fills');
+const createLiquiditySourceRouter = require('./liquidity-source');
+const createLiquiditySourcesRouter = require('./liquidity-sources');
 const createMetricsRouter = require('./metrics');
 const createProtocolsRouter = require('./protocols');
 const createRatesRouter = require('./rates');
@@ -31,6 +32,8 @@ const createRouter = () => {
     createArticlesRouter().routes(),
     createArticleSourcesRouter().routes(),
     createFillsRouter().routes(),
+    createLiquiditySourceRouter().routes(),
+    createLiquiditySourcesRouter().routes(),
     createMetricsRouter().routes(),
     createProtocolsRouter().routes(),
     createRatesRouter().routes(),
@@ -42,7 +45,6 @@ const createRouter = () => {
     createTraderLookupRouter().routes(),
     createTradersRouter().routes(),
     createZrxPriceRouter().routes(),
-    createAssetBridgesRouter().routes(),
   );
 
   return router;
