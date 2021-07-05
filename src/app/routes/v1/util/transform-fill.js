@@ -48,6 +48,10 @@ const transformFill = fill => {
         }
       : undefined;
 
+  const liquiditySource = fill.attributions.find(
+    a => a.type === FILL_ATTRIBUTION_TYPE.LIQUIDITY_SOURCE,
+  );
+
   return {
     affiliate: normalizeMetadata(fill.affiliate, fill.affiliateAddress),
     apps: fill.attributions
@@ -73,6 +77,14 @@ const transformFill = fill => {
       fill.feeRecipient,
     ),
     id: fill.id,
+    liquiditySource: liquiditySource
+      ? {
+          id: liquiditySource.entityId,
+          logoUrl: liquiditySource.entity.logoUrl,
+          name: liquiditySource.entity.name,
+          urlSlug: liquiditySource.entity.urlSlug,
+        }
+      : null,
     makerAddress: fill.maker || null,
     maker: normalizeMetadata(fill.makerMetadata, fill.maker),
     orderHash: fill.orderHash,
