@@ -2,8 +2,7 @@ const _ = require('lodash');
 const Router = require('koa-router');
 
 const { TIME_PERIOD } = require('../../../constants');
-const getAppsWithStatsForDates = require('../../../apps/get-apps-with-stats-for-dates');
-const getDatesForTimePeriod = require('../../../util/get-dates-for-time-period');
+const getAppsWithStatsForPeriod = require('../../../apps/get-apps-with-stats-for-period');
 const middleware = require('../../middleware');
 
 const createRouter = () => {
@@ -30,14 +29,8 @@ const createRouter = () => {
       const { limit, page } = pagination;
       const { sortBy, sortDirection, statsPeriod } = params;
 
-      if (statsPeriod === 'all' || statsPeriod === 'year') {
-        throw new Error('Temporarily unavailable');
-      }
-
-      const { dateFrom, dateTo } = getDatesForTimePeriod(statsPeriod);
-      const { apps, resultCount } = await getAppsWithStatsForDates(
-        dateFrom,
-        dateTo,
+      const { apps, resultCount } = await getAppsWithStatsForPeriod(
+        statsPeriod,
         {
           category: _.isEmpty(category) ? undefined : category,
           page,
@@ -49,9 +42,12 @@ const createRouter = () => {
 
       response.body = {
         apps,
+        limit,
         page,
         pageCount: Math.ceil(resultCount / limit),
-        limit,
+        sortBy,
+        sortDirection,
+        statsPeriod,
         total: resultCount,
       };
 
