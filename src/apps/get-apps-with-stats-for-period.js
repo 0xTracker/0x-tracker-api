@@ -74,7 +74,6 @@ const getPreviousStats = async (appIds, dateFrom, dateTo, usePrecomputed) => {
     const appId = bucket.key;
 
     return {
-      activeTraders: null,
       appId,
       tradeCount: {
         relayed: bucket.relayedTradeCount.value,
@@ -110,32 +109,31 @@ const getAppsByIds = async appIds => {
   return apps;
 };
 
-const getTraderStatsForApps = async (appIds, period) => {
-  let mappedPeriod;
-
+const mapPeriodForAppStatsCollection = period => {
   switch (period) {
     case TIME_PERIOD.DAY:
-      mappedPeriod = '1d';
-      break;
+      return '1d';
     case TIME_PERIOD.WEEK:
-      mappedPeriod = '7d';
-      break;
+      return '7d';
     case TIME_PERIOD.MONTH:
-      mappedPeriod = '30d';
-      break;
+      return '30d';
     case TIME_PERIOD.YEAR:
-      mappedPeriod = '365d';
-      break;
+      return '365d';
     case TIME_PERIOD.ALL:
-      mappedPeriod = 'all-time';
-      break;
+      return 'all-time';
     default:
       throw new Error(`Unsupported time period: ${period}`);
+  }
+};
+
+const getTraderStatsForApps = async (appIds, period) => {
+  if (typeof period !== 'string') {
+    return null;
   }
 
   const appStats = await AppStat.find({
     appId: { $in: appIds },
-    period: mappedPeriod,
+    period: mapPeriodForAppStatsCollection(period),
   }).lean();
 
   return appStats;
@@ -157,6 +155,115 @@ const getDataset = async ({
   const filteredAppIds = await getFilteredAppIds(category);
   const startIndex = (page - 1) * limit;
 
+  /*
+    When sorting by active traders we must fetch the initial dataset
+    from MongoDB rather than Elasticsearch and then fetch other metrics
+    for the apps from Elasticsearch afterwards.
+  */
+  if (sortBy === 'activeTraders') {
+    const appStats = await AppStat.paginate(
+      filteredAppIds
+        ? {
+            appId: { $in: filteredAppIds },
+            period: mapPeriodForAppStatsCollection(period),
+          }
+        : {
+            period: mapPeriodForAppStatsCollection(period),
+          },
+      {
+        sort: { activeTraders: sortDirection === 'asc' ? 1 : -1 },
+        limit,
+        page,
+        lean: true,
+      },
+    );
+
+    const appIds = appStats.docs.map(x => x.appId);
+
+    const otherStats = await elasticsearch.getClient().search({
+      index: usePrecomputed ? 'app_metrics_daily' : 'app_fills',
+      body: {
+        aggs: {
+          apps: {
+            terms: {
+              field: 'appId',
+              size: appIds.length,
+            },
+            aggs: {
+              relayedTradeCount: {
+                sum: {
+                  field: 'relayedTradeCount',
+                },
+              },
+              relayedTradeVolume: {
+                sum: {
+                  field: 'relayedTradeValue',
+                },
+              },
+              totalTradeCount: {
+                sum: {
+                  field: 'totalTradeCount',
+                },
+              },
+              totalTradeVolume: {
+                sum: {
+                  field: 'totalTradeValue',
+                },
+              },
+            },
+          },
+        },
+        size: 0,
+        query: {
+          bool: {
+            filter: [
+              {
+                range: {
+                  date: {
+                    gte: dateFrom,
+                    lte: dateTo,
+                  },
+                },
+              },
+              {
+                terms: {
+                  appId: appIds,
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    return {
+      appCount: appStats.total,
+      stats: appStats.docs.map(appStat => {
+        const otherStat = otherStats.body.aggregations.apps.buckets.find(
+          b => b.key === appStat.appId,
+        );
+
+        return {
+          activeTraders: appStat.activeTraders,
+          activeTradersChange: _.get(appStat, 'activeTradersChange', null),
+          appId: appStat.appId,
+          tradeCount: {
+            relayed: _.get(otherStat, 'relayedTradeCount.value', null),
+            total: _.get(otherStat, 'totalTradeCount.value', null),
+          },
+          tradeVolume: {
+            relayed: _.get(otherStat, 'relayedTradeVolume.value', null),
+            total: _.get(otherStat, 'totalTradeVolume.value', null),
+          },
+        };
+      }),
+    };
+  }
+
+  /*
+    When sorting by any other metric we must pull the initial dataset
+    from Elasticsearch and then fetch active traders from MongoDB.
+  */
   const response = await elasticsearch.getClient().search({
     index: usePrecomputed ? 'app_metrics_daily' : 'app_fills',
     body: {
