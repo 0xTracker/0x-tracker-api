@@ -6,6 +6,7 @@ const elasticsearch = require('../util/elasticsearch');
 const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 const getPercentageChange = require('../util/get-percentage-change');
 const getPreviousPeriod = require('../util/get-previous-period');
+const mapPeriodForAppStatsCollection = require('./map-period-for-app-stats-collection');
 
 const getPreviousStats = async (appIds, dateFrom, dateTo, usePrecomputed) => {
   if (appIds.length === 0) {
@@ -107,23 +108,6 @@ const getAppsByIds = async appIds => {
   }).lean();
 
   return apps;
-};
-
-const mapPeriodForAppStatsCollection = period => {
-  switch (period) {
-    case TIME_PERIOD.DAY:
-      return '1d';
-    case TIME_PERIOD.WEEK:
-      return '7d';
-    case TIME_PERIOD.MONTH:
-      return '30d';
-    case TIME_PERIOD.YEAR:
-      return '365d';
-    case TIME_PERIOD.ALL:
-      return 'all-time';
-    default:
-      throw new Error(`Unsupported time period: ${period}`);
-  }
 };
 
 const getTraderStatsForApps = async (appIds, period) => {

@@ -20,10 +20,6 @@ const createRouter = () => {
       const { slug, statsPeriod } = params;
       const app = await getAppBySlug(slug);
 
-      if (statsPeriod === 'all' || statsPeriod === 'year') {
-        throw new Error('Temporarily unavailable');
-      }
-
       if (app === null) {
         response.status = 404;
         await next();
