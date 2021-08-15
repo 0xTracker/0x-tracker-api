@@ -1,92 +1,40 @@
 const _ = require('lodash');
-
-const { FILL_ATTRIBUTION_TYPE, TIME_PERIOD } = require('../constants');
+const { TIME_PERIOD } = require('../constants');
+const AppStat = require('../model/app-stat');
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 const getPercentageChange = require('../util/get-percentage-change');
 const getPreviousPeriod = require('../util/get-previous-period');
+const mapPeriodForAppStatsCollection = require('./map-period-for-app-stats-collection');
 
-const getStatsForDates = async (appId, dateFrom, dateTo) => {
+const getStatsForDates = async (
+  appId,
+  dateFrom,
+  dateTo,
+  { usePrecomputed },
+) => {
   const res = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: usePrecomputed ? 'app_metrics_daily' : 'app_fills',
     body: {
       aggs: {
-        avgTradeSize: {
-          avg: {
-            field: 'tradeVolume',
-          },
-        },
-        traderCount: {
-          cardinality: {
-            field: 'traders',
-          },
-        },
-        tradeCount: {
+        relayedTradeCount: {
           sum: {
-            field: 'tradeCountContribution',
+            field: 'relayedTradeCount',
           },
         },
-        tradeVolume: {
+        relayedTradeVolume: {
           sum: {
-            field: 'tradeVolume',
+            field: 'relayedTradeValue',
           },
         },
-        attributions: {
-          nested: {
-            path: 'attributions',
+        totalTradeCount: {
+          sum: {
+            field: 'totalTradeCount',
           },
-          aggs: {
-            attribution: {
-              filter: {
-                bool: {
-                  minimum_should_match: 1,
-                  should: [
-                    {
-                      bool: {
-                        filter: [
-                          {
-                            term: {
-                              'attributions.id': appId,
-                            },
-                          },
-                          {
-                            term: {
-                              'attributions.type':
-                                FILL_ATTRIBUTION_TYPE.RELAYER,
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              },
-              aggs: {
-                by_type: {
-                  terms: {
-                    field: 'attributions.type',
-                    size: 10,
-                  },
-                  aggs: {
-                    attribution: {
-                      reverse_nested: {},
-                      aggs: {
-                        tradeCount: {
-                          sum: {
-                            field: 'tradeCountContribution',
-                          },
-                        },
-                        tradeVolume: {
-                          sum: {
-                            field: 'tradeVolume',
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
+        },
+        totalTradeVolume: {
+          sum: {
+            field: 'totalTradeValue',
           },
         },
       },
@@ -102,49 +50,8 @@ const getStatsForDates = async (appId, dateFrom, dateTo) => {
               },
             },
             {
-              nested: {
-                path: 'attributions',
-                query: {
-                  bool: {
-                    minimum_should_match: 1,
-                    should: [
-                      {
-                        bool: {
-                          filter: [
-                            {
-                              term: {
-                                'attributions.id': appId,
-                              },
-                            },
-                            {
-                              term: {
-                                'attributions.type':
-                                  FILL_ATTRIBUTION_TYPE.RELAYER,
-                              },
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        bool: {
-                          filter: [
-                            {
-                              term: {
-                                'attributions.id': appId,
-                              },
-                            },
-                            {
-                              term: {
-                                'attributions.type':
-                                  FILL_ATTRIBUTION_TYPE.CONSUMER,
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
+              term: {
+                appId,
               },
             },
           ],
@@ -153,38 +60,60 @@ const getStatsForDates = async (appId, dateFrom, dateTo) => {
     },
   });
 
-  const relayerStats = res.body.aggregations.attributions.attribution.by_type.buckets.find(
-    b => b.key === 0,
-  );
+  const appStats = res.body.aggregations;
+  const relayedTradeCount = appStats.relayedTradeCount.value;
+  const relayedTradeVolume = appStats.relayedTradeVolume.value;
+  const totalTradeCount = appStats.totalTradeCount.value;
+  const totalTradeVolume = appStats.totalTradeVolume.value;
 
   return {
-    activeTraders: res.body.aggregations.traderCount.value,
-    avgTradeSize: res.body.aggregations.avgTradeSize.value,
+    avgTradeSize: totalTradeVolume / totalTradeCount,
     tradeCount: {
-      relayed: _.get(relayerStats, 'attribution.tradeCount.value', 0),
-      total: res.body.aggregations.tradeCount.value,
+      relayed: relayedTradeCount,
+      total: totalTradeCount,
     },
     tradeVolume: {
-      relayed: _.get(relayerStats, 'attribution.tradeVolume.value', 0),
-      total: res.body.aggregations.tradeVolume.value,
+      relayed: relayedTradeVolume,
+      total: totalTradeVolume,
     },
   };
 };
 
-const getRelayerStatsForPeriod = async (appId, period) => {
+const getActiveTradersForPeriod = async (appId, period) => {
+  const appStat = await AppStat.findOne({
+    appId,
+    period: mapPeriodForAppStatsCollection(period),
+  });
+
+  if (!appStat) {
+    return undefined;
+  }
+
+  return {
+    activeTraders: appStat.activeTraders,
+    activeTradersChange: appStat.activeTradersChange,
+  };
+};
+
+const getAppStatsForPeriod = async (appId, period) => {
+  const usePrecomputed = period !== TIME_PERIOD.DAY;
   const { dateFrom, dateTo } = getDatesForTimePeriod(period);
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
 
-  const [stats, prevStats] = await Promise.all([
-    getStatsForDates(appId, dateFrom, dateTo),
+  const [stats, prevStats, activeTradersStats] = await Promise.all([
+    getStatsForDates(appId, dateFrom, dateTo, { usePrecomputed }),
     period === TIME_PERIOD.ALL
       ? undefined
-      : await getStatsForDates(appId, prevDateFrom, prevDateTo),
+      : await getStatsForDates(appId, prevDateFrom, prevDateTo, {
+          usePrecomputed,
+        }),
+    typeof period === 'string'
+      ? getActiveTradersForPeriod(appId, period)
+      : undefined,
   ]);
 
-  const { activeTraders, avgTradeSize, tradeCount, tradeVolume } = stats;
+  const { avgTradeSize, tradeCount, tradeVolume } = stats;
 
-  const prevActiveTraders = _.get(prevStats, 'activeTraders', null);
   const prevAvgTradeSize = _.get(prevStats, 'avgTradeSize', null);
   const prevTradeCountRelayed = _.get(prevStats, 'tradeCount.relayed', null);
   const prevTradeCountTotal = _.get(prevStats, 'tradeCount.total', null);
@@ -192,8 +121,8 @@ const getRelayerStatsForPeriod = async (appId, period) => {
   const prevTradeVolumeTotal = _.get(prevStats, 'tradeVolume.total', null);
 
   return {
-    activeTraders,
-    activeTradersChange: getPercentageChange(prevActiveTraders, activeTraders),
+    activeTraders: _.get(activeTradersStats, 'activeTraders', null),
+    activeTradersChange: _.get(activeTradersStats, 'activeTradersChange', null),
     avgTradeSize,
     avgTradeSizeChange: getPercentageChange(prevAvgTradeSize, avgTradeSize),
     tradeCount,
@@ -209,4 +138,4 @@ const getRelayerStatsForPeriod = async (appId, period) => {
   };
 };
 
-module.exports = getRelayerStatsForPeriod;
+module.exports = getAppStatsForPeriod;
