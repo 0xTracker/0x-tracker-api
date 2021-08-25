@@ -256,6 +256,11 @@ const getDataset = async ({
           terms: {
             field: 'appId',
             size: limit * page,
+            order: {
+              [sortBy === 'tradeVolume'
+                ? 'totalTradeVolume'
+                : 'totalTradeCount']: sortDirection,
+            },
           },
           aggs: {
             relayedTradeCount: {
@@ -282,13 +287,6 @@ const getDataset = async ({
               bucket_sort: {
                 size: limit,
                 from: startIndex,
-                sort: [
-                  {
-                    [sortBy === 'tradeVolume'
-                      ? 'totalTradeVolume'
-                      : 'totalTradeCount']: { order: sortDirection },
-                  },
-                ],
               },
             },
           },

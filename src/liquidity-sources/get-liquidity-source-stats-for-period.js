@@ -82,12 +82,6 @@ const getLiquiditySourceStatsForPeriod = async (liquiditySourceId, period) => {
   const prevTradeCount = _.get(prevStats, 'tradeCount', null);
   const prevTradeVolume = _.get(prevStats, 'tradeVolume', null);
 
-  console.log(
-    prevTradeCount,
-    tradeCount,
-    getPercentageChange(prevTradeCount, tradeCount),
-  );
-
   return {
     avgTradeSize,
     avgTradeSizeChange: getPercentageChange(prevAvgTradeSize, avgTradeSize),

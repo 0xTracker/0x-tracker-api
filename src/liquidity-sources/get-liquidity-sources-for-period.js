@@ -7,6 +7,10 @@ const getPercentageChange = require('../util/get-percentage-change');
 const getPreviousPeriod = require('../util/get-previous-period');
 
 const getPreviousStats = async (sourceIds, period) => {
+  if (sourceIds.length === 0) {
+    return [];
+  }
+
   const usePrecomputed = period === 'day';
   const { dateFrom, dateTo } = getDatesForTimePeriod(period);
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
@@ -79,6 +83,9 @@ const getLiquiditySourcesForPeriod = async (period, options) => {
           terms: {
             field: 'liquiditySourceId',
             size: limit * page,
+            order: {
+              tradeVolume: 'desc',
+            },
           },
           aggs: {
             tradeCount: {
@@ -95,11 +102,6 @@ const getLiquiditySourcesForPeriod = async (period, options) => {
               bucket_sort: {
                 size: limit,
                 from: startIndex,
-                sort: [
-                  {
-                    tradeVolume: { order: 'desc' },
-                  },
-                ],
               },
             },
           },
@@ -152,11 +154,6 @@ const getLiquiditySourcesForPeriod = async (period, options) => {
     const tradeVolume = bucket.tradeVolume.value;
     const avgTradeSize = tradeVolume / tradeCount;
 
-    console.log(
-      prevTradeCount,
-      tradeCount,
-      getPercentageChange(prevTradeCount, tradeCount),
-    );
     return {
       categories: attributionEntity.categories,
       description: _.get(attributionEntity, 'description', null),
