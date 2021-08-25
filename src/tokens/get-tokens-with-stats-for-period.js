@@ -1,11 +1,8 @@
 const _ = require('lodash');
-
-const { TOKEN_TYPE } = require('../constants');
 const elasticsearch = require('../util/elasticsearch');
 const getCdnTokenImageUrl = require('./get-cdn-token-image-url');
 const getPercentageChange = require('../util/get-percentage-change');
 const getPreviousPeriod = require('../util/get-previous-period');
-const getTokenPrices = require('./get-token-prices');
 const Token = require('../model/token');
 const getDatesForTimePeriod = require('../util/get-dates-for-time-period');
 
@@ -40,6 +37,30 @@ const getStatsForPreviousPeriod = async (
                 field: usePrecomputed ? 'tradeVolumeUsd' : 'tradedAmountUSD',
               },
             },
+            priced: {
+              filter: {
+                exists: { field: usePrecomputed ? 'closePrice' : 'priceUSD' },
+              },
+              aggs: {
+                lastDoc: {
+                  top_hits: {
+                    size: 1,
+                    sort: {
+                      date: {
+                        order: 'desc',
+                      },
+                    },
+                    _source: {
+                      includes: [
+                        'date',
+                        'fillId',
+                        usePrecomputed ? 'closePrice' : 'priceUSD',
+                      ],
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -72,6 +93,15 @@ const getStatsForPreviousPeriod = async (
     const bucket = buckets.find(b => b.key === tokenAddress);
 
     return {
+      price: {
+        close: _.get(
+          bucket,
+          `priced.lastDoc.hits.hits[0]._source.${
+            !usePrecomputed ? 'priceUSD' : 'closePrice'
+          }`,
+          null,
+        ),
+      },
       tradeCount: _.get(bucket, 'tradeCount.value', 0),
       tradeVolume: {
         token: _.get(bucket, 'tradeVolume.value', 0),
@@ -82,16 +112,20 @@ const getStatsForPreviousPeriod = async (
   });
 };
 
+const formatSortBy = sortBy => {
+  if (sortBy === 'tradeVolume') {
+    return 'tradeVolumeUSD';
+  }
+
+  return 'tradeCount';
+};
+
 const getTokensWithStatsForDates = async (period, options) => {
   const { dateFrom, dateTo } = getDatesForTimePeriod(period);
 
-  const opts = _.defaults({}, options, {
-    page: 1,
-    limit: 20,
-  });
-
   const usePrecomputed = !options.type && period !== 'day';
-  const startIndex = (opts.page - 1) * opts.limit;
+  const startIndex = (options.page - 1) * options.limit;
+  const sortBy = formatSortBy(options.sortBy);
 
   const res = await elasticsearch.getClient().search({
     index: !usePrecomputed ? 'traded_tokens' : 'token_metrics_daily',
@@ -100,8 +134,8 @@ const getTokensWithStatsForDates = async (period, options) => {
         tokenStats: {
           terms: {
             field: !usePrecomputed ? 'tokenAddress' : 'address',
-            order: { tradeVolumeUSD: 'desc' },
-            size: opts.page * opts.limit,
+            order: { [sortBy]: options.sortDirection },
+            size: options.page * options.limit,
           },
           aggs: {
             tradeCount: {
@@ -119,9 +153,60 @@ const getTokensWithStatsForDates = async (period, options) => {
                 field: !usePrecomputed ? 'tradedAmountUSD' : 'tradeVolumeUsd',
               },
             },
+            minPriceUSD: {
+              min: {
+                field: !usePrecomputed ? 'priceUSD' : 'minPrice',
+              },
+            },
+            maxPriceUSD: {
+              max: {
+                field: !usePrecomputed ? 'priceUSD' : 'maxPrice',
+              },
+            },
+            priced: {
+              filter: {
+                exists: { field: !usePrecomputed ? 'priceUSD' : 'openPrice' },
+              },
+              aggs: {
+                firstDoc: {
+                  top_hits: {
+                    size: 1,
+                    sort: {
+                      date: {
+                        order: 'asc',
+                      },
+                    },
+                    _source: {
+                      includes: [
+                        'date',
+                        'fillId',
+                        !usePrecomputed ? 'priceUSD' : 'openPrice',
+                      ],
+                    },
+                  },
+                },
+                lastDoc: {
+                  top_hits: {
+                    size: 1,
+                    sort: {
+                      date: {
+                        order: 'desc',
+                      },
+                    },
+                    _source: {
+                      includes: [
+                        'date',
+                        'fillId',
+                        !usePrecomputed ? 'priceUSD' : 'closePrice',
+                      ],
+                    },
+                  },
+                },
+              },
+            },
             bucket_truncate: {
               bucket_sort: {
-                size: opts.limit,
+                size: options.limit,
                 from: startIndex,
               },
             },
@@ -137,9 +222,9 @@ const getTokensWithStatsForDates = async (period, options) => {
       query: {
         bool: {
           filter: [
-            opts.type === undefined
+            options.type === undefined
               ? undefined
-              : { term: { tokenType: opts.type } },
+              : { term: { tokenType: options.type } },
             {
               range: {
                 date: {
@@ -158,50 +243,45 @@ const getTokensWithStatsForDates = async (period, options) => {
   const tokenAddresses = buckets.map(x => x.key);
   const tokenCount = res.body.aggregations.tokenCount.value;
 
-  const [tokens, prices, previousStats] = await Promise.all([
+  const [tokens, previousStats] = await Promise.all([
     Token.find({
       address: { $in: tokenAddresses },
     }).lean(),
-    getTokenPrices(tokenAddresses, { from: dateFrom, to: dateTo }),
     getStatsForPreviousPeriod(tokenAddresses, dateFrom, dateTo, usePrecomputed),
   ]);
 
   return {
     tokens: buckets.map(bucket => {
       const token = tokens.find(t => t.address === bucket.key);
-      const price = prices.find(t => t.tokenAddress === bucket.key);
       const prev = previousStats.find(s => s.tokenAddress === bucket.key);
 
       const { address, imageUrl, name, symbol, type } = token;
 
+      const closePrice = _.get(
+        bucket,
+        `priced.lastDoc.hits.hits[0]._source.${
+          !usePrecomputed ? 'priceUSD' : 'closePrice'
+        }`,
+        null,
+      );
+
       return {
         address,
         imageUrl: _.isString(imageUrl) ? getCdnTokenImageUrl(imageUrl) : null,
-        lastTrade: _.has(price, 'fillId')
-          ? {
-              date: price.date,
-              id: price.fillId,
-            }
-          : null,
         name: _.isString(name) ? name : null,
-        price:
-          token.type === TOKEN_TYPE.ERC20
-            ? {
-                change: _.get(price, 'priceChange', null),
-                close: _.get(price, 'priceUSD', null),
-                high: _.get(price, 'maxPriceUSD', null),
-                last: _.get(price, 'priceUSD', null),
-                low: _.get(price, 'minPriceUSD', null),
-                open: _.get(price, 'openPriceUSD', null),
-              }
-            : {
-                change: null,
-                close: null,
-                high: _.get(price, 'maxPriceUSD', null),
-                last: null,
-                low: _.get(price, 'minPriceUSD', null),
-                open: null,
-              },
+        price: {
+          change: getPercentageChange(prev.price.close, closePrice),
+          high: bucket.maxPriceUSD.value,
+          low: bucket.minPriceUSD.value,
+          open: _.get(
+            bucket,
+            `priced.firstDoc.hits.hits[0]._source.${
+              !usePrecomputed ? 'priceUSD' : 'openPrice'
+            }`,
+            null,
+          ),
+          close: closePrice,
+        },
         stats: {
           tradeCount: bucket.tradeCount.value,
           tradeCountChange: getPercentageChange(

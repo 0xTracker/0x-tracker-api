@@ -34,6 +34,8 @@ const createRouter = () => {
     middleware.timePeriod('statsPeriod', TIME_PERIOD.DAY, {
       allowCustom: true,
     }),
+    middleware.enum('sortBy', ['tradeCount', 'tradeVolume'], 'tradeVolume'),
+    middleware.enum('sortDirection', ['asc', 'desc'], 'desc'),
     async ({ pagination, params, request, response }, next) => {
       const { type } = request.query;
 
@@ -45,17 +47,15 @@ const createRouter = () => {
       }
 
       const { limit, page } = pagination;
-      const { statsPeriod } = params;
-
-      if (statsPeriod === 'all' || statsPeriod === 'year') {
-        throw new Error('Temporarily unavailable');
-      }
+      const { sortBy, sortDirection, statsPeriod } = params;
 
       const { tokens, resultCount } = await getTokensWithStatsForPeriod(
         statsPeriod,
         {
-          page,
           limit,
+          page,
+          sortBy,
+          sortDirection,
           type: TOKEN_TYPE_REVERSE_MAP[type],
         },
       );
