@@ -12,6 +12,10 @@ const getStatsForPreviousPeriod = async (
   dateTo,
   usePrecomputed,
 ) => {
+  if (tokenAddresses.length === 0) {
+    return [];
+  }
+
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
 
   const res = await elasticsearch.getClient().search({
