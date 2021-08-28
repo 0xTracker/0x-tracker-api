@@ -1,9 +1,7 @@
 const _ = require('lodash');
 const Router = require('koa-router');
-
 const { TIME_PERIOD } = require('../../../constants');
 const getAppsForTokenInPeriod = require('../../../apps/get-apps-for-token-in-period');
-const getTokenPrice = require('../../../tokens/get-token-price');
 const getTokenStatsForPeriod = require('../../../tokens/get-token-stats-for-period');
 const middleware = require('../../middleware');
 const Token = require('../../../model/token');
@@ -30,12 +28,11 @@ const createRouter = () => {
         return;
       }
 
-      const [price, stats] = await Promise.all([
-        getTokenPrice(token.address, statsPeriod),
+      const [stats] = await Promise.all([
         getTokenStatsForPeriod(token, statsPeriod),
       ]);
 
-      response.body = transformToken(token, price, stats, statsPeriod);
+      response.body = transformToken(token, stats, statsPeriod);
 
       await next();
     },
