@@ -1,13 +1,14 @@
 const _ = require('lodash');
+const { GRANULARITY } = require('../constants');
 
 const elasticsearch = require('../util/elasticsearch');
 const getDatesForMetrics = require('../util/get-dates-for-metrics');
 
-const getAppMetrics = async (appId, period, granularity) => {
-  const { dateFrom, dateTo } = getDatesForMetrics(period, granularity);
+const getBasicMetrics = async (appId, dates, granularity) => {
+  const usePrecomputed = granularity !== GRANULARITY.HOUR;
 
   const results = await elasticsearch.getClient().search({
-    index: 'fills',
+    index: usePrecomputed ? 'app_metrics_daily' : 'app_fills',
     body: {
       aggs: {
         by_date: {
@@ -15,97 +16,29 @@ const getAppMetrics = async (appId, period, granularity) => {
             field: 'date',
             calendar_interval: granularity,
             extended_bounds: {
-              min: dateFrom,
-              max: dateTo,
+              min: dates.dateFrom,
+              max: dates.dateTo,
             },
           },
           aggs: {
-            traderCount: {
-              cardinality: {
-                field: 'traders',
-              },
-            },
-            tradeCount: {
+            relayedTradeCount: {
               sum: {
-                field: 'tradeCountContribution',
+                field: 'relayedTradeCount',
               },
             },
-            tradeVolume: {
+            relayedTradeVolume: {
               sum: {
-                field: 'tradeVolume',
+                field: 'relayedTradeValue',
               },
             },
-            attributions: {
-              nested: {
-                path: 'attributions',
+            totalTradeCount: {
+              sum: {
+                field: 'totalTradeCount',
               },
-              aggs: {
-                attribution: {
-                  filter: {
-                    bool: {
-                      minimum_should_match: 1,
-                      should: [
-                        {
-                          bool: {
-                            filter: [
-                              {
-                                term: {
-                                  'attributions.id': appId,
-                                },
-                              },
-                              {
-                                term: {
-                                  'attributions.type': 0,
-                                },
-                              },
-                            ],
-                          },
-                        },
-                        {
-                          bool: {
-                            filter: [
-                              {
-                                term: {
-                                  'attributions.id': appId,
-                                },
-                              },
-                              {
-                                term: {
-                                  'attributions.type': 1,
-                                },
-                              },
-                            ],
-                          },
-                        },
-                      ],
-                    },
-                  },
-                  aggs: {
-                    by_type: {
-                      terms: {
-                        field: 'attributions.type',
-                        size: 10,
-                      },
-                      aggs: {
-                        attribution: {
-                          reverse_nested: {},
-                          aggs: {
-                            tradeCount: {
-                              sum: {
-                                field: 'tradeCountContribution',
-                              },
-                            },
-                            tradeVolume: {
-                              sum: {
-                                field: 'tradeVolume',
-                              },
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
+            },
+            totalTradeVolume: {
+              sum: {
+                field: 'totalTradeValue',
               },
             },
           },
@@ -117,53 +50,14 @@ const getAppMetrics = async (appId, period, granularity) => {
             {
               range: {
                 date: {
-                  gte: dateFrom,
-                  lte: dateTo,
+                  gte: dates.dateFrom,
+                  lte: dates.dateTo,
                 },
               },
             },
             {
-              nested: {
-                path: 'attributions',
-                query: {
-                  bool: {
-                    minimum_should_match: 1,
-                    should: [
-                      {
-                        bool: {
-                          filter: [
-                            {
-                              term: {
-                                'attributions.id': appId,
-                              },
-                            },
-                            {
-                              term: {
-                                'attributions.type': 0,
-                              },
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        bool: {
-                          filter: [
-                            {
-                              term: {
-                                'attributions.id': appId,
-                              },
-                            },
-                            {
-                              term: {
-                                'attributions.type': 1,
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
+              term: {
+                appId,
               },
             },
           ],
@@ -173,22 +67,91 @@ const getAppMetrics = async (appId, period, granularity) => {
     },
   });
 
-  return results.body.aggregations.by_date.buckets.map(x => {
-    const relayerStats = x.attributions.attribution.by_type.buckets.find(
-      b => b.key === 0,
+  return results.body.aggregations.by_date.buckets.map(bucket => {
+    return {
+      date: new Date(bucket.key_as_string),
+      tradeCount: {
+        relayed: _.get(bucket, 'relayedTradeCount.value', 0),
+        total: _.get(bucket, 'totalTradeCount.value', 0),
+      },
+      tradeVolume: {
+        relayed: _.get(bucket, 'relayedTradeVolume.value', 0),
+        total: _.get(bucket, 'totalTradeVolume.value', 0),
+      },
+    };
+  });
+};
+
+const getActiveTraderMetrics = async (appId, dates, granularity) => {
+  const results = await elasticsearch.getClient().search({
+    index: 'app_fills',
+    body: {
+      aggs: {
+        by_date: {
+          date_histogram: {
+            field: 'date',
+            calendar_interval: granularity,
+            extended_bounds: {
+              min: dates.dateFrom,
+              max: dates.dateTo,
+            },
+          },
+          aggs: {
+            traderCount: {
+              cardinality: {
+                field: 'traders',
+              },
+            },
+          },
+        },
+      },
+      query: {
+        bool: {
+          filter: [
+            {
+              range: {
+                date: {
+                  gte: dates.dateFrom,
+                  lte: dates.dateTo,
+                },
+              },
+            },
+            {
+              term: {
+                appId,
+              },
+            },
+          ],
+        },
+      },
+      size: 0,
+    },
+  });
+
+  return results.body.aggregations.by_date.buckets.map(bucket => {
+    return {
+      date: new Date(bucket.key_as_string),
+      activeTraders: bucket.traderCount.value,
+    };
+  });
+};
+
+const getAppMetrics = async (appId, period, granularity) => {
+  const dates = getDatesForMetrics(period, granularity);
+
+  const [basicMetrics, activeTraderMetrics] = await Promise.all([
+    getBasicMetrics(appId, dates, granularity),
+    getActiveTraderMetrics(appId, dates, granularity),
+  ]);
+
+  return basicMetrics.map(basicMetric => {
+    const activeTradersMetric = activeTraderMetrics.find(
+      m => m.date.getTime() === basicMetric.date.getTime(),
     );
 
     return {
-      date: new Date(x.key_as_string),
-      activeTraders: x.traderCount.value,
-      tradeCount: {
-        relayed: _.get(relayerStats, 'attribution.tradeCount.value', 0),
-        total: x.tradeCount.value,
-      },
-      tradeVolume: {
-        relayed: _.get(relayerStats, 'attribution.tradeVolume.value', 0),
-        total: x.tradeVolume.value,
-      },
+      ...basicMetric,
+      activeTraders: _.get(activeTradersMetric, 'activeTraders', null),
     };
   });
 };
