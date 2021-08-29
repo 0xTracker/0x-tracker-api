@@ -113,7 +113,7 @@ const getTokenStatsForDates = async (
   } = res.body.aggregations;
 
   const { firstDoc, lastDoc } = priced;
-  console.log(firstDoc, lastDoc);
+
   return {
     price: {
       close: _.get(
@@ -139,7 +139,7 @@ const getTokenStatsForPeriod = async (token, period) => {
   const usePrecomputed = period !== 'day';
   const { dateFrom, dateTo } = getDatesForTimePeriod(period);
   const { prevDateFrom, prevDateTo } = getPreviousPeriod(dateFrom, dateTo);
-  console.log(dateFrom, dateTo, prevDateFrom, prevDateTo);
+
   const [stats, prevStats] = await Promise.all([
     getTokenStatsForDates(token, dateFrom, dateTo, { usePrecomputed }),
     period !== TIME_PERIOD.ALL
@@ -148,26 +148,22 @@ const getTokenStatsForPeriod = async (token, period) => {
         })
       : null,
   ]);
-  console.log(prevStats.price.close, stats.price.close);
+
+  const prevClosePrice = prevStats ? prevStats.price.close : null;
+  const prevTradeCount = prevStats ? prevStats.tradeCount : null;
+  const prevTradeVolume = prevStats ? prevStats.tradeVolume.token : null;
+  const prevTradeVolumeUsd = prevStats ? prevStats.tradeVolume.USD : null;
+
   return {
     ...stats,
     price: {
-      change: getPercentageChange(prevStats.price.close, stats.price.close),
+      change: getPercentageChange(prevClosePrice, stats.price.close),
       ...stats.price,
     },
-    tradeCountChange: getPercentageChange(
-      prevStats.tradeCount,
-      stats.tradeCount,
-    ),
+    tradeCountChange: getPercentageChange(prevTradeCount, stats.tradeCount),
     tradeVolumeChange: {
-      token: getPercentageChange(
-        prevStats.tradeVolume.token,
-        stats.tradeVolume.token,
-      ),
-      USD: getPercentageChange(
-        prevStats.tradeVolume.USD,
-        stats.tradeVolume.USD,
-      ),
+      token: getPercentageChange(prevTradeVolume, stats.tradeVolume.token),
+      USD: getPercentageChange(prevTradeVolumeUsd, stats.tradeVolume.USD),
     },
   };
 };
