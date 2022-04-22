@@ -42,7 +42,7 @@ const createRouter = () => {
     middleware.pagination({
       defaultLimit: 20,
       maxLimit: 50,
-      maxPage: 50,
+      maxPage: 100,
     }),
     middleware.number('protocolVersion'),
     middleware.number('valueFrom'),
